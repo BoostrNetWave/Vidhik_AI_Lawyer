@@ -1,0 +1,28 @@
+Informatic:
+===========
+50K
+
+Patient Analytics Report
+========================
+40k
+
+Face Scanning 
+=============
+Report 
+50k
+
+Social Feeder
+=============
+Insights
+40k
+
+Server Deployment, Securities, Pipeline
+========================================
+40K
+
+Mobile Application
+==================
+API Configuration -> 150 APIs
+
+120K
+
