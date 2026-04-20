@@ -107,7 +107,7 @@ export default function SupportPage() {
 
   // Derived Stats
   const stats = [
-    { label: "Total Tickets", value: rows.length, icon: <MessageSquare className="text-blue-500" />, change: "+5" },
+    { label: "Total Tickets", value: rows.length, icon: <MessageSquare className="text-primary" />, change: "+5" },
     { label: "Open Issues", value: rows.filter(t => t.status !== "Closed").length, icon: <AlertCircle className="text-orange-500" />, change: "-2" },
     { label: "Resolved", value: rows.filter(t => t.status === "Closed").length, icon: <CheckCircle2 className="text-green-500" />, change: "+8" },
     { label: "Urgent", value: rows.filter(t => t.priority === "Urgent").length, icon: <ShieldAlert className="text-red-500" />, change: "!" },
@@ -121,7 +121,7 @@ export default function SupportPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 bg-indigo-600 rounded-lg text-white shadow-lg shadow-indigo-100">
+              <div className="p-2 bg-primary rounded-lg text-white shadow-lg shadow-indigo-100">
                 <LifeBuoy size={20} />
               </div>
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Support Center</h1>
@@ -131,7 +131,7 @@ export default function SupportPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setModal(true)}
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98] gap-2"
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:bg-primary/90 transition-all active:scale-[0.98] gap-2"
             >
               <PlusCircle size={20} />
               Create New Ticket
@@ -204,7 +204,7 @@ export default function SupportPage() {
                   rows.map((t) => (
                     <tr key={t._id} className="hover:bg-slate-50/50 transition-all duration-200 group">
                       <td className="py-5 px-6">
-                        <span className="font-mono text-xs font-bold bg-slate-100 px-2 py-1 rounded-lg text-slate-600 border border-slate-200 group-hover:bg-white group-hover:text-indigo-600 group-hover:border-indigo-100 transition-colors">
+                        <span className="font-mono text-xs font-bold bg-slate-100 px-2 py-1 rounded-lg text-slate-600 border border-slate-200 group-hover:bg-white group-hover:text-primary group-hover:border-indigo-100 transition-colors">
                           {t.ticketId}
                         </span>
                       </td>
@@ -222,7 +222,7 @@ export default function SupportPage() {
                       <td className="py-5 px-6">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm ring-1 ring-inset ${t.priority === "Urgent" ? "bg-red-50 text-red-700 ring-red-100" :
                           t.priority === "High" ? "bg-orange-50 text-orange-700 ring-orange-100" :
-                            t.priority === "Medium" ? "bg-blue-50 text-blue-700 ring-blue-100" :
+                            t.priority === "Medium" ? "bg-primary/10 text-blue-700 ring-blue-100" :
                               "bg-slate-50 text-slate-600 ring-slate-100"
                           }`}>
                           {t.priority}
@@ -231,14 +231,14 @@ export default function SupportPage() {
                       <td className="py-5 px-6">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${t.status === "Closed" ? "bg-green-100 text-green-700" : "bg-indigo-100 text-indigo-700"
                           }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${t.status === "Closed" ? "bg-green-500" : "bg-indigo-500 animate-pulse"}`}></span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${t.status === "Closed" ? "bg-green-500" : "bg-primary/100 animate-pulse"}`}></span>
                           {t.status}
                         </span>
                       </td>
                       <td className="py-5 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                            className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
                             title="View Details"
                             onClick={() => {
                               setSelectedTicket(t);
@@ -273,7 +273,7 @@ export default function SupportPage() {
                       <p className="text-slate-400 text-sm mt-1">If you're having issues, our team is ready to help.</p>
                       <button
                         onClick={() => setModal(true)}
-                        className="mt-6 px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"
+                        className="mt-6 px-6 py-2 bg-primary text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:bg-primary/90 transition-all"
                       >
                         Create Your First Ticket
                       </button>
@@ -297,7 +297,7 @@ export default function SupportPage() {
                   Previous
                 </button>
                 <button
-                  className="px-4 py-2 border border-indigo-200 bg-white rounded-xl text-sm font-bold text-indigo-600 hover:bg-indigo-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-indigo-100/20"
+                  className="px-4 py-2 border border-indigo-200 bg-white rounded-xl text-sm font-bold text-primary hover:bg-primary/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-indigo-100/20"
                   onClick={() => fetchTickets(Math.min(pages, page + 1))}
                   disabled={page >= pages}
                 >

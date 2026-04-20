@@ -4,7 +4,7 @@ import rateLimit from 'express-rate-limit';
 
 const authLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 10, // Limit each IP to 10 login/register requests per hour
+    max: 100, // Relaxed from 10 to 100
     message: 'Too many accounts created from this IP, please try again after an hour'
 });
 

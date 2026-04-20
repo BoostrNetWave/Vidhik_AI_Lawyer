@@ -201,7 +201,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50/50 to-purple-50/30">
+    <div className="min-h-screen bg-slate-50/50">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-xl shadow-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
@@ -287,7 +287,7 @@ export default function Dashboard() {
                   <h3 className="font-semibold text-gray-900">New Post</h3>
                   <p className="text-sm text-gray-500">Write Article</p>
                 </div>
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg shadow-primary/10">
                   <Plus className="h-6 w-6" />
                 </div>
               </div>
@@ -301,7 +301,7 @@ export default function Dashboard() {
                   <h3 className="font-semibold text-gray-900">Support</h3>
                   <p className="text-sm text-gray-500">View Tickets</p>
                 </div>
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg shadow-primary/10">
                   <LifeBuoy className="h-6 w-6" />
                 </div>
               </div>
@@ -315,7 +315,7 @@ export default function Dashboard() {
                   <h3 className="font-semibold text-gray-900">Finance</h3>
                   <p className="text-sm text-gray-500">Check Payouts</p>
                 </div>
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg shadow-primary/10">
                   <DollarSign className="h-6 w-6" />
                 </div>
               </div>
@@ -354,7 +354,7 @@ export default function Dashboard() {
                   <p className="text-3xl font-bold text-gray-900">{stats.upcomingConsultations}</p>
                   <p className="text-sm font-medium text-gray-500">Awaiting confirmation</p>
                 </div>
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-white shadow-lg shadow-primary/10">
                   <Clock className="h-6 w-6" />
                 </div>
               </div>
@@ -369,7 +369,7 @@ export default function Dashboard() {
                   <p className="text-3xl font-bold text-gray-900">{stats.publishedBlogs}</p>
                   <p className="text-sm font-medium text-gray-500">{stats.draftBlogs} drafts in progress</p>
                 </div>
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-white">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-white shadow-lg shadow-primary/10">
                   <FileText className="h-6 w-6" />
                 </div>
               </div>
@@ -442,8 +442,8 @@ export default function Dashboard() {
                       />
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(267, 85%, 60%)" stopOpacity={0.9} />
-                          <stop offset="95%" stopColor="hsl(267, 85%, 60%)" stopOpacity={0.6} />
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.9} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
                         </linearGradient>
                       </defs>
                     </BarChart>

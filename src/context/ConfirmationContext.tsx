@@ -50,26 +50,26 @@ export const ConfirmationProvider: React.FC<{ children: ReactNode }> = ({ childr
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md relative z-10 overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6">
                             <div className="flex items-start gap-4">
-                                <div className={`p-3 rounded-full shrink-0 ${options.type === 'info' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
+                                <div className={`p-3 rounded-full shrink-0 ${options.type === 'info' ? 'bg-primary/10 text-primary' : 'bg-red-100 text-red-600'}`}>
                                     <AlertTriangle className="w-6 h-6" />
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className="text-lg font-bold text-slate-900">{options.title}</h3>
-                                    <p className="text-sm text-slate-500 leading-relaxed font-medium">{options.message}</p>
+                                    <p className="text-sm text-primary leading-relaxed font-medium">{options.message}</p>
                                 </div>
                             </div>
                         </div>
                         <div className="bg-slate-50 p-4 px-6 flex justify-end gap-3 border-t border-slate-100">
                             <button
                                 onClick={handleCancel}
-                                className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200/50 rounded-lg transition-colors"
+                                className="px-4 py-2 text-sm font-bold bg-primary/10 border-primary/20 text-primary hover:bg-slate-200/50 rounded-lg transition-colors"
                             >
                                 {options.cancelText || 'Cancel'}
                             </button>
                             <button
                                 onClick={handleConfirm}
                                 className={`px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md transition-all active:scale-95 ${options.type === 'info'
-                                        ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
+                                        ? 'bg-primary hover:bg-primary/90 shadow-primary/20'
                                         : 'bg-red-600 hover:bg-red-700 shadow-red-200'
                                     }`}
                             >

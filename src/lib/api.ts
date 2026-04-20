@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create a central axios instance
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: '/lawyer/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,7 +30,7 @@ api.interceptors.response.use(
       // Clear local storage and redirect to login if unauthorized
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.location.href = '/lawyer/login';
     }
     return Promise.reject(error);
   }

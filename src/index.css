@@ -10,19 +10,19 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 267 85% 60%;
+    --primary: 263 90% 68%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 267 100% 92%;
-    --secondary-foreground: 267 85% 20%;
-    --muted: 267 30% 96%;
-    --muted-foreground: 267 20% 40%;
-    --accent: 267 100% 96%;
-    --accent-foreground: 267 85% 25%;
+    --secondary: 263 30% 96%;
+    --secondary-foreground: 263 90% 40%;
+    --muted: 263 20% 96%;
+    --muted-foreground: 263 10% 40%;
+    --accent: 263 90% 96%;
+    --accent-foreground: 263 90% 40%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 267 20% 90%;
-    --input: 267 20% 90%;
-    --ring: 267 85% 60%;
+    --border: 263 20% 90%;
+    --input: 263 20% 90%;
+    --ring: 263 90% 68%;
     --radius: 0.75rem;
     
     /* Custom color palette for dashboard */

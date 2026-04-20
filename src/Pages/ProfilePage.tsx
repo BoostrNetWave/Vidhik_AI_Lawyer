@@ -207,7 +207,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
   }
@@ -218,11 +218,11 @@ export default function ProfilePage() {
       className={cn(
         "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all rounded-lg w-full text-left mb-1",
         activeTab === id 
-            ? "bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200" 
-            : "text-slate-600 hover:bg-slate-50 hover:text-indigo-600"
+            ? "bg-primary/10 text-primary/90 shadow-sm ring-1 ring-primary/30" 
+            : "text-slate-600 hover:bg-slate-50 hover:text-primary"
       )}
     >
-      <Icon className={cn("w-4 h-4", activeTab === id ? "text-indigo-600" : "text-slate-400")} />
+      <Icon className={cn("w-4 h-4", activeTab === id ? "text-primary" : "text-slate-400")} />
       {label}
     </button>
   );
@@ -234,7 +234,7 @@ export default function ProfilePage() {
           <h1 className="text-xl font-bold tracking-tight text-slate-900">Professional Profile</h1>
           <p className="text-xs text-slate-500 font-medium">Configure your public lawyer appearance and billing details</p>
         </div>
-        <Button onClick={activeTab === 'payouts' ? savePayment : saveProfile} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100 shadow-lg px-8">
+        <Button onClick={activeTab === 'payouts' ? savePayment : saveProfile} disabled={saving} className="bg-primary hover:bg-primary/90 shadow-primary/10 shadow-lg px-8">
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           Save Changes
         </Button>
@@ -246,9 +246,9 @@ export default function ProfilePage() {
           <aside className="w-full md:w-64 flex-shrink-0 space-y-6">
             <Card className="overflow-hidden">
                 <CardContent className="p-0">
-                    <div className="p-6 text-center border-b bg-gradient-to-br from-indigo-50 to-white">
+                    <div className="p-6 text-center border-b bg-gradient-to-br from-primary/5 to-white">
                         <div className="relative inline-block group mx-auto mb-4">
-                            <div className="w-20 h-20 rounded-full border-2 border-white shadow-md overflow-hidden bg-slate-100 ring-2 ring-indigo-100">
+                            <div className="w-20 h-20 rounded-full border-2 border-white shadow-md overflow-hidden bg-slate-100 ring-2 ring-primary/20">
                                 {avatar ? (
                                     <img src={avatar} className="w-full h-full object-cover" alt="Profile" />
                                 ) : (
@@ -257,7 +257,7 @@ export default function ProfilePage() {
                             </div>
                             <button 
                                 onClick={() => avatarRef.current?.click()}
-                                className="absolute bottom-0 right-0 p-1.5 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-transform hover:scale-110 border-2 border-white"
+                                className="absolute bottom-0 right-0 p-1.5 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-transform hover:scale-110 border-2 border-white"
                             >
                                 <Camera className="w-3.5 h-3.5" />
                             </button>
@@ -275,14 +275,14 @@ export default function ProfilePage() {
                 </CardContent>
             </Card>
 
-            <Card className="bg-indigo-900 border-none text-white overflow-hidden">
+            <Card className="bg-primary border-none text-white overflow-hidden">
                 <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-3">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm font-bold">Public Rating</span>
                     </div>
                     <div className="text-3xl font-extrabold mb-1">{profileFields.rating || "0.0"}</div>
-                    <p className="text-indigo-300 text-[10px] font-bold uppercase tracking-widest">Based on {profileFields.reviews || 0} client reviews</p>
+                    <p className="text-primary-foreground/70 text-[10px] font-bold uppercase tracking-widest">Based on {profileFields.reviews || 0} client reviews</p>
                 </CardContent>
             </Card>
           </aside>
@@ -363,7 +363,7 @@ export default function ProfilePage() {
                                 />
                                 <div className="flex flex-wrap gap-2 mt-3">
                                     {profileFields.practiceAreas.map((area, i) => area && (
-                                        <Badge key={i} variant="secondary" className="px-2 py-1 bg-indigo-50 text-indigo-700 border-indigo-100 uppercase text-[10px] font-black tracking-wider">
+                                        <Badge key={i} variant="secondary" className="px-2 py-1 bg-primary/10 text-primary/90 border-primary/20 uppercase text-[10px] font-black tracking-wider">
                                             {area}
                                         </Badge>
                                     ))}
@@ -487,7 +487,7 @@ export default function ProfilePage() {
                             />
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {profileFields.memberships.map((m, i) => m && (
-                                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-indigo-900 text-white rounded-full text-xs font-bold">
+                                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-full text-xs font-bold">
                                         <Globe className="w-3 h-3" />
                                         {m}
                                     </div>
@@ -505,13 +505,13 @@ export default function ProfilePage() {
                         <CardDescription>Your monthly earnings will be deposited into this account.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 flex items-start gap-4 mb-2">
-                            <div className="p-2 bg-indigo-600 rounded-lg">
+                        <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-start gap-4 mb-2">
+                            <div className="p-2 bg-primary rounded-lg">
                                 <CreditCard className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-bold text-indigo-900">Highly Secure Payouts</h4>
-                                <p className="text-xs text-indigo-700 mt-1 leading-relaxed">Financial data is encrypted and handled via secure banking protocols. Payouts are settlements for virtual consulting sessions.</p>
+                                <h4 className="text-sm font-bold text-primary">Highly Secure Payouts</h4>
+                                <p className="text-xs text-primary/90 mt-1 leading-relaxed">Financial data is encrypted and handled via secure banking protocols. Payouts are settlements for virtual consulting sessions.</p>
                             </div>
                         </div>
                         <div className="space-y-4">

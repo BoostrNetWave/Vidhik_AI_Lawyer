@@ -170,7 +170,7 @@ export default function BookingManagementPage() {
 
   // Derived Stats
   const stats = [
-    { label: "Total Bookings", value: appointments.length.toString(), icon: <ClipboardList className="text-blue-500" />, change: "+12%" },
+    { label: "Total Bookings", value: appointments.length.toString(), icon: <ClipboardList className="text-primary" />, change: "+12%" },
     { label: "Pending", value: appointments.filter(a => a.status !== "completed" && a.status !== "cancelled").length.toString(), icon: <Clock className="text-yellow-500" />, change: "-2%" },
     { label: "Completed", value: appointments.filter(a => a.status === "completed").length.toString(), icon: <CheckCircle2 className="text-green-500" />, change: "+8%" },
     { label: "Total Revenue", value: `₹${totalRevenue.toLocaleString()}`, icon: <TrendingUp className="text-purple-500" />, change: "+15%" },
@@ -231,7 +231,7 @@ export default function BookingManagementPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg shadow-sm hover:bg-indigo-700 transition-all duration-200 gap-2"
+              className="inline-flex items-center justify-center px-4 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-sm hover:bg-primary/90 transition-all duration-200 gap-2"
             >
               <PlusCircle size={18} />
               Manage Availability
@@ -269,7 +269,7 @@ export default function BookingManagementPage() {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${activeTab === tab.key
-                  ? "bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200"
+                  ? "bg-white text-primary shadow-sm ring-1 ring-slate-200"
                   : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
                   }`}
               >
@@ -287,7 +287,7 @@ export default function BookingManagementPage() {
                   <h2 className="text-xl font-bold text-slate-900">Availability & Blackout Dates</h2>
                   <button
                     onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-all"
+                    className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/90 bg-primary/10 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-all"
                   >
                     <Settings size={16} />
                     Manage Availability
@@ -308,8 +308,8 @@ export default function BookingManagementPage() {
                           <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 group">
                             <div className="flex items-center gap-3">
                               {s.date ? (
-                                <div className="w-10 h-10 rounded-lg bg-indigo-50 flex flex-col items-center justify-center border border-indigo-100 shadow-sm group-hover:scale-105 transition-transform">
-                                  <span className="font-bold text-indigo-600 text-xs uppercase">
+                                <div className="w-10 h-10 rounded-lg bg-primary/10 flex flex-col items-center justify-center border border-primary/20 shadow-sm group-hover:scale-105 transition-transform">
+                                  <span className="font-bold text-primary text-xs uppercase">
                                     {new Date(s.date).toLocaleDateString('en-US', { day: 'numeric' })}
                                   </span>
                                   <span className="text-[9px] text-indigo-400 font-bold uppercase leading-none">
@@ -318,7 +318,7 @@ export default function BookingManagementPage() {
                                 </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-slate-200 shadow-sm group-hover:scale-105 transition-transform">
-                                  <span className="font-bold text-indigo-600 text-xs uppercase">
+                                  <span className="font-bold text-primary text-xs uppercase">
                                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][s.dayOfWeek]}
                                   </span>
                                 </div>
@@ -397,7 +397,7 @@ export default function BookingManagementPage() {
                   <h2 className="text-xl font-bold text-slate-900">Booking Preferences</h2>
                   <button
                     onClick={() => setSettingsModal(true)}
-                    className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-50 transition-colors"
+                    className="text-sm font-semibold text-primary hover:text-primary/90 px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors"
                   >
                     Configure
                   </button>
@@ -406,7 +406,7 @@ export default function BookingManagementPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Clock size={20} /></div>
+                      <div className="p-2 bg-primary/10 text-primary/90 rounded-lg"><Clock size={20} /></div>
                       <h3 className="font-bold text-slate-900">Session Options</h3>
                     </div>
                     <div className="space-y-3">
@@ -445,7 +445,7 @@ export default function BookingManagementPage() {
 
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-500">Auto-Confirm</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${settingsData?.approval?.autoConfirm ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-500"}`}>
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${settingsData?.approval?.autoConfirm ? "bg-indigo-100 text-primary/90" : "bg-slate-100 text-slate-500"}`}>
                           {settingsData?.approval?.autoConfirm ? "YES" : "NO"}
                         </span>
                       </div>
@@ -536,7 +536,7 @@ export default function BookingManagementPage() {
                           {appt.status !== "completed" && appt.status !== "cancelled" && (
                             <button
                               onClick={(e) => handleApprovePayment(appt._id, e)}
-                              className="ml-3 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 hover:bg-indigo-100 transition-colors uppercase tracking-wide"
+                              className="ml-3 text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20 hover:bg-indigo-100 transition-colors uppercase tracking-wide"
                               title="Mark as Paid / Complete"
                             >
                               Mark Paid
@@ -551,7 +551,7 @@ export default function BookingManagementPage() {
             </div>
             {appointments.length > 0 && (
               <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-center">
-                <button className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors">View All Appointments</button>
+                <button className="text-sm font-bold text-primary hover:text-primary/90 transition-colors">View All Appointments</button>
               </div>
             )}
           </div>

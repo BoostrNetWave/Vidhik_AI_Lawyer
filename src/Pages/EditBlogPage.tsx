@@ -113,7 +113,7 @@ export default function EditBlogPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -143,7 +143,7 @@ export default function EditBlogPage() {
                     <button
                         onClick={submit}
                         disabled={saving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-8 rounded-xl transition-all shadow-lg shadow-indigo-200 active:scale-95 flex items-center text-sm disabled:opacity-50"
+                        className="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-8 rounded-xl transition-all shadow-lg shadow-primary/20 active:scale-95 flex items-center text-sm disabled:opacity-50"
                     >
                         {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                         Save Changes
@@ -164,7 +164,7 @@ export default function EditBlogPage() {
                             {preview ? (
                                 <div className="relative aspect-video w-full overflow-hidden">
                                     <img src={preview} className="w-full h-full object-cover" alt="Cover" />
-                                    <div className="absolute inset-0 bg-indigo-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">
+                                    <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">
                                         <button
                                             onClick={() => fileInputRef.current?.click()}
                                             className="bg-white hover:bg-slate-50 text-slate-900 font-bold py-2.5 px-6 rounded-xl text-xs shadow-2xl transition-all active:scale-95"
@@ -182,7 +182,7 @@ export default function EditBlogPage() {
                             ) : (
                                 <div
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="aspect-video w-full flex flex-col items-center justify-center bg-slate-50 border-none hover:bg-indigo-50/30 transition-all cursor-pointer group p-12"
+                                    className="aspect-video w-full flex flex-col items-center justify-center bg-slate-50 border-none hover:bg-primary/10/30 transition-all cursor-pointer group p-12"
                                 >
                                     <div className="p-5 bg-white rounded-2xl shadow-sm border border-slate-100 mb-5 text-slate-300">
                                         <ImageIcon className="w-10 h-10" />
@@ -196,7 +196,7 @@ export default function EditBlogPage() {
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-12">
                             <div className="space-y-4">
                                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] flex items-center gap-2">
-                                    <Type className="w-4 h-4 text-indigo-500" />
+                                    <Type className="w-4 h-4 text-primary" />
                                     Headline
                                 </label>
                                 <input
@@ -210,7 +210,7 @@ export default function EditBlogPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between border-b border-slate-50 pb-4">
                                     <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] flex items-center gap-2">
-                                        <Layout className="w-4 h-4 text-indigo-500" />
+                                        <Layout className="w-4 h-4 text-primary" />
                                         Narrative
                                     </label>
                                 </div>
@@ -229,10 +229,10 @@ export default function EditBlogPage() {
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-8">
                             <div
                                 onClick={() => set("premium", !form.premium)}
-                                className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer ${form.premium ? "bg-indigo-50/50 border-indigo-100" : "bg-white border-slate-100"}`}
+                                className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer ${form.premium ? "bg-primary/10/50 border-primary/20" : "bg-white border-slate-100"}`}
                             >
                                 <p className="text-xs font-bold text-slate-900">Premium Content</p>
-                                <div className={`w-11 h-6 rounded-full relative flex items-center transition-all ${form.premium ? "bg-indigo-600" : "bg-slate-200"}`}>
+                                <div className={`w-11 h-6 rounded-full relative flex items-center transition-all ${form.premium ? "bg-primary" : "bg-slate-200"}`}>
                                     <span className={`absolute w-4 h-4 bg-white rounded-full transition-all ${form.premium ? "left-6" : "left-1"}`}></span>
                                 </div>
                             </div>

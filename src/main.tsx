@@ -52,7 +52,9 @@ const router = createBrowserRouter([
       { path: "settings", element: <SettingsPage /> },
     ],
   },
-]);
+], {
+  basename: "/lawyer"
+});
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
