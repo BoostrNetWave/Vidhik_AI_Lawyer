@@ -9,6 +9,12 @@ export default defineConfig({
     server: {
         port: 8081,
         proxy: {
+            '/lawyer/api': {
+                target: 'http://localhost:5025',
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/lawyer\/api/, '/api'),
+            },
             '/api': {
                 target: 'http://localhost:5025',
                 changeOrigin: true,

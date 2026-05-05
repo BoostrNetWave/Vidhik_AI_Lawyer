@@ -25,8 +25,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const savedToken = localStorage.getItem('token');
-        const savedUser = localStorage.getItem('user');
+        const savedToken = localStorage.getItem('lawyer_token');
+        const savedUser = localStorage.getItem('lawyer_user');
 
         if (savedToken && savedUser) {
             setToken(savedToken);
@@ -38,15 +38,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const login = (newToken: string, newUser: User) => {
         setToken(newToken);
         setUser(newUser);
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(newUser));
+        localStorage.setItem('lawyer_token', newToken);
+        localStorage.setItem('lawyer_user', JSON.stringify(newUser));
     };
 
     const logout = () => {
         setToken(null);
         setUser(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.removeItem('lawyer_token');
+        localStorage.removeItem('lawyer_user');
         window.location.href = '/lawyer/login';
     };
 

@@ -11,7 +11,7 @@ const api = axios.create({
 // Add a request interceptor to include the JWT token in all requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('lawyer_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,8 +28,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // Clear local storage and redirect to login if unauthorized
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem('lawyer_token');
+      localStorage.removeItem('lawyer_user');
       window.location.href = '/lawyer/login';
     }
     return Promise.reject(error);

@@ -20,11 +20,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
 
     // Check both user and token to ensure proper authentication
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('lawyer_token');
     if (!user || !token) {
         // Clear any inconsistent state
         if (!token) {
-            localStorage.removeItem('user');
+            localStorage.removeItem('lawyer_user');
         }
         
         // Redirect them to the /login page, but save the current location they were
