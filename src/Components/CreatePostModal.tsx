@@ -57,7 +57,7 @@ export default function CreatePostModal({ visible, onClose, onCreated, authorId 
       if (authorId) data.append("authorId", authorId);
       if (form.image) data.append("image", form.image);
 
-      const res = await fetch("http://localhost:5025/api/blogs", {
+      const res = await fetch("/lawyer/api/blogs", {
         method: "POST",
         body: data
       });

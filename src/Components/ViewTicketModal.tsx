@@ -108,7 +108,7 @@ export default function ViewTicketModal({ visible, onClose, ticket }: ViewTicket
                         <div>
                             <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Attachment</label>
                             <a
-                                href={`http://localhost:5025/${ticket.attachment.replace(/\\/g, '/')}`}
+                                href={`/lawyer/${ticket.attachment.replace(/\\/g, '/')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all group"

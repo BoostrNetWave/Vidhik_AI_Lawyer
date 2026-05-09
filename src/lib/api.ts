@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create a central axios instance
 const api = axios.create({
-  baseURL: '/lawyer/api',
+  baseURL: typeof window !== 'undefined' ? `${window.location.origin}/lawyer/api` : '/lawyer/api',
   headers: {
     'Content-Type': 'application/json',
   },

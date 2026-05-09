@@ -25,14 +25,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const savedToken = localStorage.getItem('lawyer_token');
-        const savedUser = localStorage.getItem('lawyer_user');
+        const verifyToken = async () => {
+            const savedToken = localStorage.getItem('lawyer_token');
+            const savedUser = localStorage.getItem('lawyer_user');
 
-        if (savedToken && savedUser) {
-            setToken(savedToken);
-            setUser(JSON.parse(savedUser));
-        }
-        setLoading(false);
+            if (savedToken && savedUser) {
+                try {
+                    // Verify token with backend
+                    const response = await api.get('/auth/me');
+                    if (response.data && response.data.user) {
+                        setToken(savedToken);
+                        setUser(JSON.parse(savedUser));
+                    } else {
+                        throw new Error('Invalid token response');
+                    }
+                } catch (err) {
+                    console.error('Token verification failed:', err);
+                    localStorage.removeItem('lawyer_token');
+                    localStorage.removeItem('lawyer_user');
+                    setToken(null);
+                    setUser(null);
+                }
+            }
+            setLoading(false);
+        };
+
+        verifyToken();
     }, []);
 
     const login = (newToken: string, newUser: User) => {

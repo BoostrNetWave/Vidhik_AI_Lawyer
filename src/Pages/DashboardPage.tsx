@@ -96,64 +96,37 @@ export default function Dashboard() {
         };
 
         const [statsRes, revenueRes, servicesRes, txRes, profileRes, paymentSummaryRes] = await Promise.all([
-          api.get("/dashboard/stats").catch(() => ({ data: null })),
-          api.get("/dashboard/revenue").catch(() => ({ data: null })),
-          api.get("/dashboard/services").catch(() => ({ data: null })),
-          api.get("/dashboard/transactions").catch(() => ({ data: null })),
-          api.get(`/profile/${user?.userId}`).catch(() => ({ data: demoProfile })),
-          api.get("/payments/summary").catch(() => ({ data: null })),
+          api.get("/dashboard/stats"),
+          api.get("/dashboard/revenue"),
+          api.get("/dashboard/services"),
+          api.get("/dashboard/transactions"),
+          api.get(`/profile/${user?.userId}`),
+          api.get("/payments/summary"),
         ]);
 
         const s = statsRes.data?.stats || {};
         const p = paymentSummaryRes.data || {};
 
-        // Use demo data if API fails
         setStats({
-          totalEarnings: p.totalEarnings || 22400,
-          upcomingConsultations: s.upcomingConsultations || 12,
-          publishedBlogs: s.publishedBlogs || 24,
-          draftBlogs: s.draftBlogs || 8,
-          openTickets: s.openTickets || 5,
-          closedTickets: s.closedTickets || 47,
-          urgentTickets: s.urgentTickets || 2,
-          monthlyEarnings: p.monthlyEarnings || 8500,
-          lastMonthEarnings: p.lastMonthEarnings || 7200,
+          totalEarnings: p.totalEarnings || 0,
+          upcomingConsultations: s.upcomingConsultations || 0,
+          publishedBlogs: s.publishedBlogs || 0,
+          draftBlogs: s.draftBlogs || 0,
+          openTickets: s.openTickets || 0,
+          closedTickets: s.closedTickets || 0,
+          urgentTickets: s.urgentTickets || 0,
+          monthlyEarnings: p.monthlyEarnings || 0,
+          lastMonthEarnings: p.lastMonthEarnings || 0,
         });
 
-        // Demo revenue data
-        setMonthlyRevenue(revenueRes.data?.monthlyRevenue || [
-          { month: "Jan", earnings: 6500, consultations: 15 },
-          { month: "Feb", earnings: 7200, consultations: 18 },
-          { month: "Mar", earnings: 8500, consultations: 22 },
-          { month: "Apr", earnings: 7800, consultations: 19 },
-          { month: "May", earnings: 9200, consultations: 25 },
-          { month: "Jun", earnings: 8900, consultations: 21 },
-        ]);
+        setMonthlyRevenue(revenueRes.data?.monthlyRevenue || []);
+        setServiceDistribution(servicesRes.data?.serviceDistribution || []);
 
-        // Demo service distribution
-        setServiceDistribution(servicesRes.data?.serviceDistribution || [
-          { serviceType: "Legal Consultation", revenue: 15000 },
-          { serviceType: "Document Review", revenue: 8500 },
-          { serviceType: "Case Management", revenue: 12000 },
-          { serviceType: "Court Filing", revenue: 6800 },
-          { serviceType: "Legal Research", revenue: 4500 },
-        ]);
-
-        // Always set profile data (demo or API)
         if (profileRes.data) {
           setProfile(profileRes.data);
-        } else {
-          setProfile(demoProfile);
         }
 
-        // Demo transactions
-        const recent = txRes.data?.recentTransactions || [
-          { _id: "1", date: new Date().toISOString(), clientName: "John Smith", serviceType: "Legal Consultation", amount: 2500, status: "completed" },
-          { _id: "2", date: new Date(Date.now() - 86400000).toISOString(), clientName: "Sarah Johnson", serviceType: "Document Review", amount: 1800, status: "completed" },
-          { _id: "3", date: new Date(Date.now() - 172800000).toISOString(), clientName: "Mike Davis", serviceType: "Case Management", amount: 3200, status: "pending" },
-          { _id: "4", date: new Date(Date.now() - 259200000).toISOString(), clientName: "Emily Brown", serviceType: "Court Filing", amount: 1500, status: "completed" },
-          { _id: "5", date: new Date(Date.now() - 345600000).toISOString(), clientName: "Robert Wilson", serviceType: "Legal Research", amount: 4200, status: "in-progress" },
-        ];
+        const recent = txRes.data?.recentTransactions || [];
         
         setTransactions(
           recent.map((t: any) => ({

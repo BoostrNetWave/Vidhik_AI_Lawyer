@@ -66,7 +66,7 @@ export default function SettingsModal({ visible, onClose, userId, initial, onSav
         sessionDurations: (form.sessionDurations || []).map(n => Number(n)).filter(Boolean)
       };
 
-      const res = await fetch(`http://localhost:5025/api/booking-prefs/settings?userId=${userId}`, {
+      const res = await fetch(`/lawyer/api/booking-prefs/settings?userId=${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

@@ -52,7 +52,7 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
         formData.append('attachment', file);
       }
 
-      const res = await fetch("http://localhost:5025/api/support/tickets", {
+      const res = await fetch("/lawyer/api/support/tickets", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`

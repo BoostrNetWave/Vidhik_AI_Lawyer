@@ -24,7 +24,7 @@ export default function AppointmentHistory({ consultantId }: AppointmentHistoryP
   const fetchHistory = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5025/api/appointments/history/${consultantId}`);
+      const res = await fetch(`/lawyer/api/appointments/history/${consultantId}`);
       if (!res.ok) throw new Error("Failed to fetch appointments");
       const data = await res.json();
 

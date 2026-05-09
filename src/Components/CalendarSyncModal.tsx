@@ -46,7 +46,7 @@ export default function CalendarSyncModal({ visible, onClose, userId, initial, o
   const save = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`http://localhost:5025/api/calendar-sync/settings?userId=${userId}`, {
+      const res = await fetch(`/lawyer/api/calendar-sync/settings?userId=${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)

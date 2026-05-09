@@ -63,7 +63,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
         payloadSlot.dayOfWeek = d.getDay();
       }
 
-      const res = await fetch(`http://localhost:5025/api/booking-prefs/availability/slots?userId=${userId}`, {
+      const res = await fetch(`/lawyer/api/booking-prefs/availability/slots?userId=${userId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recurringSlots: [payloadSlot] })
@@ -83,7 +83,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
     if (blackout.startDate > blackout.endDate) return setMessage({ type: "error", text: "Start date cannot be after End date" });
 
     try {
-      const res = await fetch(`http://localhost:5025/api/booking-prefs/availability/blackouts?userId=${userId}`, {
+      const res = await fetch(`/lawyer/api/booking-prefs/availability/blackouts?userId=${userId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dateRange: { start: blackout.startDate, end: blackout.endDate }, reason: blackout.reason })

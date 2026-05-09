@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Edit3, Calendar, Tag, User, Loader2, Lock } from "lucide-react";
-import axios from "axios";
+import api from "../lib/api";
 
 export default function ViewBlogPage() {
     const { id } = useParams<{ id: string }>();
@@ -12,7 +12,7 @@ export default function ViewBlogPage() {
     useEffect(() => {
         const fetchBlog = async () => {
             try {
-                const res = await axios.get(`http://localhost:5025/api/blogs/${id}`);
+                const res = await api.get(`/blogs/${id}`);
                 setBlog(res.data);
             } catch (err) {
                 console.error("Error fetching blog:", err);
@@ -67,7 +67,11 @@ export default function ViewBlogPage() {
             <main className="max-w-4xl mx-auto mt-12 px-6 w-full">
                 {blog.image && (
                     <div className="w-full aspect-video rounded-3xl overflow-hidden shadow-2xl mb-12">
-                        <img src={`http://localhost:5025${blog.image}`} className="w-full h-full object-cover" alt={blog.title} />
+                        <img 
+                            src={blog.image.startsWith('http') ? blog.image : `${api.defaults.baseURL?.replace('/api', '')}${blog.image}`} 
+                            className="w-full h-full object-cover" 
+                            alt={blog.title} 
+                        />
                     </div>
                 )}
 

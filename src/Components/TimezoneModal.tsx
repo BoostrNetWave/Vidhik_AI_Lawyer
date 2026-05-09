@@ -54,7 +54,7 @@ export default function TimezoneModal({ visible, onClose, userId, current, onSav
   const save = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`http://localhost:5025/api/booking-prefs/timezone?userId=${userId}`, {
+      const res = await fetch(`/lawyer/api/booking-prefs/timezone?userId=${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ timezone: zone })

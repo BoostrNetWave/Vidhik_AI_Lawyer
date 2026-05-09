@@ -63,7 +63,7 @@ export default function WorkingHoursModal({ visible, onClose, userId, initialDat
         payload.weekly[k] = enabled[i] ? (weekly[k] && weekly[k].length ? weekly[k] : [{ start: "09:00", end: "17:00" }]) : [];
       });
 
-      const res = await fetch(`http://localhost:5025/api/booking-prefs/hours?userId=${userId}`, {
+      const res = await fetch(`/lawyer/api/booking-prefs/hours?userId=${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
