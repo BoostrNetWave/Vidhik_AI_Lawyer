@@ -20,6 +20,7 @@ import ViewBlogPage from "./Pages/ViewBlogPage";
 import SettingsPage from "./Pages/SettingsPage";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
+import VerifyOTP from "./Pages/VerifyOTP";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <Signup />,
+  },
+  {
+    path: "/verify-otp",
+    element: <VerifyOTP />,
   },
   {
     path: "/",

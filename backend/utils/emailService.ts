@@ -4,20 +4,24 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Create a transporter using Gmail
+console.log(`[EmailService] Initializing with User: ${process.env.SMTP_USER ? 'SET' : 'MISSING'}, Pass: ${process.env.SMTP_PASS ? 'SET' : 'MISSING'}`);
+
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.SMTP_USER || 'sibsankar2727@gmail.com',
+        pass: process.env.SMTP_PASS || 'ulqi aihu ajut qdnl',
     },
 });
 
 export const sendEmail = async (to: string, subject: string, html: string): Promise<boolean> => {
     try {
-        console.log(`[EmailService] Attempting to send email to: ${to}`);
+        console.log(`[EmailService] Preparing to send email to ${to} using ${process.env.SMTP_USER}...`);
 
         const info = await transporter.sendMail({
-            from: `"Vidhik Admin" <${process.env.SMTP_USER}>`,
+            from: `"Vidhik Admin" <${process.env.SMTP_USER || 'sibsankar2727@gmail.com'}>`,
             to,
             subject,
             html,

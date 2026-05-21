@@ -1,5 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config';
 
 import express, { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
@@ -71,7 +70,11 @@ const startServer = async () => {
         console.log('Connected to MongoDB');
 
         app.listen(PORT, () => {
-            console.log(`Server is running in ${NODE_ENV} mode on port ${PORT}`);
+            console.log(`\n=================================================`);
+            console.log(`🚀 Lawyer Backend running on port ${PORT}`);
+            console.log(`📡 MongoDB: Connected`);
+            console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Configured' : 'MISSING'}`);
+            console.log(`=================================================\n`);
         });
     } catch (error: any) {
         console.error('Initial startup error:', error.message);

@@ -18,16 +18,19 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction): vo
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
+            console.log('Verifying token...');
             const decoded = jwt.verify(token, FINAL_SECRET);
             req.user = decoded;
             return next();
         } catch (error) {
+            console.error('Token verification failed:', error);
             res.status(401).json({ message: 'Not authorized, token failed' });
             return;
         }
     }
 
     if (!token) {
+        console.log('No token provided in authorization header');
         res.status(401).json({ message: 'Not authorized, no token' });
         return;
     }

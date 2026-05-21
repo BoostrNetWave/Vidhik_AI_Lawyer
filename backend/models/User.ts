@@ -4,7 +4,7 @@ export interface IUser extends Document {
     userId: string;
     email: string;
     password?: string;
-    role: 'admin' | 'user';
+    role: 'admin' | 'user' | 'lawyer';
     fullName: string;
     title: string;
     expertise: string;
@@ -24,6 +24,10 @@ export interface IUser extends Document {
     experience: string;
     rating: number;
     reviews: number;
+    isVerified: boolean;
+    isApproved: boolean;
+    verificationOTP?: string;
+    otpExpires?: Date;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -48,8 +52,12 @@ const userSchema: Schema = new Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'user'],
+        enum: ['admin', 'user', 'lawyer'],
         default: 'admin'
+    },
+    isApproved: {
+        type: Boolean,
+        default: false
     },
     // Profile Information
     fullName: { type: String, default: "" },
@@ -75,7 +83,17 @@ const userSchema: Schema = new Schema({
     location: { type: String, default: "" },
     experience: { type: String, default: "" },
     rating: { type: Number, default: 0 },
-    reviews: { type: Number, default: 0 }
+    reviews: { type: Number, default: 0 },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationOTP: {
+        type: String
+    },
+    otpExpires: {
+        type: Date
+    }
 }, {
     timestamps: true
 });

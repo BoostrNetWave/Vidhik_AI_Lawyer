@@ -68,13 +68,15 @@ const Signup: React.FC = () => {
                 password: password.trim() 
             });
             
-            if (response.data && response.data.token) {
-                const { token, user } = response.data;
-                login(token, user);
+            if (response.data) {
                 setSuccess(true);
+                localStorage.setItem('pending_verification_email', email.trim());
                 
                 setTimeout(() => {
-                    navigate('/', { replace: true });
+                    navigate('/verify-otp', { 
+                        state: { email: email.trim() },
+                        replace: true 
+                    });
                 }, 1500);
             }
             
@@ -116,7 +118,7 @@ const Signup: React.FC = () => {
                             {success && (
                                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-3 text-green-700 text-sm">
                                     <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                                    <p>Account created successfully! Redirecting to dashboard...</p>
+                                    <p>Account created! OTP sent to your email. Redirecting to verification...</p>
                                 </div>
                             )}
 

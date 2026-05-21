@@ -57,6 +57,18 @@ const Login: React.FC = () => {
             
         } catch (err: any) {
             console.error('Login error:', err);
+            
+            // Check if account is not verified
+            if (err.response?.status === 403 && err.response?.data?.isVerified === false) {
+                const unverifiedEmail = err.response.data.email || email.trim();
+                localStorage.setItem('pending_verification_email', unverifiedEmail);
+                navigate('/verify-otp', { 
+                    state: { email: unverifiedEmail },
+                    replace: true 
+                });
+                return;
+            }
+            
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
         } finally {
             setLoading(false);

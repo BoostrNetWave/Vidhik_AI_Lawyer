@@ -11,7 +11,17 @@ const api = axios.create({
 // Add a request interceptor to include the JWT token in all requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('lawyer_token');
+    // Ensure url doesn't start with a slash so it properly appends to baseURL
+    if (config.url && config.url.startsWith('/')) {
+      config.url = config.url.substring(1);
+    }
+    
+    // Ensure baseURL ends with a slash
+    if (config.baseURL && !config.baseURL.endsWith('/')) {
+      config.baseURL += '/';
+    }
+
+    const token = localStorage.getItem('vidhik_auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,8 +38,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // Clear local storage and redirect to login if unauthorized
-      localStorage.removeItem('lawyer_token');
-      localStorage.removeItem('lawyer_user');
+      localStorage.removeItem('vidhik_auth_token');
+      localStorage.removeItem('vidhik_user_data');
       window.location.href = '/lawyer/login';
     }
     return Promise.reject(error);

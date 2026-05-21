@@ -26,28 +26,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     useEffect(() => {
         const verifyToken = async () => {
-            const savedToken = localStorage.getItem('lawyer_token');
-            const savedUser = localStorage.getItem('lawyer_user');
+            try {
+                const savedToken = localStorage.getItem('vidhik_auth_token');
+                const savedUser = localStorage.getItem('vidhik_user_data');
 
-            if (savedToken && savedUser) {
-                try {
-                    // Verify token with backend
-                    const response = await api.get('/auth/me');
-                    if (response.data && response.data.user) {
-                        setToken(savedToken);
-                        setUser(JSON.parse(savedUser));
-                    } else {
-                        throw new Error('Invalid token response');
+                if (savedToken && savedUser) {
+                    try {
+                        // Verify token with backend
+                        const response = await api.get('/auth/me');
+                        if (response.data && response.data.user) {
+                            setToken(savedToken);
+                            setUser(JSON.parse(savedUser));
+                        } else {
+                            throw new Error('Invalid token response');
+                        }
+                    } catch (err: any) {
+                        console.error('Token verification failed:', err);
+                        console.log('Error details:', err.response?.data || err.message);
+                        
+                        // Force logout on 401, but allow 404 or other errors to proceed with saved user data
+                        if (err.response?.status === 401) {
+                            localStorage.removeItem('vidhik_auth_token');
+                            localStorage.removeItem('vidhik_user_data');
+                            setToken(null);
+                            setUser(null);
+                        } else {
+                            // For other errors (like 404 or timeout), still attempt to use saved data
+                            try {
+                                setToken(savedToken);
+                                setUser(JSON.parse(savedUser));
+                            } catch (e) {
+                                console.error('Failed to parse saved user data:', e);
+                            }
+                        }
                     }
-                } catch (err) {
-                    console.error('Token verification failed:', err);
-                    localStorage.removeItem('lawyer_token');
-                    localStorage.removeItem('lawyer_user');
-                    setToken(null);
-                    setUser(null);
                 }
+            } catch (outerErr) {
+                console.error('Critical Auth error:', outerErr);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         verifyToken();
@@ -56,15 +74,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const login = (newToken: string, newUser: User) => {
         setToken(newToken);
         setUser(newUser);
-        localStorage.setItem('lawyer_token', newToken);
-        localStorage.setItem('lawyer_user', JSON.stringify(newUser));
+        localStorage.setItem('vidhik_auth_token', newToken);
+        localStorage.setItem('vidhik_user_data', JSON.stringify(newUser));
     };
 
     const logout = () => {
         setToken(null);
         setUser(null);
-        localStorage.removeItem('lawyer_token');
-        localStorage.removeItem('lawyer_user');
+        localStorage.removeItem('vidhik_auth_token');
+        localStorage.removeItem('vidhik_user_data');
         window.location.href = '/lawyer/login';
     };
 
