@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, User, Calendar, CreditCard, FileText, LifeBuoy, Settings, LogOut } from 'lucide-react';
+import { Home, User, Calendar, CreditCard, FileText, LifeBuoy, Settings, LogOut, Briefcase } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 import logo from '../assets/logo.jpeg';
@@ -15,6 +15,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: <Home size={20} />, to: "/" },
   { label: "Profile", icon: <User size={20} />, to: "/profile" },
   { label: "Bookings", icon: <Calendar size={20} />, to: "/bookings" },
+  { label: "Cases", icon: <Briefcase size={20} />, to: "/cases" },
   { label: "Payments", icon: <CreditCard size={20} />, to: "/payments" },
   { label: "Blog Posts", icon: <FileText size={20} />, to: "/blog-posts" },
   { label: "Support", icon: <LifeBuoy size={20} />, to: "/support" },

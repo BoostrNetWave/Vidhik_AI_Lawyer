@@ -19,6 +19,7 @@ import bookingRoutes from './routes/bookingRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import caseRoutes from './routes/caseRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -58,6 +59,7 @@ app.use('/api', bookingRoutes);
 app.use('/api', appointmentRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/cases', caseRoutes);
 
 // Database connection & Server start
 const startServer = async () => {
