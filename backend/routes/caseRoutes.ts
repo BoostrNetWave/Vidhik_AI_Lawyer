@@ -7,7 +7,13 @@ import {
     submitPlan, 
     updateMilestoneStatus, 
     uploadProof, 
-    requestPayout 
+    requestPayout,
+    confirmBooking,
+    uploadMeetingSummary,
+    joinMeeting,
+    sendSignal,
+    getSignals,
+    clearSignals
 } from '../controllers/caseController.js';
 import multer from 'multer';
 import path from 'path';
@@ -49,10 +55,16 @@ router.use(protect);
 
 router.get('/', getCases);
 router.post('/', createCase);
+router.put('/:id/confirm-booking', confirmBooking);
 router.get('/:id', getCaseById);
 router.put('/:id/plan', submitPlan);
 router.put('/:id/milestones/:index/status', updateMilestoneStatus);
 router.post('/:id/milestones/:index/upload-proof', upload.single('proof'), uploadProof);
 router.post('/:id/milestones/:index/request-payout', requestPayout);
+router.post('/:id/meeting-summary', upload.single('summary'), uploadMeetingSummary);
+router.post('/:id/join-meeting', joinMeeting);
+router.post('/:id/signal', sendSignal);
+router.get('/:id/signals', getSignals);
+router.post('/:id/signals/clear', clearSignals);
 
 export default router;

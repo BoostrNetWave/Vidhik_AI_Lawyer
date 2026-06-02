@@ -22,6 +22,7 @@ import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import VerifyOTP from "./Pages/VerifyOTP";
 import CasesPage from "./Pages/CasesPage";
+import ConsultationMeeting from "./Pages/ConsultationMeeting";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
       { path: "support", element: <SupportPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "cases", element: <CasesPage /> },
+      { path: "cases/:id/meet", element: <ConsultationMeeting /> },
     ],
   },
 ], {

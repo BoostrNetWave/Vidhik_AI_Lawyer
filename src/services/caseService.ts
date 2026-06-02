@@ -28,12 +28,20 @@ export interface ICase {
         location?: string;
     };
     lawyer: string;
-    status: 'active' | 'completed' | 'cancelled';
+    status: 'pending_lawyer' | 'pending_payment' | 'active' | 'completed' | 'cancelled';
     totalFee: number;
     currentProgress: number;
     planSubmitted: boolean;
     planApproved: boolean;
     milestones: IMilestone[];
+    bookingDate?: string;
+    bookingTime?: string;
+    meetingLink?: string;
+    meetingSummaryUrl?: string;
+    meetingSummaryName?: string;
+    meetingSummaryUploadedAt?: string;
+    meetingJoinedByClient?: boolean;
+    meetingJoinedByLawyer?: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -51,6 +59,11 @@ export const caseService = {
 
     async createCase(data: { clientEmail: string; title: string; description: string; totalFee: number }): Promise<ICase> {
         const response = await api.post('cases', data);
+        return response.data;
+    },
+
+    async confirmBooking(id: string): Promise<ICase> {
+        const response = await api.put(`cases/${id}/confirm-booking`);
         return response.data;
     },
 
@@ -80,6 +93,37 @@ export const caseService = {
 
     async requestPayout(id: string, index: number): Promise<ICase> {
         const response = await api.post(`cases/${id}/milestones/${index}/request-payout`);
+        return response.data;
+    },
+
+    async uploadMeetingSummary(id: string, file: File): Promise<ICase> {
+        const formData = new FormData();
+        formData.append('summary', file);
+        const response = await api.post(`cases/${id}/meeting-summary`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    },
+
+    async joinMeeting(id: string): Promise<ICase> {
+        const response = await api.post(`cases/${id}/join-meeting`);
+        return response.data;
+    },
+
+    async sendSignal(id: string, signalData: { sender: 'client' | 'lawyer'; type: string; sdp?: string; candidate?: any }): Promise<any> {
+        const response = await api.post(`cases/${id}/signal`, signalData);
+        return response.data;
+    },
+
+    async getSignals(id: string): Promise<any[]> {
+        const response = await api.get(`cases/${id}/signals`);
+        return response.data;
+    },
+
+    async clearSignals(id: string): Promise<any> {
+        const response = await api.post(`cases/${id}/signals/clear`);
         return response.data;
     }
 };

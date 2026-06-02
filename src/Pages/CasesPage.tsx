@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
     Briefcase, 
     PlusCircle, 
@@ -13,13 +14,16 @@ import {
     Trash2, 
     FileText, 
     ExternalLink,
-    Percent
+    Percent,
+    Video,
+    Download
 } from "lucide-react";
 import { caseService, ICase, IMilestone } from "../services/caseService";
 import { useToast } from "../context/ToastContext";
 import { useConfirm } from "../context/ConfirmationContext";
 
 export default function CasesPage() {
+    const navigate = useNavigate();
     const { success, error } = useToast();
     const { confirm } = useConfirm();
     
@@ -36,6 +40,28 @@ export default function CasesPage() {
         totalFee: ""
     });
     const [isSubmittingCase, setIsSubmittingCase] = useState(false);
+
+    // Summary upload in CasesPage
+    const [summaryFile, setSummaryFile] = useState<File | null>(null);
+    const [isUploadingSummary, setIsUploadingSummary] = useState(false);
+
+    const handleUploadSummaryDirect = async () => {
+        if (!summaryFile || !selectedCase) return;
+
+        setIsUploadingSummary(true);
+        try {
+            const updated = await caseService.uploadMeetingSummary(selectedCase._id, summaryFile);
+            success("Meeting summary uploaded successfully! The case roadmap is now unlocked.");
+            setSummaryFile(null);
+            fetchCases();
+            setSelectedCase(updated);
+        } catch (err: any) {
+            console.error(err);
+            error(err.response?.data?.message || "Failed to upload meeting summary");
+        } finally {
+            setIsUploadingSummary(false);
+        }
+    };
 
     // Plan Builder
     const [builderMilestones, setBuilderMilestones] = useState<{
@@ -229,6 +255,27 @@ export default function CasesPage() {
         });
     };
 
+    const handleConfirmBooking = async () => {
+        if (!selectedCase) return;
+
+        confirm({
+            title: "Confirm Booking Request",
+            message: "Accept this consultation booking slot and notify the client to complete the payment. Proceed?",
+            type: "info",
+            confirmText: "Confirm Booking",
+            onConfirm: async () => {
+                try {
+                    const updated = await caseService.confirmBooking(selectedCase._id);
+                    success("Booking request confirmed! Client has been notified to complete the payment.");
+                    fetchCases();
+                    setSelectedCase(updated);
+                } catch (err: any) {
+                    error(err.response?.data?.message || "Failed to confirm booking request");
+                }
+            }
+        });
+    };
+
     return (
         <div className="min-h-screen bg-slate-50/50 p-4 md:p-8 max-w-[1600px] mx-auto space-y-8 font-sans">
             {/* Header */}
@@ -293,9 +340,15 @@ export default function CasesPage() {
                                     <div className="flex justify-between items-start gap-2 mb-2">
                                         <h4 className="font-extrabold text-slate-900 text-sm leading-snug truncate">{c.title}</h4>
                                         <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
-                                            c.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
+                                            c.status === "active" 
+                                            ? "bg-emerald-50 text-emerald-700" 
+                                            : c.status === "pending_lawyer"
+                                                ? "bg-amber-100 text-amber-700 font-extrabold hover:bg-amber-100"
+                                                : c.status === "pending_payment"
+                                                    ? "bg-orange-100 text-orange-700 font-extrabold hover:bg-orange-100"
+                                                    : "bg-slate-100 text-slate-650"
                                         }`}>
-                                            {c.status}
+                                            {c.status === "pending_lawyer" ? "Booking Request" : c.status === "pending_payment" ? "Awaiting Payment" : c.status}
                                         </span>
                                     </div>
                                     <p className="text-xs text-slate-500 line-clamp-2 mb-3">{c.description}</p>
@@ -355,34 +408,229 @@ export default function CasesPage() {
                                 <p className="text-sm text-slate-600 leading-relaxed bg-slate-50/50 border border-slate-100 rounded-2xl p-4">{selectedCase.description}</p>
                             </div>
 
-                            {/* Action Roadmap & Milestone Section */}
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="font-extrabold text-slate-900 text-lg">Procedural Roadmap & Stages</h3>
-                                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                                        selectedCase.planApproved 
-                                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
-                                            : selectedCase.planSubmitted 
-                                                ? "bg-amber-50 text-amber-700 border border-amber-100" 
-                                                : "bg-red-50 text-red-700 border border-red-100"
-                                    }`}>
-                                        {selectedCase.planApproved 
-                                            ? "Roadmap Approved by Client" 
-                                            : selectedCase.planSubmitted 
-                                                ? "Roadmap Awaiting Client Approval" 
-                                                : "Action Plan Required"}
-                                    </span>
+                            {/* Booking Date & Time Details (if present) */}
+                            {selectedCase.bookingDate && (
+                                <div className="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-xs font-semibold text-slate-600">
+                                    <div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Proposed Consultation Date</p>
+                                        <p className="text-sm font-black text-slate-900 mt-1">{new Date(selectedCase.bookingDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Proposed Consultation Time</p>
+                                        <p className="text-sm font-black text-slate-900 mt-1">{selectedCase.bookingTime}</p>
+                                    </div>
                                 </div>
+                            )}
 
-                                {!selectedCase.planSubmitted ? (
-                                    /* ROADMAP BUILDER (No plan submitted yet) */
-                                    <div className="bg-slate-50/40 border border-slate-200 rounded-3xl p-6 space-y-6">
+                            {selectedCase.status === 'pending_lawyer' && (
+                                <div className="bg-amber-50 border border-amber-200 p-6 rounded-3xl space-y-4">
+                                    <div className="flex items-start gap-4">
+                                        <AlertCircle className="h-6 w-6 text-amber-700 shrink-0 mt-0.5 animate-pulse" />
                                         <div className="space-y-1">
-                                            <h4 className="font-extrabold text-slate-900 text-sm">Outline Case Milestones</h4>
-                                            <p className="text-xs text-slate-500 leading-normal">
-                                                Create a transparent work process for your client. The sum of all progress increments must equal 100%. Payouts can be configured per milestone.
+                                            <h4 className="font-extrabold text-amber-900 text-sm">New Consultation Booking Request</h4>
+                                            <p className="text-xs text-amber-700 leading-relaxed font-semibold">
+                                                This client has requested to schedule a consultation date and start a new case engagement with you. Verify your calendar and click <strong>Confirm Booking Request</strong> to notify the client to proceed with payment.
                                             </p>
                                         </div>
+                                    </div>
+                                    <div className="flex justify-end pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleConfirmBooking}
+                                            className="px-5 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                                        >
+                                            Confirm Booking Request
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedCase.status === 'pending_payment' && (
+                                <div className="bg-orange-50 border border-orange-200 p-6 rounded-3xl flex items-start gap-4">
+                                    <Clock className="h-6 w-6 text-orange-650 shrink-0 mt-0.5" />
+                                    <div className="space-y-1">
+                                        <h4 className="font-extrabold text-orange-900 text-sm">Awaiting Client Payment</h4>
+                                        <p className="text-xs text-orange-700 leading-relaxed font-semibold">
+                                            You have confirmed this consultation booking request. The client has been notified to complete the checkout payment of <strong>₹{selectedCase.totalFee.toLocaleString()}</strong>. Once payment is confirmed, the case will transition to "Active" and you can configure the action plan.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedCase.status !== 'pending_lawyer' && selectedCase.status !== 'pending_payment' && (
+                                /* Action Roadmap & Milestone Section */
+                                <div className="space-y-6">
+                                    {/* Meeting Summary Document Card */}
+                                    {selectedCase.meetingSummaryUrl && (
+                                        <div className="bg-violet-50 border border-violet-100 rounded-3xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm animate-in fade-in duration-300">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-3 bg-violet-100 rounded-xl text-violet-700">
+                                                    <FileText size={24} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-extrabold text-slate-900 text-sm">Consultation Meeting Summary Document</h4>
+                                                    <p className="text-xs text-slate-500 mt-1">Briefing document: <span className="font-bold text-slate-700">{selectedCase.meetingSummaryName}</span></p>
+                                                    <p className="text-[10px] text-slate-400 font-semibold">Uploaded on {selectedCase.meetingSummaryUploadedAt ? new Date(selectedCase.meetingSummaryUploadedAt).toLocaleDateString() : 'N/A'}</p>
+                                                </div>
+                                            </div>
+                                            <a 
+                                                href={`http://localhost:3000/lawyer${selectedCase.meetingSummaryUrl}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="bg-primary hover:bg-primary/90 text-white rounded-xl font-bold px-5 py-2.5 text-xs flex items-center gap-1.5 shadow-sm transition-all text-center shrink-0"
+                                            >
+                                                <Download size={14} />
+                                                Download Summary Briefing
+                                            </a>
+                                        </div>
+                                    )}
+
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                        <div>
+                                            <h3 className="font-extrabold text-slate-900 text-lg">Procedural Roadmap & Stages</h3>
+                                            {selectedCase.meetingLink && (
+                                                <button
+                                                    onClick={() => navigate(`/cases/${selectedCase._id}/meet`)}
+                                                    className="mt-2 bg-primary hover:bg-primary/95 text-white rounded-xl font-bold px-4 py-2 text-xs flex items-center gap-2 shadow-sm transition-all"
+                                                >
+                                                    <Video className="w-4 h-4" />
+                                                    Join Video Consultation
+                                                </button>
+                                            )}
+                                        </div>
+                                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                                            selectedCase.planApproved 
+                                                ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
+                                                : selectedCase.planSubmitted 
+                                                    ? "bg-amber-50 text-amber-700 border border-amber-100" 
+                                                    : "bg-red-50 text-red-700 border border-red-100"
+                                        }`}>
+                                            {selectedCase.planApproved 
+                                                ? "Roadmap Approved by Client" 
+                                                : selectedCase.planSubmitted 
+                                                    ? "Roadmap Awaiting Client Approval" 
+                                                    : "Action Plan Required"}
+                                        </span>
+                                    </div>
+
+                                {!selectedCase.planSubmitted ? (
+                                    /* ROADMAP BUILDER & CONSULTATION GATE */
+                                    !selectedCase.meetingJoinedByClient || !selectedCase.meetingJoinedByLawyer ? (
+                                        <div className="bg-amber-50/50 border border-amber-200 rounded-3xl p-8 space-y-6">
+                                            <div className="flex items-start gap-4">
+                                                <AlertCircle className="h-6 w-6 text-amber-700 shrink-0 mt-0.5 animate-pulse" />
+                                                <div className="space-y-2">
+                                                    <h4 className="font-extrabold text-amber-900 text-sm uppercase tracking-wider">Video Consultation Attendance Required</h4>
+                                                    <p className="text-xs text-amber-700 leading-relaxed font-semibold">
+                                                        Before you can upload the meeting summary and proceed to design the case roadmap, both you and the client must join the live consultation video call.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white border border-amber-100 rounded-2xl p-4 space-y-3 shadow-sm text-xs font-semibold text-slate-600">
+                                                <h5 className="font-bold text-slate-800 text-xs">Live Attendance Tracker</h5>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Your Status</span>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByLawyer ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                                                            {selectedCase.meetingJoinedByLawyer ? 'Joined' : 'Pending'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Client Status</span>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByClient ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                                                            {selectedCase.meetingJoinedByClient ? 'Joined' : 'Pending'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {selectedCase.meetingLink && (
+                                                <div className="flex justify-end">
+                                                    <button
+                                                        onClick={() => navigate(`/cases/${selectedCase._id}/meet`)}
+                                                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md shadow-indigo-100 transition-all"
+                                                    >
+                                                        <Video className="w-4 h-4" />
+                                                        Join Video Consultation
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : !selectedCase.meetingSummaryUrl ? (
+                                        <div className="bg-violet-50/50 border border-violet-100 rounded-3xl p-8 space-y-6">
+                                            <div className="flex items-start gap-4">
+                                                <FileText className="h-6 w-6 text-primary shrink-0 mt-0.5" />
+                                                <div className="space-y-1.5">
+                                                    <h4 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider">Video Consultation Completed - Meeting Summary Required</h4>
+                                                    <p className="text-xs text-slate-650 leading-relaxed font-semibold">
+                                                        You have both successfully attended the consultation. Please upload the meeting summary briefing document to unlock the Action Roadmap Builder.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="border border-dashed border-slate-300 bg-white p-6 rounded-2xl text-center space-y-3">
+                                                <input 
+                                                    type="file" 
+                                                    id="summary-upload-direct"
+                                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        if (e.target.files && e.target.files[0]) {
+                                                            setSummaryFile(e.target.files[0]);
+                                                        }
+                                                    }}
+                                                />
+                                                {summaryFile ? (
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800">
+                                                            <FileText size={16} className="text-primary" />
+                                                            <span className="truncate max-w-[200px]">{summaryFile.name}</span>
+                                                        </div>
+                                                        <p className="text-[10px] text-slate-400 font-semibold">Size: {(summaryFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                    </div>
+                                                ) : (
+                                                    <label htmlFor="summary-upload-direct" className="cursor-pointer space-y-1 block">
+                                                        <Upload size={24} className="mx-auto text-slate-400" />
+                                                        <p className="text-xs font-bold text-primary hover:underline">Select Brief Summary File</p>
+                                                        <p className="text-[10px] text-slate-400 font-semibold">PDF, Word, or Image up to 10MB</p>
+                                                    </label>
+                                                )}
+                                            </div>
+
+                                            {summaryFile && (
+                                                <div className="flex justify-end gap-3">
+                                                    <button
+                                                        onClick={() => setSummaryFile(null)}
+                                                        className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl text-xs"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={handleUploadSummaryDirect}
+                                                        disabled={isUploadingSummary}
+                                                        className="px-5 py-2.5 bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md disabled:bg-indigo-300"
+                                                    >
+                                                        {isUploadingSummary ? (
+                                                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                        ) : (
+                                                            <>
+                                                                <Upload size={13} />
+                                                                Upload & Unlock Roadmap
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-slate-50/40 border border-slate-200 rounded-3xl p-6 space-y-6">
+                                            <div className="space-y-1">
+                                                <h4 className="font-extrabold text-slate-900 text-sm">Outline Case Milestones</h4>
+                                                <p className="text-xs text-slate-500 leading-normal">
+                                                    Create a transparent work process for your client. The sum of all progress increments must equal 100%. Payouts can be configured per milestone.
+                                                </p>
+                                            </div>
 
                                         <div className="space-y-4">
                                             {builderMilestones.map((bm, idx) => (
@@ -470,6 +718,7 @@ export default function CasesPage() {
                                             </button>
                                         </div>
                                     </div>
+                                    )
                                 ) : (
                                     /* ROADMAP VIEW & MANAGEMENT */
                                     <div className="space-y-6">
@@ -700,6 +949,7 @@ export default function CasesPage() {
                                     </div>
                                 )}
                             </div>
+                            )}
                         </div>
                     ) : (
                         <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center shadow-sm">

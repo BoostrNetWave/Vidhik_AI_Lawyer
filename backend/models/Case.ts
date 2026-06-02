@@ -21,12 +21,20 @@ export interface ICase extends Document {
     description: string;
     client: mongoose.Types.ObjectId;
     lawyer: mongoose.Types.ObjectId;
-    status: 'active' | 'completed' | 'cancelled';
+    status: 'pending_lawyer' | 'pending_payment' | 'active' | 'completed' | 'cancelled';
     totalFee: number;
     currentProgress: number;
     planSubmitted: boolean;
     planApproved: boolean;
     milestones: IMilestone[];
+    bookingDate?: Date;
+    bookingTime?: string;
+    meetingLink?: string;
+    meetingSummaryUrl?: string;
+    meetingSummaryName?: string;
+    meetingSummaryUploadedAt?: Date;
+    meetingJoinedByClient?: boolean;
+    meetingJoinedByLawyer?: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -62,14 +70,22 @@ const caseSchema = new Schema({
     lawyer: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     status: { 
         type: String, 
-        enum: ['active', 'completed', 'cancelled'], 
-        default: 'active' 
+        enum: ['pending_lawyer', 'pending_payment', 'active', 'completed', 'cancelled'], 
+        default: 'pending_lawyer' 
     },
     totalFee: { type: Number, required: true, default: 0 },
     currentProgress: { type: Number, default: 0 },
     planSubmitted: { type: Boolean, default: false },
     planApproved: { type: Boolean, default: false },
-    milestones: [milestoneSchema]
+    milestones: [milestoneSchema],
+    bookingDate: { type: Date },
+    bookingTime: { type: String },
+    meetingLink: { type: String },
+    meetingSummaryUrl: { type: String },
+    meetingSummaryName: { type: String },
+    meetingSummaryUploadedAt: { type: Date },
+    meetingJoinedByClient: { type: Boolean, default: false },
+    meetingJoinedByLawyer: { type: Boolean, default: false }
 }, {
     timestamps: true
 });
