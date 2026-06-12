@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, User, Calendar, CreditCard, FileText, LifeBuoy, Settings, LogOut, Briefcase } from 'lucide-react';
+import { Home, User, Calendar, CreditCard, FileText, LifeBuoy, Settings, LogOut, Briefcase, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 import logo from '../assets/logo.jpeg';
@@ -16,13 +16,14 @@ const navItems: NavItem[] = [
   { label: "Profile", icon: <User size={20} />, to: "/profile" },
   { label: "Bookings", icon: <Calendar size={20} />, to: "/bookings" },
   { label: "Case Management", icon: <Briefcase size={20} />, to: "/cases" },
+  { label: "Subscription", icon: <Zap size={20} />, to: "/subscription" },
   { label: "Payments", icon: <CreditCard size={20} />, to: "/payments" },
   { label: "Blog Posts", icon: <FileText size={20} />, to: "/blog-posts" },
   { label: "Support", icon: <LifeBuoy size={20} />, to: "/support" },
 ];
 
 function Sidebar() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <aside className="bg-white text-slate-600 w-full h-full flex flex-col border-r border-slate-100 shadow-sm">
@@ -55,7 +56,10 @@ function Sidebar() {
 
         <div className="mt-6 px-4 py-4 bg-primary/5 rounded-2xl border border-primary/10">
           <p className="text-[10px] text-primary/60 font-bold uppercase tracking-wider">Subscription</p>
-          <p className="text-xs text-slate-900 font-black mt-1">Premium Plan</p>
+          <p className="text-xs text-slate-900 font-black mt-1 capitalize">{user?.subscription || "Free"} Plan</p>
+          <NavLink to="/subscription" className="text-[10px] text-primary hover:underline font-bold mt-2 block">
+            Manage Plan →
+          </NavLink>
         </div>
       </div>
     </aside>

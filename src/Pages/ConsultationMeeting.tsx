@@ -121,7 +121,7 @@ export default function ConsultationMeeting() {
     const [summaryFile, setSummaryFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
-    const user = JSON.parse(localStorage.getItem('vidhik_user_data') || '{}');
+    const user = JSON.parse(localStorage.getItem('lawyer_profile_data') || '{}');
 
     const fetchCaseDetails = async () => {
         try {

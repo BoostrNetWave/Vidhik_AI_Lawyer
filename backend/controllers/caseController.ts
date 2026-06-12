@@ -2,6 +2,7 @@ import { Response } from 'express';
 import Case from '../models/Case.js';
 import User from '../models/User.js';
 import Signal from '../models/Signal.js';
+import SystemConfig from '../models/SystemConfig.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { sendEmail } from '../utils/emailService.js';
 
@@ -38,6 +39,35 @@ export const createCase = async (req: AuthRequest, res: Response): Promise<void>
 
         if (!clientEmail || !title || !description || !totalFee) {
             res.status(400).json({ message: 'All fields are required' });
+            return;
+        }
+
+        // Check lawyer's active cases limit
+        const lawyerUser = await User.findById(req.user.id);
+        if (!lawyerUser) {
+            res.status(404).json({ message: 'Lawyer not found' });
+            return;
+        }
+
+        const lawyerPlanName = lawyerUser.subscription || 'Free';
+        const plansConfig = await SystemConfig.findOne({ key: 'LAWYER_PRICING_PLANS' });
+        let activeCasesLimit = 5;
+        if (plansConfig && Array.isArray(plansConfig.value)) {
+            const plan = plansConfig.value.find(
+                (p: any) => p.name.toLowerCase() === lawyerPlanName.toLowerCase()
+            ) || plansConfig.value.find((p: any) => p.name.toLowerCase() === 'free');
+            if (plan && plan.limits && plan.limits.activeCases !== undefined) {
+                activeCasesLimit = Number(plan.limits.activeCases);
+            }
+        }
+
+        const activeCasesCount = await Case.countDocuments({
+            lawyer: req.user.id,
+            status: { $in: ['active', 'pending_lawyer', 'pending_payment'] }
+        });
+
+        if (activeCasesCount >= activeCasesLimit) {
+            res.status(403).json({ message: `You have reached your active case limit of ${activeCasesLimit} cases for your ${lawyerPlanName} plan. Please upgrade to handle more cases.` });
             return;
         }
 

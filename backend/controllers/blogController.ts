@@ -1,5 +1,7 @@
 import { Response } from 'express';
 import Blog from '../models/Blog.js';
+import User from '../models/User.js';
+import SystemConfig from '../models/SystemConfig.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
 export const getBlogs = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -47,6 +49,32 @@ export const createBlog = async (req: AuthRequest, res: Response): Promise<void>
     try {
         const blogData = { ...req.body };
         const userId = req.user.userId;
+
+        // Check lawyer's blog limit
+        const lawyerUser = await User.findById(req.user.id);
+        const lawyerPlanName = lawyerUser ? (lawyerUser.subscription || 'Free') : 'Free';
+        const plansConfig = await SystemConfig.findOne({ key: 'LAWYER_PRICING_PLANS' });
+        let blogsLimit = 2;
+        if (plansConfig && Array.isArray(plansConfig.value)) {
+            const plan = plansConfig.value.find(
+                (p: any) => p.name.toLowerCase() === lawyerPlanName.toLowerCase()
+            ) || plansConfig.value.find((p: any) => p.name.toLowerCase() === 'free');
+            if (plan && plan.limits && plan.limits.blogsPerWeek !== undefined) {
+                blogsLimit = Number(plan.limits.blogsPerWeek);
+            }
+        }
+
+        const now = new Date();
+        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        const blogCount = await Blog.countDocuments({
+            authorId: userId,
+            createdAt: { $gte: startOfWeek }
+        });
+
+        if (blogCount >= blogsLimit) {
+            res.status(403).json({ message: `You have reached your weekly limit of ${blogsLimit} blog posts for your ${lawyerPlanName} plan. Please upgrade to write more articles.` });
+            return;
+        }
 
         // Force the authorId from the authenticated user session
         blogData.authorId = userId;

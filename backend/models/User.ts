@@ -28,6 +28,7 @@ export interface IUser extends Document {
     isApproved: boolean;
     verificationOTP?: string;
     otpExpires?: Date;
+    subscription?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -93,6 +94,10 @@ const userSchema: Schema = new Schema({
     },
     otpExpires: {
         type: Date
+    },
+    subscription: {
+        type: String,
+        default: "Free"
     }
 }, {
     timestamps: true

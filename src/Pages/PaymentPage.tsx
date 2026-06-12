@@ -35,82 +35,6 @@ export default function PaymentPage() {
   const { user } = useAuth();
   const userId = user?.userId;
 
-  // Demo payment data
-  const demoPaymentData: PaymentTransaction[] = [
-    {
-      _id: "1",
-      razorpayOrderId: "order_123456789",
-      paymentId: "pay_ABC123DEF456",
-      method: "Credit Card",
-      date: "2024-03-15T10:30:00Z",
-      amount: 2500,
-      status: "succeeded"
-    },
-    {
-      _id: "2", 
-      razorpayOrderId: "order_987654321",
-      paymentId: "pay_XYZ789ABC123",
-      method: "UPI",
-      date: "2024-03-14T14:20:00Z",
-      amount: 1800,
-      status: "succeeded"
-    },
-    {
-      _id: "3",
-      razorpayOrderId: "order_456123789",
-      paymentId: "pay_DEF456GHI789",
-      method: "Debit Card",
-      date: "2024-03-13T09:15:00Z",
-      amount: 3200,
-      status: "pending"
-    },
-    {
-      _id: "4",
-      razorpayOrderId: "order_789456123",
-      paymentId: "pay_GHI789JKL012",
-      method: "Net Banking",
-      date: "2024-03-12T16:45:00Z",
-      amount: 1500,
-      status: "failed"
-    },
-    {
-      _id: "5",
-      razorpayOrderId: "order_321654987",
-      paymentId: "pay_JKL012MNO345",
-      method: "Wallet",
-      date: "2024-03-11T11:30:00Z",
-      amount: 4200,
-      status: "succeeded"
-    },
-    {
-      _id: "6",
-      razorpayOrderId: "order_654321987",
-      paymentId: "pay_MNO345PQR678",
-      method: "Credit Card",
-      date: "2024-03-10T13:20:00Z",
-      amount: 2800,
-      status: "succeeded"
-    },
-    {
-      _id: "7",
-      razorpayOrderId: "order_987123456",
-      paymentId: "pay_PQR678STU901",
-      method: "UPI",
-      date: "2024-03-09T15:10:00Z",
-      amount: 1900,
-      status: "pending"
-    },
-    {
-      _id: "8",
-      razorpayOrderId: "order_123987654",
-      paymentId: "pay_STU901VWX234",
-      method: "Debit Card",
-      date: "2024-03-08T10:45:00Z",
-      amount: 3500,
-      status: "succeeded"
-    }
-  ];
-
   useEffect(() => {
     const t = setTimeout(() => setSearch(typing.trim()), 400);
     return () => clearTimeout(t);
@@ -124,7 +48,7 @@ export default function PaymentPage() {
       }
     } catch (e) {
       console.error("fetchSummary error", e);
-      setTotalEarnings(22400); // Fallback for demo
+      setTotalEarnings(0);
     }
   };
 
@@ -139,50 +63,18 @@ export default function PaymentPage() {
       if (res.status === 200) {
         const data: PaymentHistoryResponse = res.data;
         const apiData = Array.isArray(data?.data) ? data.data : [];
-        setRows(apiData.length > 0 ? apiData : demoPaymentData);
+        setRows(apiData);
         setPages(data?.pagination?.pages || 1);
         setPage(data?.pagination?.page || p);
       } else {
-        // Use demo data if API fails
-        const filteredData = demoPaymentData.filter((row: PaymentTransaction) => {
-          if (status && status !== "all") {
-            return row.status === status;
-          }
-          if (search) {
-            return row.razorpayOrderId?.toLowerCase().includes(search.toLowerCase()) ||
-                   row.paymentId?.toLowerCase().includes(search.toLowerCase());
-          }
-          return true;
-        });
-        
-        const startIndex = (p - 1) * 10;
-        const endIndex = startIndex + 10;
-        const paginatedData = filteredData.slice(startIndex, endIndex);
-        
-        setRows(paginatedData);
-        setPages(Math.ceil(filteredData.length / 10));
+        setRows([]);
+        setPages(1);
         setPage(p);
       }
     } catch (e) {
       console.error("fetchHistory error", e);
-      // Use demo data as fallback
-      const filteredData = demoPaymentData.filter((row: PaymentTransaction) => {
-        if (status && status !== "all") {
-          return row.status === status;
-        }
-        if (search) {
-          return row.razorpayOrderId?.toLowerCase().includes(search.toLowerCase()) ||
-                 row.paymentId?.toLowerCase().includes(search.toLowerCase());
-        }
-        return true;
-      });
-      
-      const startIndex = (p - 1) * 10;
-      const endIndex = startIndex + 10;
-      const paginatedData = filteredData.slice(startIndex, endIndex);
-      
-      setRows(paginatedData);
-      setPages(Math.ceil(filteredData.length / 10));
+      setRows([]);
+      setPages(1);
       setPage(p);
     } finally {
       setLoading(false);
@@ -200,17 +92,8 @@ export default function PaymentPage() {
         button.innerHTML = '<svg class="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Generating...';
       }
 
-      // Use demo data for export
-      const exportData = demoPaymentData.filter((row: PaymentTransaction) => {
-        if (status && status !== "all") {
-          return row.status === status;
-        }
-        if (search) {
-          return row.razorpayOrderId?.toLowerCase().includes(search.toLowerCase()) ||
-                 row.paymentId?.toLowerCase().includes(search.toLowerCase());
-        }
-        return true;
-      });
+      // Use actual data for export
+      const exportData = rows;
       
       console.log('Exporting data:', exportData.length, 'records');
 

@@ -7,6 +7,7 @@ interface User {
     email: string;
     fullName: string;
     role: string;
+    subscription?: string;
 }
 
 interface AuthContextType {
@@ -27,8 +28,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         const verifyToken = async () => {
             try {
-                const savedToken = localStorage.getItem('vidhik_auth_token');
-                const savedUser = localStorage.getItem('vidhik_user_data');
+                const savedToken = localStorage.getItem('lawyer_auth_token') || localStorage.getItem('vidhik_auth_token');
+                const savedUser = localStorage.getItem('lawyer_profile_data') || localStorage.getItem('vidhik_user_data');
 
                 if (savedToken && savedUser) {
                     try {
@@ -36,7 +37,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         const response = await api.get('/auth/me');
                         if (response.data && response.data.user) {
                             setToken(savedToken);
-                            setUser(JSON.parse(savedUser));
+                            setUser(response.data.user);
+                            localStorage.setItem('lawyer_profile_data', JSON.stringify(response.data.user));
                         } else {
                             throw new Error('Invalid token response');
                         }
@@ -46,6 +48,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         
                         // Force logout on 401, but allow 404 or other errors to proceed with saved user data
                         if (err.response?.status === 401) {
+                            localStorage.removeItem('lawyer_auth_token');
+                            localStorage.removeItem('lawyer_profile_data');
                             localStorage.removeItem('vidhik_auth_token');
                             localStorage.removeItem('vidhik_user_data');
                             setToken(null);
@@ -74,6 +78,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const login = (newToken: string, newUser: User) => {
         setToken(newToken);
         setUser(newUser);
+        localStorage.setItem('lawyer_auth_token', newToken);
+        localStorage.setItem('lawyer_profile_data', JSON.stringify(newUser));
         localStorage.setItem('vidhik_auth_token', newToken);
         localStorage.setItem('vidhik_user_data', JSON.stringify(newUser));
     };
@@ -81,6 +87,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const logout = () => {
         setToken(null);
         setUser(null);
+        localStorage.removeItem('lawyer_auth_token');
+        localStorage.removeItem('lawyer_profile_data');
         localStorage.removeItem('vidhik_auth_token');
         localStorage.removeItem('vidhik_user_data');
         window.location.href = '/lawyer/login';

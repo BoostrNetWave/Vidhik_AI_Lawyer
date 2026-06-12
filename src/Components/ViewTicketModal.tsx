@@ -10,6 +10,7 @@ interface Ticket {
     status: string;
     description: string;
     attachment?: string;
+    adminReply?: string;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -102,6 +103,18 @@ export default function ViewTicketModal({ visible, onClose, ticket }: ViewTicket
                             </div>
                         </div>
                     </div>
+
+                    {/* Admin Reply */}
+                    {ticket.adminReply && (
+                        <div>
+                            <label className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3 block">Admin Resolution Response</label>
+                            <div className="bg-indigo-50/30 border border-indigo-100 rounded-2xl p-6">
+                                <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-semibold">
+                                    {ticket.adminReply}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Attachment */}
                     {ticket.attachment && (

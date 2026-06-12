@@ -9,6 +9,7 @@ export interface ISupportTicket extends Document {
     description: string;
     attachment?: string;
     status: 'Open' | 'Closed' | 'Pending';
+    adminReply?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -49,6 +50,10 @@ const supportTicketSchema: Schema = new Schema({
         type: String,
         enum: ['Open', 'Closed', 'Pending'],
         default: 'Open'
+    },
+    adminReply: {
+        type: String,
+        default: ''
     },
     // Automatically delete documents 30 days after creation
     createdAt: {

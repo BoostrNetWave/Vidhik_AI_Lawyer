@@ -21,7 +21,7 @@ api.interceptors.request.use(
       config.baseURL += '/';
     }
 
-    const token = localStorage.getItem('vidhik_auth_token');
+    const token = localStorage.getItem('lawyer_auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -38,8 +38,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // Clear local storage and redirect to login if unauthorized
-      localStorage.removeItem('vidhik_auth_token');
-      localStorage.removeItem('vidhik_user_data');
+      localStorage.removeItem('lawyer_auth_token');
+      localStorage.removeItem('lawyer_profile_data');
       window.location.href = '/lawyer/login';
     }
     return Promise.reject(error);

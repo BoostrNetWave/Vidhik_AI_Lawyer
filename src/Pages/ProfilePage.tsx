@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Camera, User, CreditCard, Save, Loader2, Award, BookOpen, MapPin, Globe, Briefcase, Star, Trash2, Plus } from "lucide-react";
+import { Camera, User, CreditCard, Save, Loader2, Award, BookOpen, MapPin, Globe, Briefcase, Star, Trash2, Plus, Zap, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
@@ -36,11 +37,34 @@ interface PaymentFields {
 }
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { success, error } = useToast();
   const [loading, setLoading] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"basic" | "professional" | "credentials" | "payouts">("basic");
+  const [activeTab, setActiveTab] = useState<"basic" | "professional" | "credentials" | "payouts" | "subscription">("basic");
+  const [subData, setSubData] = useState<any>(null);
+  const [loadingSub, setLoadingSub] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (activeTab === "subscription" && !subData && user?.userId) {
+      const fetchSub = async () => {
+        setLoadingSub(true);
+        try {
+          const res = await api.get("/dashboard/subscription");
+          if (res.data && res.data.success) {
+            setSubData(res.data.data);
+          }
+        } catch (err) {
+          console.error("Failed to fetch profile subscription details:", err);
+          error("Failed to load subscription details.");
+        } finally {
+          setLoadingSub(false);
+        }
+      };
+      fetchSub();
+    }
+  }, [activeTab, subData, user?.userId]);
 
   // Profile Info State
   const [profileFields, setProfileFields] = useState<ProfileFields>({
@@ -271,6 +295,7 @@ export default function ProfilePage() {
                         <NavItem id="professional" label="Expertise & Areas" icon={Briefcase} />
                         <NavItem id="credentials" label="Education & Credits" icon={Award} />
                         <NavItem id="payouts" label="Payout Settings" icon={CreditCard} />
+                        <NavItem id="subscription" label="Chamber Plan" icon={Zap} />
                     </nav>
                 </CardContent>
             </Card>
@@ -536,6 +561,104 @@ export default function ProfilePage() {
                             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Verify & Update Bank Details"}
                         </Button>
                     </CardFooter>
+                </Card>
+            )}
+
+            {activeTab === "subscription" && (
+                <Card className="border border-slate-200/80 shadow-sm overflow-hidden animate-in fade-in duration-300">
+                    <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-5">
+                        <div className="flex items-center gap-2 text-primary">
+                            <Zap className="h-5 w-5 fill-primary/10" />
+                            <CardTitle className="text-lg font-bold">Chamber Plan & Quotas</CardTitle>
+                        </div>
+                        <CardDescription>View your active chamber membership tier, resource usage caps, and transaction commission rates.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-6">
+                        {loadingSub ? (
+                            <div className="py-12 flex flex-col items-center justify-center gap-3">
+                                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                                <p className="text-slate-400 font-semibold text-xs">Syncing practice quotas...</p>
+                            </div>
+                        ) : subData ? (
+                            <div className="space-y-6">
+                                {/* Active Plan Banner */}
+                                <div className="bg-primary/5 rounded-2xl border border-primary/10 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div className="space-y-1">
+                                        <span className="px-2.5 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[9px] font-extrabold uppercase tracking-wider">
+                                            Active Chamber Membership
+                                        </span>
+                                        <h3 className="text-xl font-black text-slate-800 capitalize mt-2">{subData.subscription} Plan</h3>
+                                        <p className="text-xs text-slate-500 font-medium">Your account limits and platform payout rules are governed by this plan.</p>
+                                    </div>
+                                    <Button 
+                                        onClick={() => navigate('/subscription')}
+                                        className="bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl shadow-lg shadow-primary/10 flex items-center gap-1 px-5 h-10"
+                                    >
+                                        Upgrade Chamber <ArrowRight className="h-3.5 w-3.5" />
+                                    </Button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                                    {/* 1. Case Capacity */}
+                                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-4 flex flex-col justify-between">
+                                        <div>
+                                            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Active Case Capacity</span>
+                                            <p className="text-lg font-black text-slate-850 mt-1">
+                                                {subData.usage.activeCases} / {subData.limits.activeCases >= 999999 ? "∞" : subData.limits.activeCases}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                                                <div 
+                                                    className="h-2 rounded-full bg-primary"
+                                                    style={{ width: `${subData.limits.activeCases >= 999999 ? 100 : Math.min((subData.usage.activeCases / subData.limits.activeCases) * 100, 100)}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-[9px] text-slate-400 font-bold block text-right">
+                                                {subData.limits.activeCases >= 999999 ? "Unlimited slots" : `${subData.limits.activeCases - subData.usage.activeCases} slots remaining`}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* 2. Blog Posts */}
+                                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-4 flex flex-col justify-between">
+                                        <div>
+                                            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Weekly Blog Posts</span>
+                                            <p className="text-lg font-black text-slate-850 mt-1">
+                                                {subData.usage.blogsThisWeek} / {subData.limits.blogsPerWeek >= 999999 ? "∞" : subData.limits.blogsPerWeek}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                                                <div 
+                                                    className="h-2 rounded-full bg-primary"
+                                                    style={{ width: `${subData.limits.blogsPerWeek >= 999999 ? 100 : Math.min((subData.usage.blogsThisWeek / subData.limits.blogsPerWeek) * 100, 100)}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-[9px] text-slate-400 font-bold block text-right">
+                                                {subData.limits.blogsPerWeek >= 999999 ? "Unlimited articles" : `${Math.max(subData.limits.blogsPerWeek - subData.usage.blogsThisWeek, 0)} posts left this week`}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Platform Rate */}
+                                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-3 flex flex-col justify-between">
+                                        <div>
+                                            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Platform Commission</span>
+                                            <p className="text-lg font-black text-slate-850 mt-1">{subData.limits.commissionPercent}%</p>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 leading-normal font-medium">
+                                            The platform commission rate deducted from consultation payouts.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="py-8 text-center text-slate-400 text-xs">
+                                Failed to fetch subscription details.
+                            </div>
+                        )}
+                    </CardContent>
                 </Card>
             )}
           </div>

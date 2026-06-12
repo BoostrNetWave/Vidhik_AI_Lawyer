@@ -126,7 +126,8 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
                 userId: user.userId,
                 email: user.email,
                 fullName: user.fullName,
-                role: user.role
+                role: user.role,
+                subscription: user.subscription
             }
         });
     } catch (error: any) {
@@ -236,7 +237,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                 userId: user.userId,
                 email: user.email,
                 fullName: user.fullName,
-                role: user.role
+                role: user.role,
+                subscription: user.subscription
             }
         });
     } catch (error: any) {

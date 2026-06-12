@@ -23,6 +23,7 @@ import Signup from "./Pages/Signup";
 import VerifyOTP from "./Pages/VerifyOTP";
 import CasesPage from "./Pages/CasesPage";
 import ConsultationMeeting from "./Pages/ConsultationMeeting";
+import SubscriptionPage from "./Pages/SubscriptionPage";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
       { path: "blogs/edit/:id", element: <EditBlogPage /> },
       { path: "support", element: <SupportPage /> },
       { path: "settings", element: <SettingsPage /> },
+      { path: "subscription", element: <SubscriptionPage /> },
       { path: "cases", element: <CasesPage /> },
       { path: "cases/:id/meet", element: <ConsultationMeeting /> },
     ],

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
     Briefcase, 
@@ -81,26 +81,35 @@ export default function CasesPage() {
     const [uploadFile, setUploadFile] = useState<File | null>(null);
     const [uploadDetails, setUploadDetails] = useState<string>("");
 
-    const fetchCases = async () => {
-        setLoading(true);
+    const fetchCases = useCallback(async (isSilent = false) => {
+        if (!isSilent) setLoading(true);
         try {
             const data = await caseService.getCases();
             setCases(data);
-            if (selectedCase) {
-                const updated = data.find(c => c._id === selectedCase._id);
-                if (updated) setSelectedCase(updated);
-            }
+            setSelectedCase(prevSelected => {
+                if (!prevSelected) return null;
+                const updated = data.find(c => c._id === prevSelected._id);
+                return updated || prevSelected;
+            });
         } catch (err: any) {
             console.error(err);
-            error(err.response?.data?.message || "Failed to load cases");
+            if (!isSilent) {
+                error(err.response?.data?.message || "Failed to load cases");
+            }
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
         }
-    };
+    }, [error]);
 
     useEffect(() => {
         fetchCases();
-    }, []);
+
+        const interval = setInterval(() => {
+            fetchCases(true);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [fetchCases]);
 
     const handleCreateCaseSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
