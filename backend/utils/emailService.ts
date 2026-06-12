@@ -14,23 +14,31 @@ const transporter = nodemailer.createTransport({
         user: process.env.SMTP_USER || 'sibsankar2727@gmail.com',
         pass: process.env.SMTP_PASS || 'ulqi aihu ajut qdnl',
     },
+    connectionTimeout: 5000 // 5 seconds connection timeout
 });
 
 export const sendEmail = async (to: string, subject: string, html: string): Promise<boolean> => {
     try {
         console.log(`[EmailService] Preparing to send email to ${to} using ${process.env.SMTP_USER}...`);
 
-        const info = await transporter.sendMail({
+        // Fire-and-forget email sending in the background to prevent blocking HTTP requests.
+        // This resolves hanging requests caused by AWS port 25 blocking.
+        transporter.sendMail({
             from: `"Vidhik Admin" <${process.env.SMTP_USER || 'sibsankar2727@gmail.com'}>`,
             to,
             subject,
             html,
+        })
+        .then((info) => {
+            console.log("[EmailService] Message sent successfully: %s", info.messageId);
+        })
+        .catch((error) => {
+            console.error("[EmailService] Async email sending failed:", error);
         });
 
-        console.log("[EmailService] Message sent: %s", info.messageId);
         return true;
     } catch (error) {
-        console.error("[EmailService] Error sending email:", error);
+        console.error("[EmailService] Error initiating email send:", error);
         return false;
     }
 };
