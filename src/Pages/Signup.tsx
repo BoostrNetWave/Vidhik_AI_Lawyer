@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, AlertCircle, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, Eye, EyeOff, CheckCircle, Scale, Star, ShieldCheck, Check, Sparkles } from 'lucide-react';
 import logo from '../assets/logo.jpeg';
 import { Button } from '../Components/ui/button';
 import { Input } from '../Components/ui/input';
@@ -89,45 +89,142 @@ const Signup: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-secondary/30 to-white flex items-center justify-center p-4">
-            <div className="w-full max-w-md">
-                <Card className="shadow-xl border-0">
-                    <CardHeader className="space-y-1 text-center pb-6">
-                        <div className="flex justify-center mb-4">
-                            <div className="bg-white p-2 rounded-2xl shadow-xl shadow-primary/10 border border-slate-100 h-20 w-20 overflow-hidden">
-                                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+        <div className="flex min-h-screen w-full font-sans bg-slate-50">
+            {/* Left - Branding Panel */}
+            <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-[#0F172A] via-[#1E1B4B] to-[#020617] relative overflow-hidden items-center justify-center p-12 select-none">
+                {/* Decorative glows */}
+                <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-violet-500/10 to-transparent blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
+                <div className="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full bg-violet-500/10 blur-[100px] pointer-events-none" />
+                
+                {/* Dots grid pattern */}
+                <div 
+                    className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                    style={{
+                        backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+                        backgroundSize: '24px 24px'
+                    }}
+                />
+
+                <div className="relative z-10 text-white max-w-md">
+                    <div className="inline-flex items-center gap-3 mb-10">
+                        <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center overflow-hidden p-1 shadow-md">
+                            <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+                        </div>
+                        <span className="font-display text-2xl font-bold tracking-tight text-white">Vidhik <span className="text-violet-400">AI</span></span>
+                    </div>
+                    
+                    <h2 className="font-display text-4xl font-extrabold mb-6 leading-tight">
+                        Grow Your Legal Practice Digitally
+                    </h2>
+                    <p className="text-slate-300/85 text-sm leading-relaxed mb-10">
+                        Join Vidhik AI's provider network. Connect with clients, build your caseload, automate paperwork, and manage your billing from a single platform.
+                    </p>
+                    
+                    {/* Features checklist */}
+                    <div className="space-y-4 mb-10 bg-white/[0.02] backdrop-blur-md rounded-2xl p-6 border border-white/[0.06] shadow-[0_20px_50px_rgba(0,0,0,0.25)]">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-400">
+                                <Check className="h-3 w-3" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-semibold text-white">Premium Client Leads</h4>
+                                <p className="text-xs text-slate-400 leading-normal">Get matched with clients searching for your legal expertise.</p>
                             </div>
                         </div>
-                        <CardTitle className="text-3xl font-bold text-gray-900">
-                            Create Account
-                        </CardTitle>
-                        <CardDescription className="text-gray-600">
-                            Join the legal admin portal
-                        </CardDescription>
-                    </CardHeader>
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-400">
+                                <Check className="h-3 w-3" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-semibold text-white">Interactive Case Dashboards</h4>
+                                <p className="text-xs text-slate-400 leading-normal">Collaborate with clients, share notes, and update statuses.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-400">
+                                <Check className="h-3 w-3" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-semibold text-white">Automated Invoicing & Payments</h4>
+                                <p className="text-xs text-slate-400 leading-normal">Collect retainers, track hours, and receive payments securely.</p>
+                            </div>
+                        </div>
+                    </div>
 
-                    <CardContent className="space-y-4">
-                        <form className="space-y-4" onSubmit={handleSubmit}>
+                    {/* Trust badges */}
+                    <div className="flex items-center gap-6 mt-10 text-slate-400/80 text-xs">
+                        <div className="flex items-center gap-1.5">
+                            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                            <span>SOC 2 Compliant</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                            <span>HIPAA Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Right - Form Container */}
+            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-[#FAFAFC] relative overflow-hidden">
+                {/* Decorative glows on the right panel */}
+                <div className="absolute top-0 right-0 -z-10 w-[300px] h-[300px] rounded-full bg-violet-200/30 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -z-10 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
+                
+                {/* Dots grid pattern for Right Panel */}
+                <div 
+                    className="absolute inset-0 opacity-[0.015] pointer-events-none"
+                    style={{
+                        backgroundImage: `radial-gradient(circle at 1px 1px, #7C3AED 1px, transparent 0)`,
+                        backgroundSize: '20px 20px'
+                    }}
+                />
+
+                <div className="w-full max-w-md">
+                    {/* Small Logo for mobile view */}
+                    <div className="text-center mb-8 lg:hidden">
+                        <div className="inline-flex items-center gap-2 mb-2">
+                            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center overflow-hidden p-0.5 border border-slate-100 shadow-sm">
+                                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+                            </div>
+                            <span className="font-display text-xl font-bold tracking-tight text-slate-900">
+                                Vidhik <span className="text-violet-600">AI</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-[0_20px_50px_-12px_rgba(124,58,237,0.08)] rounded-2xl p-8 sm:p-10 w-full relative">
+                        <div className="text-center mb-8">
+                            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 font-display flex items-center justify-center gap-2">
+                                Create Account
+                            </h2>
+                            <p className="mt-2.5 text-sm text-slate-500">
+                                Join the legal admin portal and manage your practice.
+                            </p>
+                        </div>
+
+                        <form className="space-y-5" onSubmit={handleSubmit}>
                             {error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-3 text-red-700 text-sm">
-                                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                                    <p>{error}</p>
+                                <div className="bg-rose-50 border border-rose-100 rounded-lg p-3.5 flex items-start gap-2.5 text-rose-700 text-sm animate-shake">
+                                    <AlertCircle className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-rose-500" />
+                                    <p className="leading-normal font-medium">{error}</p>
                                 </div>
                             )}
                             
                             {success && (
-                                <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-3 text-green-700 text-sm">
-                                    <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                                    <p>Account created! OTP sent to your email. Redirecting to verification...</p>
+                                <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3.5 flex items-start gap-2.5 text-emerald-700 text-sm">
+                                    <CheckCircle className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-emerald-500" />
+                                    <p className="leading-normal font-medium">Account created! OTP sent to your email. Redirecting to verification...</p>
                                 </div>
                             )}
 
                             <div className="space-y-2">
-                                <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
+                                <Label htmlFor="fullName" className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                                     Full Name
                                 </Label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
                                     <Input
                                         id="fullName"
                                         name="fullName"
@@ -135,18 +232,18 @@ const Signup: React.FC = () => {
                                         required
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
-                                        className="pl-10 border-gray-300 focus:border-primary focus:ring-primary"
+                                        className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500/20 focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-all rounded-lg"
                                         placeholder="John Doe"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                                <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                                     Email address
                                 </Label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
                                     <Input
                                         id="email"
                                         name="email"
@@ -154,18 +251,18 @@ const Signup: React.FC = () => {
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="pl-10 border-gray-300 focus:border-primary focus:ring-primary"
+                                        className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500/20 focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-all rounded-lg"
                                         placeholder="admin@legal.com"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                                     Password
                                 </Label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
                                     <Input
                                         id="password"
                                         name="password"
@@ -173,15 +270,15 @@ const Signup: React.FC = () => {
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-10 pr-10 border-gray-300 focus:border-primary focus:ring-primary"
+                                        className="pl-10 pr-10 h-11 bg-slate-50/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500/20 focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-all rounded-lg"
                                         placeholder="••••••••"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none flex items-center justify-center"
                                     >
-                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                                     </button>
                                 </div>
                             </div>
@@ -189,24 +286,36 @@ const Signup: React.FC = () => {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
+                                className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold h-11 rounded-lg flex items-center justify-center transition-all duration-300 shadow-[0_10px_20px_-5px_rgba(124,58,237,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none"
                             >
-                                {loading ? 'Creating account...' : 'Create Account'}
+                                {loading ? (
+                                    <div className="flex items-center justify-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Creating account...
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center gap-1.5">
+                                        <Sparkles className="h-4 w-4" />
+                                        Create Account
+                                    </div>
+                                )}
                             </Button>
                         </form>
-                    </CardContent>
 
-                    <CardFooter className="pt-6">
-                        <div className="text-center w-full">
-                            <Link
-                                to="/login"
-                                className="font-medium text-primary hover:text-primary/80 transition-colors"
-                            >
-                                Already have an account? Sign in
-                            </Link>
+                        <div className="mt-8 text-center text-sm text-slate-500 border-t border-slate-100 pt-6">
+                            <p>
+                                Already have an account?{" "}
+                                <Link
+                                    to="/login"
+                                    className="font-semibold text-violet-600 hover:text-violet-700 transition-colors inline-flex items-center gap-0.5 group"
+                                >
+                                    Sign In
+                                    <span className="transform transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+                                </Link>
+                            </p>
                         </div>
-                    </CardFooter>
-                </Card>
+                    </div>
+                </div>
             </div>
         </div>
     );

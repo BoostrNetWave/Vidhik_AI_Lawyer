@@ -483,7 +483,7 @@ export default function CasesPage() {
                                                 </div>
                                             </div>
                                             <a 
-                                                href={`http://localhost:3000/lawyer${selectedCase.meetingSummaryUrl}`}
+                                                href={`/lawyer${selectedCase.meetingSummaryUrl}`}
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="bg-primary hover:bg-primary/90 text-white rounded-xl font-bold px-5 py-2.5 text-xs flex items-center gap-1.5 shadow-sm transition-all text-center shrink-0"
@@ -824,7 +824,7 @@ export default function CasesPage() {
                                                                                             <div key={dIdx} className="space-y-2 border-b border-slate-100 pb-2 last:border-b-0 last:pb-0">
                                                                                                 <div className="flex flex-wrap items-center gap-2">
                                                                                                     <a 
-                                                                                                        href={`http://localhost:3000/lawyer${doc.url}`}
+                                                                                                        href={`/lawyer${doc.url}`}
                                                                                                         target="_blank"
                                                                                                         rel="noreferrer"
                                                                                                         className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1.5"
@@ -843,7 +843,7 @@ export default function CasesPage() {
                                                                                                 {isImg && (
                                                                                                     <div className="mt-2 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 max-w-sm shadow-sm relative group">
                                                                                                         <img 
-                                                                                                            src={`http://localhost:3000/lawyer${doc.url}`} 
+                                                                                                            src={`/lawyer${doc.url}`} 
                                                                                                             alt={doc.name}
                                                                                                             className="max-h-48 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                                                                                                         />
