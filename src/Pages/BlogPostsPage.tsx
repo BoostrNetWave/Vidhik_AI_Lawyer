@@ -74,29 +74,29 @@ export default function BlogPostsPage() {
 
   return (
     <div className="flex flex-col flex-1 min-h-screen font-sans">
-      <header className="px-8 py-6 border-b bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/90">
+      <header className="px-4 sm:px-8 py-4 sm:py-6 border-b bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/90">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-display">Blog Editorial</h1>
           <p className="text-slate-500 text-sm mt-1 font-medium">Manage and publish your legal insights</p>
         </div>
         <button
           onClick={() => navigate("/blogs/create")}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-indigo-200 active:scale-95 flex items-center text-sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-indigo-200 active:scale-95 flex items-center text-sm w-fit"
         >
           <Plus size={18} className="mr-2" />
           New Publication
         </button>
       </header>
 
-      <main className="flex-1 p-8 space-y-8 animate-in fade-in duration-500">
+      <div className="flex-1 p-4 sm:p-8 space-y-8 animate-in fade-in duration-500">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
-          <div className="p-6 border-b border-slate-100 bg-slate-50/30">
+          <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/30">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="relative group">
+              <div className="relative group w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                 <input
                   placeholder="Search by title..."
-                  className="pl-10 py-2.5 border-2 border-slate-100 focus:border-indigo-500 focus:outline-none rounded-xl text-sm font-semibold w-64 md:w-80 transition-all font-sans"
+                  className="pl-10 py-2.5 border-2 border-slate-100 focus:border-indigo-500 focus:outline-none rounded-xl text-sm font-semibold w-full sm:w-80 transition-all font-sans"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
@@ -224,7 +224,7 @@ export default function BlogPostsPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

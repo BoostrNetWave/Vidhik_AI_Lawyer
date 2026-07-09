@@ -22,8 +22,12 @@ function App() {
     navigate('/login');
   };
 
-  // Don't show header on login/signup pages
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  // Don't show header on login/signup/verify-otp pages
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/verify-otp';
+
+  if (isAuthPage) {
+    return <Outlet />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

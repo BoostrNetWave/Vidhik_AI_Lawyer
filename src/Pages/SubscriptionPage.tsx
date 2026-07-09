@@ -112,7 +112,7 @@ export default function SubscriptionPage() {
 
     return (
         <div className="flex flex-col flex-1 min-h-screen font-sans">
-            <header className="px-8 py-6 border-b bg-white sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/90 flex justify-between items-center">
+            <header className="px-4 sm:px-8 py-4 sm:py-6 border-b bg-white sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/90 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-display flex items-center gap-2">
                         <Zap className="h-6 w-6 text-primary" />
@@ -122,14 +122,14 @@ export default function SubscriptionPage() {
                 </div>
                 <button 
                     onClick={fetchSubscriptionData}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors w-fit"
                 >
                     <RefreshCw className="h-3.5 w-3.5" />
                     Sync Plan
                 </button>
             </header>
 
-            <main className="flex-1 p-8 animate-in fade-in duration-500 space-y-10">
+            <div className="flex-1 p-4 sm:p-8 animate-in fade-in duration-500 space-y-10">
                 {/* Current Plan Overview Card & Progress Gauges */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-8">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
@@ -309,7 +309,7 @@ export default function SubscriptionPage() {
                         })}
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

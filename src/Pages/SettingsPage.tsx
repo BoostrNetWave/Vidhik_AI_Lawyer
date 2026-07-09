@@ -138,15 +138,15 @@ export default function SettingsPage() {
 
     return (
         <div className="flex flex-col flex-1 min-h-screen font-sans">
-            <header className="px-8 py-6 border-b bg-white sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/90">
+            <header className="px-4 sm:px-8 py-4 sm:py-6 border-b bg-white sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/90">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-display">Admin Settings</h1>
                 <p className="text-slate-500 text-sm mt-1 font-medium">Configure global platform parameters and preferences</p>
             </header>
 
-            <main className="flex-1 p-8 animate-in fade-in duration-500">
+            <div className="flex-1 p-4 sm:p-8 animate-in fade-in duration-500">
                 <div className="max-w-4xl mx-auto space-y-8">
                     {/* Settings Tabs */}
-                    <div className="bg-slate-100 p-1.5 rounded-xl inline-flex w-auto border border-slate-200/50 shadow-inner">
+                    <div className="bg-slate-100 p-1.5 rounded-xl flex flex-wrap sm:inline-flex w-full sm:w-auto border border-slate-200/50 shadow-inner gap-1 sm:gap-0">
                         <button
                             onClick={() => setActiveTab("general")}
                             className={`px-6 py-2 rounded-lg transition-all text-sm font-bold flex items-center ${activeTab === "general" ? "bg-white text-primary shadow-md" : "text-slate-500 hover:text-slate-700"}`}
@@ -372,7 +372,7 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

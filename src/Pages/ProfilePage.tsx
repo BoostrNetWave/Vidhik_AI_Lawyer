@@ -253,18 +253,18 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col flex-1 min-h-screen bg-slate-50/50">
-      <header className="px-8 py-5 border-b bg-white/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between">
+      <header className="px-4 sm:px-8 py-4 sm:py-5 border-b bg-white/80 backdrop-blur-md sticky top-0 z-30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900">Professional Profile</h1>
           <p className="text-xs text-slate-500 font-medium">Configure your public lawyer appearance and billing details</p>
         </div>
-        <Button onClick={activeTab === 'payouts' ? savePayment : saveProfile} disabled={saving} className="bg-primary hover:bg-primary/90 shadow-primary/10 shadow-lg px-8">
+        <Button onClick={activeTab === 'payouts' ? savePayment : saveProfile} disabled={saving} className="bg-primary hover:bg-primary/90 shadow-primary/10 shadow-lg px-8 w-fit">
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           Save Changes
         </Button>
       </header>
 
-      <main className="flex-1 p-8">
+      <div className="flex-1 p-4 sm:p-8">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-8">
           {/* Sidebar Nav */}
           <aside className="w-full md:w-64 flex-shrink-0 space-y-6">
@@ -663,7 +663,7 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

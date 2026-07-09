@@ -45,7 +45,7 @@ export default function ViewBlogPage() {
 
     return (
         <div className="flex flex-col flex-1 min-h-screen font-sans bg-white pb-20">
-            <header className="px-8 py-5 border-b bg-white flex items-center justify-between sticky top-0 z-30 shadow-sm">
+            <header className="px-4 sm:px-8 py-4 sm:py-5 border-b bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-30 shadow-sm">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate("/blog-posts")}
@@ -57,14 +57,14 @@ export default function ViewBlogPage() {
                 </div>
                 <button
                     onClick={() => navigate(`/blogs/edit/${id}`)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg shadow-indigo-100"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg shadow-indigo-100 w-fit"
                 >
                     <Edit3 className="w-4 h-4" />
                     Edit Content
                 </button>
             </header>
 
-            <main className="max-w-4xl mx-auto mt-12 px-6 w-full">
+            <div className="max-w-4xl mx-auto mt-12 px-4 sm:px-6 w-full">
                 {blog.image && (
                     <div className="w-full aspect-video rounded-3xl overflow-hidden shadow-2xl mb-12">
                         <img 
@@ -135,7 +135,7 @@ export default function ViewBlogPage() {
                         "{blog.excerpt}"
                     </div>
                 )}
-            </main>
+            </div>
         </div>
     );
 }

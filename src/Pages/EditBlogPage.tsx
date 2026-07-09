@@ -120,7 +120,7 @@ export default function EditBlogPage() {
 
     return (
         <div className="flex flex-col flex-1 min-h-screen font-sans bg-slate-50/50">
-            <header className="px-8 py-5 border-b bg-white flex items-center justify-between sticky top-0 z-30 shadow-sm backdrop-blur-md bg-white/90">
+            <header className="px-4 sm:px-8 py-4 sm:py-5 border-b bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-30 shadow-sm backdrop-blur-md bg-white/90">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate("/blog-posts")}
@@ -143,7 +143,7 @@ export default function EditBlogPage() {
                     <button
                         onClick={submit}
                         disabled={saving}
-                        className="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-8 rounded-xl transition-all shadow-lg shadow-primary/20 active:scale-95 flex items-center text-sm disabled:opacity-50"
+                        className="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-8 rounded-xl transition-all shadow-lg shadow-primary/20 active:scale-95 flex items-center text-sm disabled:opacity-50 w-fit"
                     >
                         {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                         Save Changes
@@ -151,7 +151,7 @@ export default function EditBlogPage() {
                 </div>
             </header>
 
-            <main className="flex-1 p-8">
+            <div className="flex-1 p-4 sm:p-8">
                 <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     <div className="lg:col-span-2 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden group transition-all hover:border-slate-300 hover:shadow-md">
@@ -274,7 +274,7 @@ export default function EditBlogPage() {
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

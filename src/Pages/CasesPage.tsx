@@ -398,7 +398,7 @@ export default function CasesPage() {
                                     <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">{selectedCase.title}</h2>
                                     <p className="text-xs text-slate-400 font-medium">Case ID: <span className="font-mono">{selectedCase._id}</span></p>
                                 </div>
-                                <div className="flex flex-row items-center gap-6 shrink-0 bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4">
+                                <div className="flex flex-row items-center justify-between sm:justify-start gap-4 sm:gap-6 shrink-0 bg-slate-50 border border-slate-100 rounded-2xl p-4 sm:px-6 sm:py-4 w-full sm:w-auto">
                                     <div>
                                         <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Client Name</p>
                                         <p className="text-sm font-black text-slate-900">{selectedCase.client?.fullName}</p>
@@ -414,12 +414,12 @@ export default function CasesPage() {
                             {/* Case Description */}
                             <div className="space-y-2">
                                 <h4 className="font-extrabold text-slate-900 text-sm">Engagement Details</h4>
-                                <p className="text-sm text-slate-600 leading-relaxed bg-slate-50/50 border border-slate-100 rounded-2xl p-4">{selectedCase.description}</p>
+                                <p className="text-sm text-slate-650 leading-relaxed bg-slate-50/50 border border-slate-100 rounded-2xl p-4">{selectedCase.description}</p>
                             </div>
 
                             {/* Booking Date & Time Details (if present) */}
                             {selectedCase.bookingDate && (
-                                <div className="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-xs font-semibold text-slate-600">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-xs font-semibold text-slate-600">
                                     <div>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Proposed Consultation Date</p>
                                         <p className="text-sm font-black text-slate-900 mt-1">{new Date(selectedCase.bookingDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>

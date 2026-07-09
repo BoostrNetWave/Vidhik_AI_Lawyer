@@ -299,7 +299,7 @@ export default function PaymentPage() {
 
   return (
     <div className="flex flex-col flex-1 min-h-screen font-sans">
-      <header className="px-8 py-6 border-b bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/90">
+      <header className="px-4 sm:px-8 py-4 sm:py-6 border-b bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/90">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-display">Payments & Earnings</h1>
           <p className="text-slate-500 text-sm mt-1 font-medium">Track your income and transaction history</p>
@@ -307,7 +307,7 @@ export default function PaymentPage() {
         <div className="relative">
           <button 
             onClick={() => document.getElementById('export-dropdown')?.classList.toggle('hidden')}
-            className="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/20 active:scale-95 flex items-center text-sm"
+            className="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/20 active:scale-95 flex items-center text-sm w-fit"
           >
             <Download className="download-icon w-4 h-4 mr-2" />
             Export Report
@@ -332,7 +332,7 @@ export default function PaymentPage() {
         </div>
       </header>
 
-      <main className="flex-1 p-8 space-y-8 animate-in fade-in duration-500">
+      <div className="flex-1 p-4 sm:p-8 space-y-8 animate-in fade-in duration-500">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 bg-slate-900 text-white rounded-2xl shadow-2xl relative overflow-hidden p-8 border-none transform transition-transform hover:scale-[1.01] duration-300">
             <div className="absolute top-0 right-0 p-8 opacity-[0.03] transform translate-x-1/4 -translate-y-1/4">
@@ -513,7 +513,7 @@ export default function PaymentPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

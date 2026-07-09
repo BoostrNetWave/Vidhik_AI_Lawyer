@@ -177,17 +177,17 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-50/50">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-xl shadow-sm">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/90 to-primary flex items-center justify-center shadow-lg shadow-primary/20">
                 <div className="h-4 w-4 rounded-full bg-white"></div>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900 font-display">Dashboard</h1>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 font-display">Dashboard</h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6">
             <div className="relative hidden lg:block">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
@@ -197,20 +197,20 @@ export default function Dashboard() {
               />
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 ring-2 ring-white"></span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                <Bell className="h-4.5 w-4.5" />
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => navigate('/settings')}>
-                <Settings className="h-5 w-5" />
+              <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="h-9 w-9">
+                <Settings className="h-4.5 w-4.5" />
               </Button>
-              <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+              <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-gray-200">
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-semibold text-gray-900">{user?.fullName || profile?.fullName || "Legal Admin"}</p>
                   <p className="text-xs text-gray-500">{user?.email || profile?.title || "Superuser"}</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/90 to-primary p-0.5 shadow-md shadow-primary/10">
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-primary/90 to-primary p-0.5 shadow-md shadow-primary/10">
                   <div className="h-full w-full rounded-full bg-white p-0.5">
                     <div className="h-full w-full rounded-full bg-gradient-to-br from-primary/90 to-primary flex items-center justify-center text-white text-xs font-bold">
                       {profile?.avatar ? (
@@ -225,10 +225,10 @@ export default function Dashboard() {
                   variant="ghost" 
                   size="icon" 
                   onClick={handleLogout}
-                  className="text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  className="text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors h-9 w-9"
                   title="Logout"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4.5 w-4.5" />
                 </Button>
               </div>
             </div>
@@ -236,7 +236,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 lg:px-8 space-y-8">
+      <div className="container mx-auto py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="group cursor-pointer border-0 bg-white/50 backdrop-blur-sm shadow-sm hover:shadow-lg hover:bg-white transition-all duration-300" onClick={() => navigate('/bookings')}>
@@ -505,7 +505,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-      </main>
+      </div>
     </div>
   );
 }
