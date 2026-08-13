@@ -1,0 +1,203 @@
+name: Deploy Vidhik AI Lawyer Panel
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build and Deploy Lawyer Panel
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # =========================================================
+      # FRONTEND BUILD
+      # =========================================================
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Verify frontend build
+        run: |
+          if [ ! -f "dist/index.html" ]; then
+            echo "ERROR: dist/index.html not found"
+            exit 1
+          fi
+
+          echo "Frontend build successful"
+          ls -la dist/
+
+      # =========================================================
+      # BACKEND VALIDATION
+      # =========================================================
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      # =========================================================
+      # SSH/Rsync
+      # =========================================================
+
+      - name: Install deployment tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass rsync
+
+      # =========================================================
+      # BACKUP
+      # =========================================================
+
+      - name: Backup current frontend
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            ${SERVER_USER}@${SERVER_HOST} \
+            "mkdir -p /var/www/backups && \
+             rm -rf /var/www/backups/Vidhik_AI_Lawyer-dist-previous && \
+             if [ -d /var/www/html/Vidhik_AI_Lawyer/dist ]; then \
+               cp -a /var/www/html/Vidhik_AI_Lawyer/dist \
+               /var/www/backups/Vidhik_AI_Lawyer-dist-previous; \
+             fi"
+
+      # =========================================================
+      # DEPLOY SOURCE
+      # =========================================================
+
+      - name: Deploy application
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          sshpass -e rsync -avz --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.env' \
+            --exclude='backend/.env' \
+            --exclude='node_modules/' \
+            --exclude='backend/node_modules/' \
+            --exclude='backend/uploads/' \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ \
+            ${SERVER_USER}@${SERVER_HOST}:/var/www/html/Vidhik_AI_Lawyer/
+
+      # =========================================================
+      # SERVER DEPENDENCIES
+      # =========================================================
+
+      - name: Install production dependencies on server
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            ${SERVER_USER}@${SERVER_HOST} \
+            "cd /var/www/html/Vidhik_AI_Lawyer && \
+             npm ci && \
+             cd backend && \
+             npm ci"
+
+      # =========================================================
+      # PM2
+      # =========================================================
+
+      - name: Restart Lawyer backend
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            ${SERVER_USER}@${SERVER_HOST} \
+            "cd /var/www/html/Vidhik_AI_Lawyer/backend && \
+             if pm2 describe vidhik-lawyer-backend > /dev/null 2>&1; then \
+               pm2 restart vidhik-lawyer-backend --update-env; \
+             else \
+               pm2 start 'npm start' \
+                 --name vidhik-lawyer-backend \
+                 --cwd /var/www/html/Vidhik_AI_Lawyer/backend; \
+             fi && \
+             pm2 save"
+
+      # =========================================================
+      # HEALTH CHECKS
+      # =========================================================
+
+      - name: Check PM2
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            ${SERVER_USER}@${SERVER_HOST} \
+            "pm2 status"
+
+      - name: Check backend port
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            ${SERVER_USER}@${SERVER_HOST} \
+            "sleep 5 && ss -lntp | grep ':5025'"
+
+      - name: Test Nginx
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            ${SERVER_USER}@${SERVER_HOST} \
+            "nginx -t"
+
+      - name: Reload Nginx
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            ${SERVER_USER}@${SERVER_HOST} \
+            "systemctl reload nginx"
+
+      - name: Deployment completed
+        run: |
+          echo "============================================="
+          echo "Vidhik AI Lawyer Panel Deployment Successful"
+          echo "============================================="
+          echo "Server: ${{ secrets.SERVER_HOST }}"
+          echo "Frontend: /lawyer/"
+          echo "Backend Port: 5025"
+          echo "PM2: vidhik-lawyer-backend"
+          echo "============================================="
