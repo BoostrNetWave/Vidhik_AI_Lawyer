@@ -136,7 +136,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
             <button
               onClick={() => setActiveTab("slots")}
               className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-all text-sm font-bold ${activeTab === "slots"
-                  ? "bg-white text-indigo-600 shadow-md ring-1 ring-black/5"
+                  ? "bg-white text-primary shadow-md ring-1 ring-black/5"
                   : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                 }`}
             >
@@ -146,7 +146,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
             <button
               onClick={() => setActiveTab("blackout")}
               className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-all text-sm font-bold ${activeTab === "blackout"
-                  ? "bg-white text-indigo-600 shadow-md ring-1 ring-black/5"
+                  ? "bg-white text-primary shadow-md ring-1 ring-black/5"
                   : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                 }`}
             >
@@ -157,7 +157,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
 
           {/* Alert Messages */}
           {message && (
-            <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${message.type === "success" ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100"
+            <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${message.type === "success" ? "bg-secondary text-primary border border-border" : "bg-secondary text-primary border border-border"
               } animate-in fade-in slide-in-from-top-2`}>
               {message.type === "success" ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
               <span className="font-semibold text-sm">{message.text}</span>
@@ -177,7 +177,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                       name="slotMode"
                       checked={isRecurring}
                       onChange={() => setIsRecurring(true)}
-                      className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                      className="w-4 h-4 text-primary focus:ring-ring"
                     />
                     <span className="font-bold text-slate-700 text-sm flex items-center gap-1">
                       <RefreshCcw size={14} /> Recurring Weekly
@@ -189,7 +189,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                       name="slotMode"
                       checked={!isRecurring}
                       onChange={() => setIsRecurring(false)}
-                      className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                      className="w-4 h-4 text-primary focus:ring-ring"
                     />
                     <span className="font-bold text-slate-700 text-sm flex items-center gap-1">
                       <Calendar size={14} /> Specific Date
@@ -205,7 +205,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                     <select
                       value={slot.dayOfWeek}
                       onChange={e => setSlot({ ...slot, dayOfWeek: Number(e.target.value) })}
-                      className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                      className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-border transition-all cursor-pointer"
                     >
                       {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
                     </select>
@@ -216,7 +216,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                         type="date"
                         value={specificDate}
                         onChange={e => setSpecificDate(e.target.value)}
-                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-border transition-all cursor-pointer"
                       />
                     </div>
                   )}
@@ -231,7 +231,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                         type="time"
                         value={slot.startTime}
                         onChange={e => setSlot({ ...slot, startTime: e.target.value })}
-                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-border transition-all"
                       />
                     </div>
                   </div>
@@ -243,7 +243,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                         type="time"
                         value={slot.endTime}
                         onChange={e => setSlot({ ...slot, endTime: e.target.value })}
-                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-border transition-all"
                       />
                     </div>
                   </div>
@@ -258,7 +258,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                       step={5}
                       value={slot.duration}
                       onChange={e => setSlot({ ...slot, duration: Number(e.target.value) })}
-                      className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                      className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-border transition-all"
                     />
                   </div>
                   <div className="space-y-2">
@@ -269,7 +269,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                       step={5}
                       value={slot.breakMinutes}
                       onChange={e => setSlot({ ...slot, breakMinutes: Number(e.target.value) })}
-                      className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                      className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-border transition-all"
                     />
                   </div>
                 </div>
@@ -285,7 +285,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                         type="date"
                         value={blackout.startDate}
                         onChange={e => setBlackout({ ...blackout, startDate: e.target.value })}
-                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-border transition-all"
                       />
                     </div>
                   </div>
@@ -297,7 +297,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                         type="date"
                         value={blackout.endDate}
                         onChange={e => setBlackout({ ...blackout, endDate: e.target.value })}
-                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                        className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-border transition-all"
                       />
                     </div>
                   </div>
@@ -310,7 +310,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
                     placeholder="e.g. Conference, Vacation, Maintenance"
                     value={blackout.reason}
                     onChange={e => setBlackout({ ...blackout, reason: e.target.value })}
-                    className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-border transition-all"
                   />
                 </div>
               </div>
@@ -327,7 +327,7 @@ export default function ManageModal({ visible, onClose, userId, refreshData }: M
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 bg-primary hover:bg-primary text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-primary/10 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {saving ? (
                   <>

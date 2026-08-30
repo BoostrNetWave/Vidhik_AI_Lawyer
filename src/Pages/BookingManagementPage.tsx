@@ -171,9 +171,9 @@ export default function BookingManagementPage() {
   // Derived Stats
   const stats = [
     { label: "Total Bookings", value: appointments.length.toString(), icon: <ClipboardList className="text-primary" />, change: "+12%" },
-    { label: "Pending", value: appointments.filter(a => a.status !== "completed" && a.status !== "cancelled").length.toString(), icon: <Clock className="text-yellow-500" />, change: "-2%" },
-    { label: "Completed", value: appointments.filter(a => a.status === "completed").length.toString(), icon: <CheckCircle2 className="text-green-500" />, change: "+8%" },
-    { label: "Total Revenue", value: `₹${totalRevenue.toLocaleString()}`, icon: <TrendingUp className="text-purple-500" />, change: "+15%" },
+    { label: "Pending", value: appointments.filter(a => a.status !== "completed" && a.status !== "cancelled").length.toString(), icon: <Clock className="text-primary" />, change: "-2%" },
+    { label: "Completed", value: appointments.filter(a => a.status === "completed").length.toString(), icon: <CheckCircle2 className="text-primary" />, change: "+8%" },
+    { label: "Total Revenue", value: `₹${totalRevenue.toLocaleString()}`, icon: <TrendingUp className="text-primary" />, change: "+15%" },
   ];
 
   const deleteSlot = (idx: number) => {
@@ -247,7 +247,7 @@ export default function BookingManagementPage() {
                 <div className="p-2.5 bg-slate-50 rounded-xl">
                   {stat.icon}
                 </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${stat.change.startsWith("+") ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"}`}>
+                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${stat.change.startsWith("+") ? "bg-secondary text-primary" : "bg-secondary text-primary"}`}>
                   {stat.change}
                 </span>
               </div>
@@ -287,7 +287,7 @@ export default function BookingManagementPage() {
                   <h2 className="text-xl font-bold text-slate-900">Availability & Blackout Dates</h2>
                   <button
                     onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/90 bg-primary/10 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-all"
+                    className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/90 bg-primary/10 hover:bg-muted px-4 py-2 rounded-xl transition-all"
                   >
                     <Settings size={16} />
                     Manage Availability
@@ -299,7 +299,7 @@ export default function BookingManagementPage() {
                   {/* Slots Card */}
                   <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                     <div className="px-5 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
-                      <Clock size={18} className="text-indigo-500" />
+                      <Clock size={18} className="text-primary" />
                       <h3 className="font-bold text-slate-700">Active Consultation Slots</h3>
                     </div>
                     <div className="p-5 space-y-4">
@@ -312,7 +312,7 @@ export default function BookingManagementPage() {
                                   <span className="font-bold text-primary text-xs uppercase">
                                     {new Date(s.date).toLocaleDateString('en-US', { day: 'numeric' })}
                                   </span>
-                                  <span className="text-[9px] text-indigo-400 font-bold uppercase leading-none">
+                                  <span className="text-[9px] text-muted-foreground font-bold uppercase leading-none">
                                     {new Date(s.date).toLocaleDateString('en-US', { month: 'short' })}
                                   </span>
                                 </div>
@@ -334,7 +334,7 @@ export default function BookingManagementPage() {
                             </div>
                             <button
                               onClick={() => deleteSlot(idx)}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary text-slate-400 hover:text-primary transition-colors"
                               title="Delete Slot"
                             >
                               <MoreVertical size={16} className="rotate-90" />
@@ -353,26 +353,26 @@ export default function BookingManagementPage() {
                   {/* Blackouts Card */}
                   <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                     <div className="px-5 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
-                      <CalendarCheck2 size={18} className="text-red-500" />
+                      <CalendarCheck2 size={18} className="text-primary" />
                       <h3 className="font-bold text-slate-700">Upcoming Blackout Dates</h3>
                     </div>
                     <div className="p-5 space-y-4">
                       {blackouts.length > 0 ? (
                         blackouts.map((b, idx) => (
-                          <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-red-50/30 border border-red-100">
+                          <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-secondary border border-border">
                             <div>
                               <p className="font-semibold text-slate-900">
                                 {new Date(b.start).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                                 <span className="mx-2 text-slate-400">-</span>
                                 {new Date(b.end).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                               </p>
-                              <p className="text-xs text-red-600 font-medium">{b.reason || "Scheduled maintenance"}</p>
+                              <p className="text-xs text-primary font-medium">{b.reason || "Scheduled maintenance"}</p>
                             </div>
                             <button
                               onClick={() => deleteBlackout(idx)}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-100/50 text-red-400 hover:text-red-600 transition-colors"
+                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-primary transition-colors"
                             >
-                              <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                              <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
                             </button>
                           </div>
                         ))
@@ -423,7 +423,7 @@ export default function BookingManagementPage() {
 
                   <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><ClipboardList size={20} /></div>
+                      <div className="p-2 bg-secondary text-primary rounded-lg"><ClipboardList size={20} /></div>
                       <h3 className="font-bold text-slate-900">Booking Rules</h3>
                     </div>
                     <div className="space-y-3">
@@ -438,14 +438,14 @@ export default function BookingManagementPage() {
 
                   <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-50 text-green-600 rounded-lg"><CheckCircle2 size={20} /></div>
+                      <div className="p-2 bg-secondary text-primary rounded-lg"><CheckCircle2 size={20} /></div>
                       <h3 className="font-bold text-slate-900">Approvals</h3>
                     </div>
                     <div className="space-y-3">
 
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-500">Auto-Confirm</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${settingsData?.approval?.autoConfirm ? "bg-indigo-100 text-primary/90" : "bg-slate-100 text-slate-500"}`}>
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${settingsData?.approval?.autoConfirm ? "bg-muted text-primary/90" : "bg-slate-100 text-slate-500"}`}>
                           {settingsData?.approval?.autoConfirm ? "YES" : "NO"}
                         </span>
                       </div>
@@ -489,7 +489,7 @@ export default function BookingManagementPage() {
                   {loadingHistory ? (
                     <tr>
                       <td colSpan={5} className="py-20 text-center">
-                        <div className="inline-block w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="inline-block w-8 h-8 border-4 border-border border-t-transparent rounded-full animate-spin"></div>
                         <p className="mt-4 text-slate-500 font-medium">Loading records...</p>
                       </td>
                     </tr>
@@ -523,20 +523,20 @@ export default function BookingManagementPage() {
                         <td className="py-4 px-6 text-right">
                           <span
                             className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${appt.status === "completed"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-muted text-primary"
                               : appt.status === "cancelled"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-yellow-100 text-yellow-700"
+                                ? "bg-muted text-primary"
+                                : "bg-muted text-primary"
                               }`}
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${appt.status === "completed" ? "bg-green-500" : appt.status === "cancelled" ? "bg-red-500" : "bg-yellow-500"
+                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${appt.status === "completed" ? "bg-primary" : appt.status === "cancelled" ? "bg-primary" : "bg-primary"
                               }`}></span>
                             {(appt.status || "pending").toUpperCase()}
                           </span>
                           {appt.status !== "completed" && appt.status !== "cancelled" && (
                             <button
                               onClick={(e) => handleApprovePayment(appt._id, e)}
-                              className="ml-3 text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20 hover:bg-indigo-100 transition-colors uppercase tracking-wide"
+                              className="ml-3 text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20 hover:bg-muted transition-colors uppercase tracking-wide"
                               title="Mark as Paid / Complete"
                             >
                               Mark Paid

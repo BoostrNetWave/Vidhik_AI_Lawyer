@@ -200,7 +200,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2 sm:gap-3">
               <Button variant="ghost" size="icon" className="relative h-9 w-9">
                 <Bell className="h-4.5 w-4.5" />
-                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary ring-2 ring-white"></span>
               </Button>
               <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="h-9 w-9">
                 <Settings className="h-4.5 w-4.5" />
@@ -225,7 +225,7 @@ export default function Dashboard() {
                   variant="ghost" 
                   size="icon" 
                   onClick={handleLogout}
-                  className="text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors h-9 w-9"
+                  className="text-slate-600 hover:text-primary hover:bg-muted transition-colors h-9 w-9"
                   title="Logout"
                 >
                   <LogOut className="h-4.5 w-4.5" />
@@ -305,9 +305,9 @@ export default function Dashboard() {
                   <p className="text-sm font-medium text-gray-500">Total Revenue</p>
                   <p className="text-3xl font-bold text-gray-900">₹{stats.totalEarnings.toLocaleString()}</p>
                   <div className="flex items-center gap-1">
-                    {revenueTrendDirection === 'up' && <ArrowUpRight className="h-4 w-4 text-emerald-600" />}
-                    {revenueTrendDirection === 'down' && <span className="text-rose-600">↓</span>}
-                    <p className={`text-sm font-medium ${revenueTrendDirection === 'up' ? 'text-emerald-600' : revenueTrendDirection === 'down' ? 'text-rose-600' : 'text-gray-500'}`}>
+                    {revenueTrendDirection === 'up' && <ArrowUpRight className="h-4 w-4 text-primary" />}
+                    {revenueTrendDirection === 'down' && <span className="text-muted-foreground">↓</span>}
+                    <p className={`text-sm font-medium ${revenueTrendDirection === 'up' ? 'text-primary' : revenueTrendDirection === 'down' ? 'text-muted-foreground' : 'text-gray-500'}`}>
                       {revenueTrendText}
                     </p>
                   </div>
@@ -482,16 +482,16 @@ export default function Dashboard() {
                             variant={tx.status === "completed" ? "default" : tx.status === "pending" ? "secondary" : "outline"}
                             className={`${
                               tx.status === "completed"
-                                ? "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200"
+                                ? "bg-secondary text-primary border-border hover:bg-muted"
                                 : tx.status === "pending"
-                                  ? "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200"
+                                  ? "bg-muted text-muted-foreground border-border hover:bg-secondary"
                                   : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                             }`}
                           >
                             <span className="flex items-center gap-1">
                               <span className={`w-1.5 h-1.5 rounded-full ${
-                                tx.status === "completed" ? "bg-emerald-600" : 
-                                tx.status === "pending" ? "bg-amber-600" : "bg-gray-500"
+                                tx.status === "completed" ? "bg-primary" : 
+                                tx.status === "pending" ? "bg-muted-foreground" : "bg-gray-500"
                               }`}></span>
                               {tx.status}
                             </span>

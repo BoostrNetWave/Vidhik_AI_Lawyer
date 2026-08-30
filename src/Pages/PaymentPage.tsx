@@ -341,7 +341,7 @@ export default function PaymentPage() {
             <div className="relative z-10">
               <p className="text-primary font-bold text-xs uppercase tracking-widest mb-4">Total Revenue</p>
               <div className="text-6xl font-extrabold tracking-tighter mb-4 font-display">{formattedTotal}</div>
-              <div className="flex items-center gap-2 text-emerald-400 text-sm font-bold bg-emerald-400/10 w-fit px-3 py-1 rounded-full border border-emerald-400/20">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm font-bold bg-muted/10 w-fit px-3 py-1 rounded-full border border-border/20">
                 <ArrowUpRight size={16} />
                 <span>+18.2% from last month</span>
               </div>
@@ -352,7 +352,7 @@ export default function PaymentPage() {
             <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-4">Available Balance</p>
             <div className="text-3xl font-extrabold tracking-tight text-slate-900">{formattedTotal}</div>
             <div className="mt-4 flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${totalEarnings >= 3000 ? "bg-emerald-500" : "bg-amber-500"} animate-pulse`}></div>
+              <div className={`w-2 h-2 rounded-full ${totalEarnings >= 3000 ? "bg-primary" : "bg-primary"} animate-pulse`}></div>
               <p className="text-xs text-slate-500 font-medium">
                 {totalEarnings >= 3000 ? "Ready for payout" : `Minimum threshold ₹3,000 (${(3000 - totalEarnings).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })} more needed)`}
               </p>
@@ -465,10 +465,10 @@ export default function PaymentPage() {
                       </td>
                       <td className="pr-6">
                         <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-widest ${r.status === "succeeded" || r.status === "paid"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-sm shadow-emerald-50/50"
+                          ? "bg-secondary text-primary border border-border shadow-sm shadow-primary/10"
                           : r.status === "failed"
-                            ? "bg-rose-50 text-rose-700 border border-rose-100 shadow-sm shadow-rose-50/50"
-                            : "bg-amber-50 text-amber-700 border border-amber-100 shadow-sm shadow-amber-50/50"
+                            ? "bg-secondary text-primary border border-border shadow-sm shadow-primary/10"
+                            : "bg-secondary text-primary border border-border shadow-sm shadow-primary/10"
                           }`}>
                           <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-current"></span>
                           {r.status}

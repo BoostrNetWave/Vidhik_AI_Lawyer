@@ -81,7 +81,7 @@ export default function BlogPostsPage() {
         </div>
         <button
           onClick={() => navigate("/blogs/create")}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-indigo-200 active:scale-95 flex items-center text-sm w-fit"
+          className="bg-primary hover:bg-primary text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/10 active:scale-95 flex items-center text-sm w-fit"
         >
           <Plus size={18} className="mr-2" />
           New Publication
@@ -93,10 +93,10 @@ export default function BlogPostsPage() {
           <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/30">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="relative group w-full sm:w-auto">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                 <input
                   placeholder="Search by title..."
-                  className="pl-10 py-2.5 border-2 border-slate-100 focus:border-indigo-500 focus:outline-none rounded-xl text-sm font-semibold w-full sm:w-80 transition-all font-sans"
+                  className="pl-10 py-2.5 border-2 border-slate-100 focus:border-border focus:outline-none rounded-xl text-sm font-semibold w-full sm:w-80 transition-all font-sans"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
@@ -120,7 +120,7 @@ export default function BlogPostsPage() {
                   <tr>
                     <td colSpan={5} className="h-40 text-center">
                       <div className="flex flex-col items-center justify-center space-y-3">
-                        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
                         <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">Loading Library...</span>
                       </div>
                     </td>
@@ -136,24 +136,24 @@ export default function BlogPostsPage() {
                     <tr key={post._id} className="hover:bg-slate-50/40 transition-colors group">
                       <td className="pl-6 py-5">
                         <div className="flex flex-col">
-                          <span className="font-bold text-slate-900 font-display tracking-tight text-base leading-none mb-1 group-hover:text-indigo-600 transition-colors cursor-pointer">{post.title}</span>
+                          <span className="font-bold text-slate-900 font-display tracking-tight text-base leading-none mb-1 group-hover:text-primary transition-colors cursor-pointer">{post.title}</span>
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{post.status}</span>
                         </div>
                       </td>
                       <td>
                         <div className="flex items-center gap-3">
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest ${post.status === "Published"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-sm shadow-emerald-50/50"
+                            ? "bg-secondary text-primary border border-border shadow-sm shadow-primary/10"
                             : "bg-slate-100 text-slate-600 border border-slate-200"
                             }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${post.status === "Published" ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}></span>
+                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${post.status === "Published" ? "bg-primary animate-pulse" : "bg-slate-400"}`}></span>
                             {post.status}
                           </span>
                           <button
                             onClick={() => togglePublish(post._id)}
                             className={`p-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-tight transition-all ${post.status === "Published"
                               ? "bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100"
-                              : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100 shadow-sm"
+                              : "bg-secondary text-primary border-border hover:bg-muted shadow-sm"
                               }`}
                           >
                             {post.status === "Published" ? "Make Draft" : "Publish Now"}
@@ -162,7 +162,7 @@ export default function BlogPostsPage() {
                       </td>
                       <td>
                         <div className="flex flex-col">
-                          <span className={`text-xs font-bold ${post.premium ? "text-indigo-600" : "text-slate-400"}`}>
+                          <span className={`text-xs font-bold ${post.premium ? "text-primary" : "text-slate-400"}`}>
                             {post.premium ? "Premium Content" : "Free Access"}
                           </span>
                           {post.premium && <span className="text-[10px] font-bold text-slate-900">₹{post.price || 0}</span>}
@@ -176,21 +176,21 @@ export default function BlogPostsPage() {
                           <button
                             title="View Publication"
                             onClick={() => navigate(`/blogs/view/${post._id}`)}
-                            className="p-2 hover:text-indigo-600 text-slate-400 transition-colors"
+                            className="p-2 hover:text-primary text-slate-400 transition-colors"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
                             title="Edit Publication"
                             onClick={() => navigate(`/blogs/edit/${post._id}`)}
-                            className="p-2 hover:text-emerald-600 text-slate-400 transition-colors"
+                            className="p-2 hover:text-primary text-slate-400 transition-colors"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
                           <button
                             title="Delete Publication"
                             onClick={() => deletePost(post._id)}
-                            className="p-2 hover:text-rose-600 text-slate-400 transition-colors"
+                            className="p-2 hover:text-primary text-slate-400 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

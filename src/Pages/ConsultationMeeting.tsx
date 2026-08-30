@@ -539,7 +539,7 @@ export default function ConsultationMeeting() {
                     {/* Consultation Status Bar */}
                     <div className="bg-[#1E293B]/80 backdrop-blur-sm px-6 py-4 flex items-center justify-between border-b border-slate-800 z-10">
                         <div className="flex items-center gap-3">
-                            <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-amber-500 animate-ping'}`}></div>
+                            <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-primary animate-pulse' : 'bg-primary animate-ping'}`}></div>
                             <span className="text-white font-extrabold text-sm tracking-tight">{caseData.title}</span>
                             <span className="text-[10px] text-slate-400 bg-[#0F172A] border border-slate-850 px-2 py-0.5 rounded-md font-semibold">
                                 {isConnected ? 'Connected' : isConnecting ? 'Connecting...' : 'Waiting'}
@@ -581,13 +581,13 @@ export default function ConsultationMeeting() {
                                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-3 bg-black/60 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/10">
                                         <button
                                             onClick={handleToggleAudio}
-                                            className={`p-1.5 rounded-full transition-colors ${isAudioMuted ? 'text-red-500 hover:bg-red-500/20' : 'text-white hover:bg-white/20'}`}
+                                            className={`p-1.5 rounded-full transition-colors ${isAudioMuted ? 'text-primary hover:bg-primary/20' : 'text-white hover:bg-white/20'}`}
                                         >
                                             {isAudioMuted ? <MicOff size={16} /> : <Mic size={16} />}
                                         </button>
                                         <button
                                             onClick={handleToggleVideo}
-                                            className={`p-1.5 rounded-full transition-colors ${isVideoMuted ? 'text-red-500 hover:bg-red-500/20' : 'text-white hover:bg-white/20'}`}
+                                            className={`p-1.5 rounded-full transition-colors ${isVideoMuted ? 'text-primary hover:bg-primary/20' : 'text-white hover:bg-white/20'}`}
                                         >
                                             {isVideoMuted ? <VideoOff size={16} /> : <Video size={16} />}
                                         </button>
@@ -625,7 +625,7 @@ export default function ConsultationMeeting() {
                                                     {caseData.client?.fullName || 'Client'}
                                                 </h4>
                                                 <p className="text-xs text-slate-400 font-semibold flex items-center gap-1.5 justify-center">
-                                                    <VideoOff className="w-3.5 h-3.5 text-red-500" /> Camera is turned off / busy
+                                                    <VideoOff className="w-3.5 h-3.5 text-primary" /> Camera is turned off / busy
                                                 </p>
                                             </div>
                                         </div>
@@ -635,8 +635,8 @@ export default function ConsultationMeeting() {
                                 /* Waiting Overlay */
                                 <div className="flex flex-col items-center justify-center text-center p-8 space-y-4 animate-pulse">
                                     <div className="relative">
-                                        <div className="absolute inset-0 bg-violet-500/20 rounded-full blur-xl animate-ping"></div>
-                                        <div className="relative h-20 w-20 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-violet-400">
+                                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-ping"></div>
+                                        <div className="relative h-20 w-20 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-muted-foreground">
                                             <Video className="w-10 h-10 animate-bounce" />
                                         </div>
                                     </div>
@@ -677,12 +677,12 @@ export default function ConsultationMeeting() {
                                     </div>
                                     <div className="flex gap-1.5 justify-center">
                                         {isAudioMuted && (
-                                            <span className="p-1 bg-red-500/80 rounded-lg text-white">
+                                            <span className="p-1 bg-primary/80 rounded-lg text-white">
                                                 <MicOff className="w-3.5 h-3.5" />
                                             </span>
                                         )}
                                         {isVideoMuted && (
-                                            <span className="p-1 bg-red-500/80 rounded-lg text-white">
+                                            <span className="p-1 bg-primary/80 rounded-lg text-white">
                                                 <VideoOff className="w-3.5 h-3.5" />
                                             </span>
                                         )}
@@ -699,7 +699,7 @@ export default function ConsultationMeeting() {
                                 onClick={handleToggleAudio}
                                 className={`h-12 w-12 rounded-2xl flex items-center justify-center border transition-all ${
                                     isAudioMuted 
-                                    ? 'bg-red-500/10 border-red-500 text-red-500' 
+                                    ? 'bg-primary/10 border-border text-primary' 
                                     : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
                                 }`}
                                 title={isAudioMuted ? "Unmute Mic" : "Mute Mic"}
@@ -711,7 +711,7 @@ export default function ConsultationMeeting() {
                                 onClick={handleToggleVideo}
                                 className={`h-12 w-12 rounded-2xl flex items-center justify-center border transition-all ${
                                     isVideoMuted 
-                                    ? 'bg-red-500/10 border-red-500 text-red-500' 
+                                    ? 'bg-primary/10 border-border text-primary' 
                                     : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
                                 }`}
                                 title={isVideoMuted ? "Start Video" : "Stop Video"}
@@ -735,7 +735,7 @@ export default function ConsultationMeeting() {
 
                             <button
                                 onClick={handleDisconnect}
-                                className="h-12 px-6 rounded-2xl bg-red-650 bg-red-600 hover:bg-red-750 hover:bg-red-700 text-white font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-900/10 active:scale-[0.98]"
+                                className="h-12 px-6 rounded-2xl bg-muted bg-primary hover:bg-muted hover:bg-primary text-white font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/10 active:scale-[0.98]"
                                 title="End Call"
                             >
                                 <PhoneOff className="w-5 h-5" />
@@ -796,17 +796,17 @@ export default function ConsultationMeeting() {
                                     <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">Meeting Summary Document</h4>
                                     
                                     {caseData.meetingSummaryUrl ? (
-                                        <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl space-y-3 shadow-sm">
+                                        <div className="bg-secondary border border-border p-4 rounded-2xl space-y-3 shadow-sm">
                                             <div className="flex items-center gap-2">
-                                                <div className="p-1.5 bg-emerald-100 rounded-lg text-emerald-600">
+                                                <div className="p-1.5 bg-muted rounded-lg text-primary">
                                                     <FileText size={16} />
                                                 </div>
                                                 <div>
-                                                    <h5 className="font-bold text-emerald-950 text-xs truncate max-w-[180px]">{caseData.meetingSummaryName}</h5>
-                                                    <p className="text-[9px] text-emerald-700 font-semibold">Uploaded on {caseData.meetingSummaryUploadedAt ? new Date(caseData.meetingSummaryUploadedAt).toLocaleDateString() : 'N/A'}</p>
+                                                    <h5 className="font-bold text-primary text-xs truncate max-w-[180px]">{caseData.meetingSummaryName}</h5>
+                                                    <p className="text-[9px] text-primary font-semibold">Uploaded on {caseData.meetingSummaryUploadedAt ? new Date(caseData.meetingSummaryUploadedAt).toLocaleDateString() : 'N/A'}</p>
                                                 </div>
                                             </div>
-                                            <p className="text-[10px] text-emerald-800 leading-relaxed font-semibold">
+                                            <p className="text-[10px] text-primary leading-relaxed font-semibold">
                                                 You have successfully uploaded the meeting summary. It is now visible to the client and the superadmin.
                                             </p>
                                             
@@ -815,7 +815,7 @@ export default function ConsultationMeeting() {
                                                     href={`/lawyer${caseData.meetingSummaryUrl}`}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                                                    className="flex-1 py-2 bg-primary hover:bg-primary text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
                                                 >
                                                     <Download size={13} />
                                                     Download
@@ -850,7 +850,7 @@ export default function ConsultationMeeting() {
                                     ) : (
                                         <div className="bg-slate-50 border border-slate-150 p-6 rounded-2xl space-y-4">
                                             <div className="flex items-start gap-3">
-                                                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                                <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                                                 <div className="space-y-1">
                                                     <h5 className="font-bold text-slate-800 text-xs">Summary Upload Required</h5>
                                                     <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
@@ -888,7 +888,7 @@ export default function ConsultationMeeting() {
                                                 <button
                                                     onClick={handleUploadSummary}
                                                     disabled={isUploading}
-                                                    className="w-full py-2.5 bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-100 disabled:bg-indigo-300"
+                                                    className="w-full py-2.5 bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-primary/10 disabled:bg-muted"
                                                 >
                                                     {isUploading ? (
                                                         <div className="h-4.5 w-4.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -917,9 +917,9 @@ export default function ConsultationMeeting() {
                                 </div>
 
                                 {caseData.meetingSummaryUrl && (
-                                    <div className="p-3.5 bg-violet-50/50 border border-violet-100 rounded-xl flex items-center justify-between gap-4 shadow-sm">
+                                    <div className="p-3.5 bg-secondary border border-border rounded-xl flex items-center justify-between gap-4 shadow-sm">
                                         <div className="flex items-center gap-2.5 truncate">
-                                            <div className="p-2 bg-violet-100 rounded-lg text-primary shrink-0">
+                                            <div className="p-2 bg-muted rounded-lg text-primary shrink-0">
                                                 <FileText size={16} />
                                             </div>
                                             <div className="truncate">
@@ -931,7 +931,7 @@ export default function ConsultationMeeting() {
                                             href={`/lawyer${caseData.meetingSummaryUrl}`}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="h-8 w-8 rounded-lg bg-white border border-violet-100 flex items-center justify-center hover:bg-violet-50 text-primary shrink-0 transition-colors"
+                                            className="h-8 w-8 rounded-lg bg-white border border-border flex items-center justify-center hover:bg-secondary text-primary shrink-0 transition-colors"
                                         >
                                             <Download size={14} />
                                         </a>

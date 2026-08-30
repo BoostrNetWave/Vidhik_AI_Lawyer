@@ -45,13 +45,13 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 {toasts.map((toast) => (
                     <div
                         key={toast.id}
-                        className={`min-w-[300px] p-4 rounded-xl shadow-lg border backdrop-blur-md flex items-start gap-3 animate-in slide-in-from-right fade-in duration-300 ${toast.type === 'success' ? 'bg-emerald-50/90 border-emerald-200 text-emerald-800' :
-                                toast.type === 'error' ? 'bg-red-50/90 border-red-200 text-red-800' :
+                        className={`min-w-[300px] p-4 rounded-xl shadow-lg border backdrop-blur-md flex items-start gap-3 animate-in slide-in-from-right fade-in duration-300 ${toast.type === 'success' ? 'bg-secondary border-border text-primary' :
+                                toast.type === 'error' ? 'bg-secondary border-border text-primary' :
                                     'bg-primary/5 border-primary/10 text-primary'
                             }`}
                     >
-                        {toast.type === 'success' && <CheckCircle className="w-5 h-5 shrink-0 text-emerald-500 mt-0.5" />}
-                        {toast.type === 'error' && <AlertCircle className="w-5 h-5 shrink-0 text-red-500 mt-0.5" />}
+                        {toast.type === 'success' && <CheckCircle className="w-5 h-5 shrink-0 text-primary mt-0.5" />}
+                        {toast.type === 'error' && <AlertCircle className="w-5 h-5 shrink-0 text-primary mt-0.5" />}
                         {toast.type === 'info' && <Info className="w-5 h-5 shrink-0 text-primary mt-0.5" />}
 
                         <p className="text-sm font-medium flex-1">{toast.message}</p>

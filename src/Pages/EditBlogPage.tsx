@@ -173,7 +173,7 @@ export default function EditBlogPage() {
                                         </button>
                                         <button
                                             onClick={() => { set("image", null); setPreview(null); }}
-                                            className="bg-rose-500 hover:bg-rose-600 text-white font-bold p-2.5 rounded-xl shadow-2xl transition-all active:scale-95"
+                                            className="bg-primary hover:bg-primary text-white font-bold p-2.5 rounded-xl shadow-2xl transition-all active:scale-95"
                                         >
                                             <X size={18} />
                                         </button>

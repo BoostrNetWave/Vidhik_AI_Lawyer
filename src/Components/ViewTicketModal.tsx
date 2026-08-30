@@ -26,9 +26,9 @@ export default function ViewTicketModal({ visible, onClose, ticket }: ViewTicket
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
-            case "Urgent": return "bg-red-50 text-red-700 ring-red-100";
-            case "High": return "bg-orange-50 text-orange-700 ring-orange-100";
-            case "Medium": return "bg-blue-50 text-blue-700 ring-blue-100";
+            case "Urgent": return "bg-secondary text-primary ring-ring";
+            case "High": return "bg-secondary text-primary ring-ring";
+            case "Medium": return "bg-secondary text-primary ring-ring";
             default: return "bg-slate-50 text-slate-600 ring-slate-100";
         }
     };
@@ -42,8 +42,8 @@ export default function ViewTicketModal({ visible, onClose, ticket }: ViewTicket
                 {/* Header */}
                 <div className="px-10 py-8 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-                            <FileText className="text-indigo-600" size={24} />
+                        <div className="w-12 h-12 rounded-2xl bg-secondary border border-border flex items-center justify-center">
+                            <FileText className="text-primary" size={24} />
                         </div>
                         <div>
                             <h2 className="text-2xl font-extrabold text-slate-900">Ticket Details</h2>
@@ -87,8 +87,8 @@ export default function ViewTicketModal({ visible, onClose, ticket }: ViewTicket
                                 <User size={16} className="text-slate-400" />
                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Status</label>
                             </div>
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${ticket.status === "Closed" ? "bg-green-100 text-green-700" : "bg-indigo-100 text-indigo-700"}`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${ticket.status === "Closed" ? "bg-green-500" : "bg-indigo-500 animate-pulse"}`}></span>
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${ticket.status === "Closed" ? "bg-muted text-primary" : "bg-muted text-primary"}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${ticket.status === "Closed" ? "bg-primary" : "bg-primary animate-pulse"}`}></span>
                                 {ticket.status}
                             </span>
                         </div>
@@ -107,8 +107,8 @@ export default function ViewTicketModal({ visible, onClose, ticket }: ViewTicket
                     {/* Admin Reply */}
                     {ticket.adminReply && (
                         <div>
-                            <label className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3 block">Admin Resolution Response</label>
-                            <div className="bg-indigo-50/30 border border-indigo-100 rounded-2xl p-6">
+                            <label className="text-xs font-bold text-primary uppercase tracking-widest mb-3 block">Admin Resolution Response</label>
+                            <div className="bg-secondary border border-border rounded-2xl p-6">
                                 <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-semibold">
                                     {ticket.adminReply}
                                 </div>
@@ -126,11 +126,11 @@ export default function ViewTicketModal({ visible, onClose, ticket }: ViewTicket
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all group"
                             >
-                                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                                     <FileText size={20} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">View Attachment</span>
+                                    <span className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">View Attachment</span>
                                     <span className="text-xs text-slate-400">Click to open file</span>
                                 </div>
                             </a>

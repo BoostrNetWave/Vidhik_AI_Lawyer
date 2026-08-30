@@ -291,7 +291,7 @@ export default function CasesPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-3 mb-1">
-                        <div className="p-2 bg-primary rounded-xl text-white shadow-lg shadow-indigo-100">
+                        <div className="p-2 bg-primary rounded-xl text-white shadow-lg shadow-primary/10">
                             <Briefcase size={22} />
                         </div>
                         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Client Engagements</h1>
@@ -300,7 +300,7 @@ export default function CasesPage() {
                 </div>
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:bg-primary/95 transition-all active:scale-[0.98] gap-2"
+                    className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/10 hover:bg-primary/95 transition-all active:scale-[0.98] gap-2"
                 >
                     <PlusCircle size={20} />
                     New Engagement
@@ -319,7 +319,7 @@ export default function CasesPage() {
                         <input
                             type="text"
                             placeholder="Search engagements..."
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all shadow-inner"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-ring/20 focus:border-border outline-none transition-all shadow-inner"
                         />
                     </div>
 
@@ -350,11 +350,11 @@ export default function CasesPage() {
                                         <h4 className="font-extrabold text-slate-900 text-sm leading-snug truncate">{c.title}</h4>
                                         <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
                                             c.status === "active" 
-                                            ? "bg-emerald-50 text-emerald-700" 
+                                            ? "bg-secondary text-primary" 
                                             : c.status === "pending_lawyer"
-                                                ? "bg-amber-100 text-amber-700 font-extrabold hover:bg-amber-100"
+                                                ? "bg-muted text-primary font-extrabold hover:bg-muted"
                                                 : c.status === "pending_payment"
-                                                    ? "bg-orange-100 text-orange-700 font-extrabold hover:bg-orange-100"
+                                                    ? "bg-muted text-primary font-extrabold hover:bg-muted"
                                                     : "bg-slate-100 text-slate-650"
                                         }`}>
                                             {c.status === "pending_lawyer" ? "Booking Request" : c.status === "pending_payment" ? "Awaiting Payment" : c.status}
@@ -432,12 +432,12 @@ export default function CasesPage() {
                             )}
 
                             {selectedCase.status === 'pending_lawyer' && (
-                                <div className="bg-amber-50 border border-amber-200 p-6 rounded-3xl space-y-4">
+                                <div className="bg-secondary border border-border p-6 rounded-3xl space-y-4">
                                     <div className="flex items-start gap-4">
-                                        <AlertCircle className="h-6 w-6 text-amber-700 shrink-0 mt-0.5 animate-pulse" />
+                                        <AlertCircle className="h-6 w-6 text-primary shrink-0 mt-0.5 animate-pulse" />
                                         <div className="space-y-1">
-                                            <h4 className="font-extrabold text-amber-900 text-sm">New Consultation Booking Request</h4>
-                                            <p className="text-xs text-amber-700 leading-relaxed font-semibold">
+                                            <h4 className="font-extrabold text-primary text-sm">New Consultation Booking Request</h4>
+                                            <p className="text-xs text-primary leading-relaxed font-semibold">
                                                 This client has requested to schedule a consultation date and start a new case engagement with you. Verify your calendar and click <strong>Confirm Booking Request</strong> to notify the client to proceed with payment.
                                             </p>
                                         </div>
@@ -446,7 +446,7 @@ export default function CasesPage() {
                                         <button
                                             type="button"
                                             onClick={handleConfirmBooking}
-                                            className="px-5 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                                            className="px-5 py-2 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary transition-all shadow-md shadow-primary/10"
                                         >
                                             Confirm Booking Request
                                         </button>
@@ -455,11 +455,11 @@ export default function CasesPage() {
                             )}
 
                             {selectedCase.status === 'pending_payment' && (
-                                <div className="bg-orange-50 border border-orange-200 p-6 rounded-3xl flex items-start gap-4">
-                                    <Clock className="h-6 w-6 text-orange-650 shrink-0 mt-0.5" />
+                                <div className="bg-secondary border border-border p-6 rounded-3xl flex items-start gap-4">
+                                    <Clock className="h-6 w-6 text-primary shrink-0 mt-0.5" />
                                     <div className="space-y-1">
-                                        <h4 className="font-extrabold text-orange-900 text-sm">Awaiting Client Payment</h4>
-                                        <p className="text-xs text-orange-700 leading-relaxed font-semibold">
+                                        <h4 className="font-extrabold text-primary text-sm">Awaiting Client Payment</h4>
+                                        <p className="text-xs text-primary leading-relaxed font-semibold">
                                             You have confirmed this consultation booking request. The client has been notified to complete the checkout payment of <strong>₹{selectedCase.totalFee.toLocaleString()}</strong>. Once payment is confirmed, the case will transition to "Active" and you can configure the action plan.
                                         </p>
                                     </div>
@@ -471,9 +471,9 @@ export default function CasesPage() {
                                 <div className="space-y-6">
                                     {/* Meeting Summary Document Card */}
                                     {selectedCase.meetingSummaryUrl && (
-                                        <div className="bg-violet-50 border border-violet-100 rounded-3xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm animate-in fade-in duration-300">
+                                        <div className="bg-secondary border border-border rounded-3xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm animate-in fade-in duration-300">
                                             <div className="flex items-center gap-3">
-                                                <div className="p-3 bg-violet-100 rounded-xl text-violet-700">
+                                                <div className="p-3 bg-muted rounded-xl text-primary">
                                                     <FileText size={24} />
                                                 </div>
                                                 <div>
@@ -509,10 +509,10 @@ export default function CasesPage() {
                                         </div>
                                         <span className={`text-xs font-bold px-3 py-1 rounded-full ${
                                             selectedCase.planApproved 
-                                                ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
+                                                ? "bg-secondary text-primary border border-border" 
                                                 : selectedCase.planSubmitted 
-                                                    ? "bg-amber-50 text-amber-700 border border-amber-100" 
-                                                    : "bg-red-50 text-red-700 border border-red-100"
+                                                    ? "bg-secondary text-primary border border-border" 
+                                                    : "bg-secondary text-primary border border-border"
                                         }`}>
                                             {selectedCase.planApproved 
                                                 ? "Roadmap Approved by Client" 
@@ -525,29 +525,29 @@ export default function CasesPage() {
                                 {!selectedCase.planSubmitted ? (
                                     /* ROADMAP BUILDER & CONSULTATION GATE */
                                     !selectedCase.meetingJoinedByClient || !selectedCase.meetingJoinedByLawyer ? (
-                                        <div className="bg-amber-50/50 border border-amber-200 rounded-3xl p-8 space-y-6">
+                                        <div className="bg-secondary border border-border rounded-3xl p-8 space-y-6">
                                             <div className="flex items-start gap-4">
-                                                <AlertCircle className="h-6 w-6 text-amber-700 shrink-0 mt-0.5 animate-pulse" />
+                                                <AlertCircle className="h-6 w-6 text-primary shrink-0 mt-0.5 animate-pulse" />
                                                 <div className="space-y-2">
-                                                    <h4 className="font-extrabold text-amber-900 text-sm uppercase tracking-wider">Video Consultation Attendance Required</h4>
-                                                    <p className="text-xs text-amber-700 leading-relaxed font-semibold">
+                                                    <h4 className="font-extrabold text-primary text-sm uppercase tracking-wider">Video Consultation Attendance Required</h4>
+                                                    <p className="text-xs text-primary leading-relaxed font-semibold">
                                                         Before you can upload the meeting summary and proceed to design the case roadmap, both you and the client must join the live consultation video call.
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            <div className="bg-white border border-amber-100 rounded-2xl p-4 space-y-3 shadow-sm text-xs font-semibold text-slate-600">
+                                            <div className="bg-white border border-border rounded-2xl p-4 space-y-3 shadow-sm text-xs font-semibold text-slate-600">
                                                 <h5 className="font-bold text-slate-800 text-xs">Live Attendance Tracker</h5>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400">Your Status</span>
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByLawyer ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByLawyer ? 'bg-secondary text-primary' : 'bg-secondary text-primary'}`}>
                                                             {selectedCase.meetingJoinedByLawyer ? 'Joined' : 'Pending'}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400">Client Status</span>
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByClient ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByClient ? 'bg-secondary text-primary' : 'bg-secondary text-primary'}`}>
                                                             {selectedCase.meetingJoinedByClient ? 'Joined' : 'Pending'}
                                                         </span>
                                                     </div>
@@ -558,7 +558,7 @@ export default function CasesPage() {
                                                 <div className="flex justify-end">
                                                     <button
                                                         onClick={() => navigate(`/cases/${selectedCase._id}/meet`)}
-                                                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md shadow-indigo-100 transition-all"
+                                                        className="bg-primary hover:bg-primary text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md shadow-primary/10 transition-all"
                                                     >
                                                         <Video className="w-4 h-4" />
                                                         Join Video Consultation
@@ -567,7 +567,7 @@ export default function CasesPage() {
                                             )}
                                         </div>
                                     ) : !selectedCase.meetingSummaryUrl ? (
-                                        <div className="bg-violet-50/50 border border-violet-100 rounded-3xl p-8 space-y-6">
+                                        <div className="bg-secondary border border-border rounded-3xl p-8 space-y-6">
                                             <div className="flex items-start gap-4">
                                                 <FileText className="h-6 w-6 text-primary shrink-0 mt-0.5" />
                                                 <div className="space-y-1.5">
@@ -618,7 +618,7 @@ export default function CasesPage() {
                                                     <button
                                                         onClick={handleUploadSummaryDirect}
                                                         disabled={isUploadingSummary}
-                                                        className="px-5 py-2.5 bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md disabled:bg-indigo-300"
+                                                        className="px-5 py-2.5 bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md disabled:bg-muted"
                                                     >
                                                         {isUploadingSummary ? (
                                                             <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -647,7 +647,7 @@ export default function CasesPage() {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveBuilderMilestone(idx)}
-                                                        className="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition-colors"
+                                                        className="absolute top-4 right-4 text-slate-400 hover:text-primary transition-colors"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
@@ -721,7 +721,7 @@ export default function CasesPage() {
 
                                             <button
                                                 onClick={handleSubmitPlan}
-                                                className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow-md shadow-indigo-50 hover:bg-primary/95 transition-all"
+                                                className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow-md shadow-primary/10 hover:bg-primary/95 transition-all"
                                             >
                                                 Submit Engagement Roadmap
                                             </button>
@@ -760,9 +760,9 @@ export default function CasesPage() {
                                                         {/* Stepper Dot */}
                                                         <div className={`absolute -left-[33px] top-1.5 h-4 w-4 rounded-full border-4 border-white ${
                                                             isCompleted 
-                                                                ? "bg-green-500 shadow-md ring-4 ring-green-50" 
+                                                                ? "bg-primary shadow-md ring-4 ring-ring" 
                                                                 : isInProgress 
-                                                                    ? "bg-primary animate-pulse ring-4 ring-indigo-50" 
+                                                                    ? "bg-primary animate-pulse ring-4 ring-ring" 
                                                                     : "bg-slate-300"
                                                         }`} />
 
@@ -781,7 +781,7 @@ export default function CasesPage() {
                                                                 <div className="flex items-center gap-3">
                                                                     <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg ${
                                                                         isCompleted 
-                                                                            ? "bg-green-50 text-green-700 border border-green-100" 
+                                                                            ? "bg-secondary text-primary border border-border" 
                                                                             : isInProgress 
                                                                                 ? "bg-primary/10 text-primary border border-primary/20" 
                                                                                 : "bg-slate-100 text-slate-600"
@@ -812,7 +812,7 @@ export default function CasesPage() {
                                                                         <div className="space-y-1 flex-1">
                                                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Proof of Work & Progress Updates</p>
                                                                             {m.proofDocs.length === 0 ? (
-                                                                                <p className="text-xs text-amber-600 font-bold flex items-center gap-1">
+                                                                                <p className="text-xs text-primary font-bold flex items-center gap-1">
                                                                                     <AlertCircle size={12} />
                                                                                     No progress proof uploaded yet for this stage.
                                                                                 </p>
@@ -922,7 +922,7 @@ export default function CasesPage() {
                                                                             <div>
                                                                                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Milestone Payment</p>
                                                                                 <p className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 mt-0.5">
-                                                                                    <Coins size={14} className="text-orange-500" />
+                                                                                    <Coins size={14} className="text-primary" />
                                                                                     ₹{m.payoutAmount.toLocaleString()}
                                                                                 </p>
                                                                             </div>
@@ -931,17 +931,17 @@ export default function CasesPage() {
                                                                                 <button
                                                                                     onClick={() => handleRequestPayout(idx)}
                                                                                     disabled={m.proofDocs.length === 0}
-                                                                                    className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-md shadow-indigo-100 hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                                    className="px-4 py-2 bg-primary text-white font-bold rounded-xl text-xs shadow-md shadow-primary/10 hover:bg-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                                                                 >
                                                                                     Request Payout Release
                                                                                 </button>
                                                                             ) : (
                                                                                 <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-xl ${
                                                                                     m.payoutStatus === 'approved' 
-                                                                                        ? "bg-green-100 text-green-700" 
+                                                                                        ? "bg-muted text-primary" 
                                                                                         : m.payoutStatus === 'requested' 
-                                                                                            ? "bg-amber-100 text-amber-700 animate-pulse" 
-                                                                                            : "bg-red-105 text-red-700"
+                                                                                            ? "bg-muted text-primary animate-pulse" 
+                                                                                            : "bg-muted text-primary"
                                                                                 }`}>
                                                                                     {m.payoutStatus === 'approved' ? "Payout Released (Paid)" : m.payoutStatus === 'requested' ? "Awaiting Payout Release" : "Payout Rejected"}
                                                                                 </span>
@@ -1042,7 +1042,7 @@ export default function CasesPage() {
                             <button
                                 type="submit"
                                 disabled={isSubmittingCase}
-                                className="w-full h-12 bg-primary text-white font-extrabold rounded-xl shadow-lg shadow-indigo-50 hover:bg-primary/95 transition-all flex items-center justify-center gap-2"
+                                className="w-full h-12 bg-primary text-white font-extrabold rounded-xl shadow-lg shadow-primary/10 hover:bg-primary/95 transition-all flex items-center justify-center gap-2"
                             >
                                 {isSubmittingCase ? "Creating..." : "Create Case & Add Roadmap"}
                             </button>

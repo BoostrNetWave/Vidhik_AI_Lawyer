@@ -303,7 +303,7 @@ export default function ProfilePage() {
             <Card className="bg-primary border-none text-white overflow-hidden">
                 <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-3">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <Star className="w-4 h-4 fill-primary text-muted-foreground" />
                         <span className="text-sm font-bold">Public Rating</span>
                     </div>
                     <div className="text-3xl font-extrabold mb-1">{profileFields.rating || "0.0"}</div>
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                                 <div key={idx} className="p-4 rounded-xl border bg-slate-50/30 space-y-4 relative group">
                                     <button 
                                         onClick={() => removeEducation(idx)}
-                                        className="absolute top-2 right-2 p-1.5 text-slate-400 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100"
+                                        className="absolute top-2 right-2 p-1.5 text-slate-400 hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -557,7 +557,7 @@ export default function ProfilePage() {
                         </div>
                     </CardContent>
                     <CardFooter className="border-t bg-slate-50/50 pt-6">
-                        <Button onClick={savePayment} disabled={saving} className="ml-auto bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100 shadow-lg">
+                        <Button onClick={savePayment} disabled={saving} className="ml-auto bg-primary hover:bg-primary shadow-primary/10 shadow-lg">
                             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Verify & Update Bank Details"}
                         </Button>
                     </CardFooter>

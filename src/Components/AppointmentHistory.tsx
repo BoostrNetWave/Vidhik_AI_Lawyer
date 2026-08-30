@@ -81,7 +81,7 @@ export default function AppointmentHistory({ consultantId }: AppointmentHistoryP
               {loading ? (
                 <tr>
                   <td colSpan={5} className="py-20 text-center">
-                    <div className="inline-block w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="inline-block w-8 h-8 border-4 border-border border-t-transparent rounded-full animate-spin"></div>
                     <p className="mt-4 text-slate-500 font-medium">Retrieving records...</p>
                   </td>
                 </tr>
@@ -98,7 +98,7 @@ export default function AppointmentHistory({ consultantId }: AppointmentHistoryP
                   <tr key={a._id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-indigo-600 border border-indigo-100">
+                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center font-bold text-primary border border-border">
                           {a.clientName.charAt(0)}
                         </div>
                         <span className="font-bold text-slate-900">{a.clientName}</span>
@@ -115,13 +115,13 @@ export default function AppointmentHistory({ consultantId }: AppointmentHistoryP
                     <td className="py-4 px-6 text-right">
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${a.status === "completed"
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-muted text-primary"
                           : a.status === "cancelled"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
+                            ? "bg-muted text-primary"
+                            : "bg-muted text-primary"
                           }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${a.status === "completed" ? "bg-green-500" : a.status === "cancelled" ? "bg-red-500" : "bg-yellow-500"
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${a.status === "completed" ? "bg-primary" : a.status === "cancelled" ? "bg-primary" : "bg-primary"
                           }`}></span>
                         {(a.status || "pending").toUpperCase()}
                       </span>
@@ -134,7 +134,7 @@ export default function AppointmentHistory({ consultantId }: AppointmentHistoryP
         </div>
         {appointments.length > 0 && (
           <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-center">
-            <button className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1 group">
+            <button className="text-sm font-bold text-primary hover:text-primary transition-colors flex items-center gap-1 group">
               View Full History
               <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </button>

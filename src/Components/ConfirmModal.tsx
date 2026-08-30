@@ -31,26 +31,26 @@ export default function ConfirmModal({
             case "danger":
                 return {
                     icon: <Trash2 size={24} />,
-                    iconBg: "bg-red-50 border-red-100",
-                    iconColor: "text-red-600",
-                    confirmBtn: "bg-red-600 hover:bg-red-700 shadow-red-100",
-                    ring: "ring-red-100"
+                    iconBg: "bg-secondary border-border",
+                    iconColor: "text-primary",
+                    confirmBtn: "bg-primary hover:bg-primary shadow-primary/10",
+                    ring: "ring-ring"
                 };
             case "warning":
                 return {
                     icon: <AlertTriangle size={24} />,
-                    iconBg: "bg-orange-50 border-orange-100",
-                    iconColor: "text-orange-600",
-                    confirmBtn: "bg-orange-600 hover:bg-orange-700 shadow-orange-100",
-                    ring: "ring-orange-100"
+                    iconBg: "bg-secondary border-border",
+                    iconColor: "text-primary",
+                    confirmBtn: "bg-primary hover:bg-primary shadow-primary/10",
+                    ring: "ring-ring"
                 };
             case "success":
                 return {
                     icon: <CheckCircle size={24} />,
-                    iconBg: "bg-green-50 border-green-100",
-                    iconColor: "text-green-600",
-                    confirmBtn: "bg-green-600 hover:bg-green-700 shadow-green-100",
-                    ring: "ring-green-100"
+                    iconBg: "bg-secondary border-border",
+                    iconColor: "text-primary",
+                    confirmBtn: "bg-primary hover:bg-primary shadow-primary/10",
+                    ring: "ring-ring"
                 };
         }
     };

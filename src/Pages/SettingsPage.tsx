@@ -223,7 +223,7 @@ export default function SettingsPage() {
                                                 name="address"
                                                 value={generalSettings.address}
                                                 onChange={handleGeneralChange}
-                                                className="w-full rounded-xl border border-slate-100 bg-slate-50/50 pl-10 pr-4 py-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all font-sans"
+                                                className="w-full rounded-xl border border-slate-100 bg-slate-50/50 pl-10 pr-4 py-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-ring focus:border-border transition-all font-sans"
                                             />
                                         </div>
                                     </div>
@@ -306,7 +306,7 @@ export default function SettingsPage() {
                                                 type={showPasswords.current ? "text" : "password"}
                                                 value={passwords.current}
                                                 onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                                                className="w-full rounded-xl border border-slate-100 bg-slate-50/50 pl-4 pr-10 py-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all font-sans"
+                                                className="w-full rounded-xl border border-slate-100 bg-slate-50/50 pl-4 pr-10 py-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-ring focus:border-border transition-all font-sans"
                                                 placeholder="••••••••"
                                             />
                                             <button
@@ -326,7 +326,7 @@ export default function SettingsPage() {
                                                     type={showPasswords.new ? "text" : "password"}
                                                     value={passwords.new}
                                                     onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                                                    className="w-full rounded-xl border border-slate-100 bg-slate-50/50 pl-4 pr-10 py-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all font-sans"
+                                                    className="w-full rounded-xl border border-slate-100 bg-slate-50/50 pl-4 pr-10 py-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-ring focus:border-border transition-all font-sans"
                                                     placeholder="••••••••"
                                                 />
                                                 <button
@@ -345,7 +345,7 @@ export default function SettingsPage() {
                                                     type={showPasswords.confirm ? "text" : "password"}
                                                     value={passwords.confirm}
                                                     onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                                                    className="w-full rounded-xl border border-slate-100 bg-slate-50/50 pl-4 pr-10 py-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all font-sans"
+                                                    className="w-full rounded-xl border border-slate-100 bg-slate-50/50 pl-4 pr-10 py-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-ring focus:border-border transition-all font-sans"
                                                     placeholder="••••••••"
                                                 />
                                                 <button

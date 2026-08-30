@@ -108,9 +108,9 @@ export default function SupportPage() {
   // Derived Stats
   const stats = [
     { label: "Total Tickets", value: rows.length, icon: <MessageSquare className="text-primary" />, change: "+5" },
-    { label: "Open Issues", value: rows.filter(t => t.status !== "Closed").length, icon: <AlertCircle className="text-orange-500" />, change: "-2" },
-    { label: "Resolved", value: rows.filter(t => t.status === "Closed").length, icon: <CheckCircle2 className="text-green-500" />, change: "+8" },
-    { label: "Urgent", value: rows.filter(t => t.priority === "Urgent").length, icon: <ShieldAlert className="text-red-500" />, change: "!" },
+    { label: "Open Issues", value: rows.filter(t => t.status !== "Closed").length, icon: <AlertCircle className="text-primary" />, change: "-2" },
+    { label: "Resolved", value: rows.filter(t => t.status === "Closed").length, icon: <CheckCircle2 className="text-primary" />, change: "+8" },
+    { label: "Urgent", value: rows.filter(t => t.priority === "Urgent").length, icon: <ShieldAlert className="text-primary" />, change: "!" },
   ];
 
   return (
@@ -121,7 +121,7 @@ export default function SupportPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 bg-primary rounded-lg text-white shadow-lg shadow-indigo-100">
+              <div className="p-2 bg-primary rounded-lg text-white shadow-lg shadow-primary/10">
                 <LifeBuoy size={20} />
               </div>
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Support Center</h1>
@@ -131,7 +131,7 @@ export default function SupportPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setModal(true)}
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:bg-primary/90 transition-all active:scale-[0.98] gap-2"
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/10 hover:bg-primary/90 transition-all active:scale-[0.98] gap-2"
             >
               <PlusCircle size={20} />
               Create New Ticket
@@ -147,7 +147,7 @@ export default function SupportPage() {
                 <div className="p-2.5 bg-slate-50 rounded-xl">
                   {stat.icon}
                 </div>
-                <span className={`text-[10px] font-extrabold px-2 py-1 rounded-full ${stat.change.startsWith("+") ? "bg-green-50 text-green-600" : stat.change === "!" ? "bg-red-50 text-red-600" : "bg-orange-50 text-orange-600"}`}>
+                <span className={`text-[10px] font-extrabold px-2 py-1 rounded-full ${stat.change.startsWith("+") ? "bg-secondary text-primary" : stat.change === "!" ? "bg-secondary text-primary" : "bg-secondary text-primary"}`}>
                   {stat.change === "!" ? "ACTION REQ" : `${stat.change} THIS WEEK`}
                 </span>
               </div>
@@ -168,7 +168,7 @@ export default function SupportPage() {
                 <input
                   type="text"
                   placeholder="Search tickets by ID or subject..."
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all shadow-sm"
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-ring/20 focus:border-border outline-none transition-all shadow-sm"
                 />
               </div>
               <button className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors shadow-sm">
@@ -196,7 +196,7 @@ export default function SupportPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="py-20 text-center">
-                      <div className="inline-block w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="inline-block w-8 h-8 border-4 border-border border-t-transparent rounded-full animate-spin"></div>
                       <p className="mt-4 text-slate-500 font-bold">Syncing Support Data...</p>
                     </td>
                   </tr>
@@ -204,7 +204,7 @@ export default function SupportPage() {
                   rows.map((t) => (
                     <tr key={t._id} className="hover:bg-slate-50/50 transition-all duration-200 group">
                       <td className="py-5 px-6">
-                        <span className="font-mono text-xs font-bold bg-slate-100 px-2 py-1 rounded-lg text-slate-600 border border-slate-200 group-hover:bg-white group-hover:text-primary group-hover:border-indigo-100 transition-colors">
+                        <span className="font-mono text-xs font-bold bg-slate-100 px-2 py-1 rounded-lg text-slate-600 border border-slate-200 group-hover:bg-white group-hover:text-primary group-hover:border-border transition-colors">
                           {t.ticketId}
                         </span>
                       </td>
@@ -220,18 +220,18 @@ export default function SupportPage() {
                         </span>
                       </td>
                       <td className="py-5 px-6">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm ring-1 ring-inset ${t.priority === "Urgent" ? "bg-red-50 text-red-700 ring-red-100" :
-                          t.priority === "High" ? "bg-orange-50 text-orange-700 ring-orange-100" :
-                            t.priority === "Medium" ? "bg-primary/10 text-blue-700 ring-blue-100" :
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm ring-1 ring-inset ${t.priority === "Urgent" ? "bg-secondary text-primary ring-ring" :
+                          t.priority === "High" ? "bg-secondary text-primary ring-ring" :
+                            t.priority === "Medium" ? "bg-primary/10 text-primary ring-ring" :
                               "bg-slate-50 text-slate-600 ring-slate-100"
                           }`}>
                           {t.priority}
                         </span>
                       </td>
                       <td className="py-5 px-6">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${t.status === "Closed" ? "bg-green-100 text-green-700" : "bg-indigo-100 text-indigo-700"
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${t.status === "Closed" ? "bg-muted text-primary" : "bg-muted text-primary"
                           }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${t.status === "Closed" ? "bg-green-500" : "bg-primary/100 animate-pulse"}`}></span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${t.status === "Closed" ? "bg-primary" : "bg-primary/100 animate-pulse"}`}></span>
                           {t.status}
                         </span>
                       </td>
@@ -249,7 +249,7 @@ export default function SupportPage() {
                           </button>
                           {t.status !== "Closed" && (
                             <button
-                              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                              className="p-2 text-slate-400 hover:text-primary hover:bg-secondary rounded-xl transition-all"
                               onClick={() => handleCloseTicket(t._id)}
                               title="Close Ticket"
                             >
@@ -273,7 +273,7 @@ export default function SupportPage() {
                       <p className="text-slate-400 text-sm mt-1">If you're having issues, our team is ready to help.</p>
                       <button
                         onClick={() => setModal(true)}
-                        className="mt-6 px-6 py-2 bg-primary text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:bg-primary/90 transition-all"
+                        className="mt-6 px-6 py-2 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/10 hover:bg-primary/90 transition-all"
                       >
                         Create Your First Ticket
                       </button>
@@ -297,7 +297,7 @@ export default function SupportPage() {
                   Previous
                 </button>
                 <button
-                  className="px-4 py-2 border border-indigo-200 bg-white rounded-xl text-sm font-bold text-primary hover:bg-primary/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-indigo-100/20"
+                  className="px-4 py-2 border border-border bg-white rounded-xl text-sm font-bold text-primary hover:bg-primary/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-primary/10"
                   onClick={() => fetchTickets(Math.min(pages, page + 1))}
                   disabled={page >= pages}
                 >

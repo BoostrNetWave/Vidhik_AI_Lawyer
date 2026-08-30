@@ -93,9 +93,9 @@ const Signup: React.FC = () => {
             {/* Left - Branding Panel */}
             <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-[#0F172A] via-[#1E1B4B] to-[#020617] relative overflow-hidden items-center justify-center p-12 select-none">
                 {/* Decorative glows */}
-                <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-violet-500/10 to-transparent blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
-                <div className="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full bg-violet-500/10 blur-[100px] pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-primary/90/10 to-transparent blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
+                <div className="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
                 
                 {/* Dots grid pattern */}
                 <div 
@@ -111,7 +111,7 @@ const Signup: React.FC = () => {
                         <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center overflow-hidden p-1 shadow-md">
                             <img src={logo} alt="Logo" className="w-full h-full object-contain" />
                         </div>
-                        <span className="font-display text-2xl font-bold tracking-tight text-white">Vidhik <span className="text-violet-400">AI</span></span>
+                        <span className="font-display text-2xl font-bold tracking-tight text-white">Vidhik <span className="text-muted-foreground">AI</span></span>
                     </div>
                     
                     <h2 className="font-display text-4xl font-extrabold mb-6 leading-tight">
@@ -124,7 +124,7 @@ const Signup: React.FC = () => {
                     {/* Features checklist */}
                     <div className="space-y-4 mb-10 bg-white/[0.02] backdrop-blur-md rounded-2xl p-6 border border-white/[0.06] shadow-[0_20px_50px_rgba(0,0,0,0.25)]">
                         <div className="flex items-start gap-3">
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-400">
+                            <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-muted-foreground">
                                 <Check className="h-3 w-3" />
                             </div>
                             <div>
@@ -133,7 +133,7 @@ const Signup: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-400">
+                            <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-muted-foreground">
                                 <Check className="h-3 w-3" />
                             </div>
                             <div>
@@ -142,7 +142,7 @@ const Signup: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-400">
+                            <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-muted-foreground">
                                 <Check className="h-3 w-3" />
                             </div>
                             <div>
@@ -155,11 +155,11 @@ const Signup: React.FC = () => {
                     {/* Trust badges */}
                     <div className="flex items-center gap-6 mt-10 text-slate-400/80 text-xs">
                         <div className="flex items-center gap-1.5">
-                            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                             <span>SOC 2 Compliant</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                             <span>HIPAA Ready</span>
                         </div>
                     </div>
@@ -169,8 +169,8 @@ const Signup: React.FC = () => {
             {/* Right - Form Container */}
             <div className="flex-1 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-[#FAFAFC] relative overflow-hidden">
                 {/* Decorative glows on the right panel */}
-                <div className="absolute top-0 right-0 -z-10 w-[300px] h-[300px] rounded-full bg-violet-200/30 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -z-10 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
+                <div className="absolute top-0 right-0 -z-10 w-[300px] h-[300px] rounded-full bg-muted/30 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -z-10 w-[300px] h-[300px] rounded-full bg-muted/30 blur-3xl pointer-events-none" />
                 
                 {/* Dots grid pattern for Right Panel */}
                 <div 
@@ -189,7 +189,7 @@ const Signup: React.FC = () => {
                                 <img src={logo} alt="Logo" className="w-full h-full object-contain" />
                             </div>
                             <span className="font-display text-xl font-bold tracking-tight text-slate-900">
-                                Vidhik <span className="text-violet-600">AI</span>
+                                Vidhik <span className="text-primary">AI</span>
                             </span>
                         </div>
                     </div>
@@ -206,15 +206,15 @@ const Signup: React.FC = () => {
 
                         <form className="space-y-5" onSubmit={handleSubmit}>
                             {error && (
-                                <div className="bg-rose-50 border border-rose-100 rounded-lg p-3.5 flex items-start gap-2.5 text-rose-700 text-sm animate-shake">
-                                    <AlertCircle className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-rose-500" />
+                                <div className="bg-secondary border border-border rounded-lg p-3.5 flex items-start gap-2.5 text-primary text-sm animate-shake">
+                                    <AlertCircle className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-primary" />
                                     <p className="leading-normal font-medium">{error}</p>
                                 </div>
                             )}
                             
                             {success && (
-                                <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3.5 flex items-start gap-2.5 text-emerald-700 text-sm">
-                                    <CheckCircle className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-emerald-500" />
+                                <div className="bg-secondary border border-border rounded-lg p-3.5 flex items-start gap-2.5 text-primary text-sm">
+                                    <CheckCircle className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-primary" />
                                     <p className="leading-normal font-medium">Account created! OTP sent to your email. Redirecting to verification...</p>
                                 </div>
                             )}
@@ -232,7 +232,7 @@ const Signup: React.FC = () => {
                                         required
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
-                                        className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500/20 focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-all rounded-lg"
+                                        className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:border-border focus:ring-ring/20 focus-visible:ring-ring/20 focus-visible:border-border transition-all rounded-lg"
                                         placeholder="John Doe"
                                     />
                                 </div>
@@ -251,7 +251,7 @@ const Signup: React.FC = () => {
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500/20 focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-all rounded-lg"
+                                        className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:border-border focus:ring-ring/20 focus-visible:ring-ring/20 focus-visible:border-border transition-all rounded-lg"
                                         placeholder="admin@legal.com"
                                     />
                                 </div>
@@ -270,7 +270,7 @@ const Signup: React.FC = () => {
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-10 pr-10 h-11 bg-slate-50/50 border-slate-200 focus:border-violet-500 focus:ring-violet-500/20 focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-all rounded-lg"
+                                        className="pl-10 pr-10 h-11 bg-slate-50/50 border-slate-200 focus:border-border focus:ring-ring/20 focus-visible:ring-ring/20 focus-visible:border-border transition-all rounded-lg"
                                         placeholder="••••••••"
                                     />
                                     <button
@@ -286,7 +286,7 @@ const Signup: React.FC = () => {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold h-11 rounded-lg flex items-center justify-center transition-all duration-300 shadow-[0_10px_20px_-5px_rgba(124,58,237,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none"
+                                className="w-full bg-gradient-to-r from-primary/90 to-primary hover:from-primary/90 hover:to-primary text-white font-semibold h-11 rounded-lg flex items-center justify-center transition-all duration-300 shadow-[0_10px_20px_-5px_rgba(124,58,237,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none"
                             >
                                 {loading ? (
                                     <div className="flex items-center justify-center gap-2">
@@ -307,7 +307,7 @@ const Signup: React.FC = () => {
                                 Already have an account?{" "}
                                 <Link
                                     to="/login"
-                                    className="font-semibold text-violet-600 hover:text-violet-700 transition-colors inline-flex items-center gap-0.5 group"
+                                    className="font-semibold text-primary hover:text-primary transition-colors inline-flex items-center gap-0.5 group"
                                 >
                                     Sign In
                                     <span className="transform transition-transform duration-200 group-hover:translate-x-0.5">→</span>

@@ -140,8 +140,8 @@ export default function SubscriptionPage() {
                             <h2 className="text-3xl font-black text-slate-900 capitalize mt-2">{subscription} Plan</h2>
                             <p className="text-sm text-slate-500">Monitor your active resource caps and platform rates below.</p>
                         </div>
-                        <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full border border-emerald-150 text-xs font-bold uppercase tracking-wider">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <div className="flex items-center gap-2 bg-secondary text-primary px-4 py-2 rounded-full border border-border text-xs font-bold uppercase tracking-wider">
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                             Active & Vetted
                         </div>
                     </div>
@@ -150,7 +150,7 @@ export default function SubscriptionPage() {
                         {/* 1. Case Capacity */}
                         <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 flex flex-col justify-between gap-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-purple-50 text-purple-600 rounded-lg border border-purple-100">
+                                <div className="p-2.5 bg-secondary text-primary rounded-lg border border-border">
                                     <Briefcase className="h-5 w-5" />
                                 </div>
                                 <div>
@@ -164,8 +164,8 @@ export default function SubscriptionPage() {
                                 <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                                     <div 
                                         className={`h-2 rounded-full transition-all duration-500 ${
-                                            limits.activeCases >= 999999 ? "w-0 bg-purple-600" :
-                                            (usage.activeCases / limits.activeCases >= 0.8) ? "bg-red-500" : "bg-purple-600"
+                                            limits.activeCases >= 999999 ? "w-0 bg-primary" :
+                                            (usage.activeCases / limits.activeCases >= 0.8) ? "bg-primary" : "bg-primary"
                                         }`}
                                         style={{ width: `${limits.activeCases >= 999999 ? 100 : Math.min((usage.activeCases / limits.activeCases) * 100, 100)}%` }}
                                     />
@@ -179,7 +179,7 @@ export default function SubscriptionPage() {
                         {/* 2. Blog Posts */}
                         <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 flex flex-col justify-between gap-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
+                                <div className="p-2.5 bg-secondary text-primary rounded-lg border border-border">
                                     <FileText className="h-5 w-5" />
                                 </div>
                                 <div>
@@ -193,8 +193,8 @@ export default function SubscriptionPage() {
                                 <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                                     <div 
                                         className={`h-2 rounded-full transition-all duration-500 ${
-                                            limits.blogsPerWeek >= 999999 ? "w-0 bg-blue-600" :
-                                            (usage.blogsThisWeek / limits.blogsPerWeek >= 0.8) ? "bg-red-500" : "bg-blue-600"
+                                            limits.blogsPerWeek >= 999999 ? "w-0 bg-primary" :
+                                            (usage.blogsThisWeek / limits.blogsPerWeek >= 0.8) ? "bg-primary" : "bg-primary"
                                         }`}
                                         style={{ width: `${limits.blogsPerWeek >= 999999 ? 100 : Math.min((usage.blogsThisWeek / limits.blogsPerWeek) * 100, 100)}%` }}
                                     />
@@ -208,7 +208,7 @@ export default function SubscriptionPage() {
                         {/* 3. Commission */}
                         <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 flex flex-col justify-between gap-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100">
+                                <div className="p-2.5 bg-secondary text-primary rounded-lg border border-border">
                                     <Percent className="h-5 w-5" />
                                 </div>
                                 <div>

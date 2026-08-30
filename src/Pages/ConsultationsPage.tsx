@@ -83,17 +83,17 @@ export default function ConsultationsPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'pending_lawyer_approval':
-                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">Pending Your Approval</span>;
+                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-secondary text-primary border border-border">Pending Your Approval</span>;
             case 'pending_user_approval':
-                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-violet-50 text-violet-700 border border-violet-100">Counter proposed (Awaiting Client)</span>;
+                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-secondary text-primary border border-border">Counter proposed (Awaiting Client)</span>;
             case 'pending_payment':
-                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">Awaiting Client Payment</span>;
+                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-secondary text-primary border border-border">Awaiting Client Payment</span>;
             case 'scheduled':
-                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">Scheduled</span>;
+                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-secondary text-primary border border-border">Scheduled</span>;
             case 'completed':
                 return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">Completed</span>;
             case 'cancelled':
-                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-100">Cancelled/Declined</span>;
+                return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-secondary text-primary border border-border">Cancelled/Declined</span>;
             default:
                 return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100">{status}</span>;
         }
@@ -161,7 +161,7 @@ export default function ConsultationsPage() {
                                         <>
                                             <button 
                                                 onClick={() => handleAccept(consultation._id)}
-                                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs px-4 py-2 flex items-center gap-1 shadow-sm"
+                                                className="bg-primary hover:bg-primary text-white rounded-xl font-bold text-xs px-4 py-2 flex items-center gap-1 shadow-sm"
                                             >
                                                 <Check size={14} /> Accept Request
                                             </button>
@@ -181,7 +181,7 @@ export default function ConsultationsPage() {
                                     {consultation.status === 'scheduled' && (
                                         <button 
                                             onClick={() => navigate(`/consultations/${consultation._id}/meet`)}
-                                            className="bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs px-5 py-2 flex items-center gap-1.5 shadow-md shadow-violet-100"
+                                            className="bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs px-5 py-2 flex items-center gap-1.5 shadow-md shadow-primary/10"
                                         >
                                             <Video size={14} /> Join Jitsi Call
                                         </button>
@@ -190,7 +190,7 @@ export default function ConsultationsPage() {
                                     {consultation.status !== 'completed' && consultation.status !== 'cancelled' && (
                                         <button 
                                             onClick={() => handleCancel(consultation._id)}
-                                            className="text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold px-4 py-2"
+                                            className="text-primary hover:bg-secondary rounded-xl text-xs font-bold px-4 py-2"
                                         >
                                             Decline/Cancel
                                         </button>

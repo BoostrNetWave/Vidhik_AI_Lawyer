@@ -100,7 +100,7 @@ export default function ConsultationRoom() {
                     {/* Status bar */}
                     <div className="bg-[#1E293B] px-6 py-4 flex items-center justify-between border-b border-slate-800 z-10">
                         <div className="flex items-center gap-3">
-                            <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></div>
+                            <div className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse"></div>
                             <span className="text-white font-extrabold text-sm tracking-tight">{consultation.title}</span>
                             <span className="text-[10px] text-slate-400 bg-[#0F172A] border border-slate-850 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
                                 {consultation.status}

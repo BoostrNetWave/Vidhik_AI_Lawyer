@@ -154,7 +154,7 @@ export default function CreatePostModal({ visible, onClose, onCreated, authorId 
             Cancel
           </button>
           <button
-            className="px-5 py-2 rounded bg-purple-600 text-white disabled:opacity-60"
+            className="px-5 py-2 rounded bg-primary text-white disabled:opacity-60"
             onClick={create}
             disabled={saving}
           >

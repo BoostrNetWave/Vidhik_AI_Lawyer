@@ -93,8 +93,8 @@ export default function WorkingHoursModal({ visible, onClose, userId, initialDat
         {/* Header */}
         <div className="px-8 py-6 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-              <Clock className="text-indigo-600" size={20} />
+            <div className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center">
+              <Clock className="text-primary" size={20} />
             </div>
             <div>
               <h2 className="text-xl font-extrabold text-slate-900">Define Working Hours</h2>
@@ -108,7 +108,7 @@ export default function WorkingHoursModal({ visible, onClose, userId, initialDat
 
         <div className="p-8">
           {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-2xl flex items-center gap-3 ring-1 ring-red-100 animate-in slide-in-from-top-2">
+            <div className="mb-6 p-4 bg-secondary text-primary rounded-2xl flex items-center gap-3 ring-1 ring-ring animate-in slide-in-from-top-2">
               <AlertCircle size={18} />
               <span className="text-sm font-bold">{error}</span>
             </div>
@@ -129,7 +129,7 @@ export default function WorkingHoursModal({ visible, onClose, userId, initialDat
                         checked={isEnabled}
                         onChange={e => toggleDay(idx, e.target.checked)}
                       />
-                      <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:bg-indigo-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all shadow-inner"></div>
+                      <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all shadow-inner"></div>
                     </label>
                     <span className={`font-bold transition-colors ${isEnabled ? "text-slate-900" : "text-slate-400"}`}>{label}</span>
                   </div>
@@ -139,7 +139,7 @@ export default function WorkingHoursModal({ visible, onClose, userId, initialDat
                       <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">Start Time</label>
                       <input
                         type="time"
-                        className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400`}
+                        className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-ring/20 focus:border-border disabled:bg-slate-100 disabled:text-slate-400`}
                         value={range.start || ""}
                         onChange={e => setTime(idx, "start", e.target.value)}
                         disabled={!isEnabled}
@@ -152,7 +152,7 @@ export default function WorkingHoursModal({ visible, onClose, userId, initialDat
                       <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">End Time</label>
                       <input
                         type="time"
-                        className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400`}
+                        className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-ring/20 focus:border-border disabled:bg-slate-100 disabled:text-slate-400`}
                         value={range.end || ""}
                         onChange={e => setTime(idx, "end", e.target.value)}
                         disabled={!isEnabled}
@@ -169,7 +169,7 @@ export default function WorkingHoursModal({ visible, onClose, userId, initialDat
             <div className="flex gap-3">
               <button className="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all" onClick={onClose}>Discard</button>
               <button
-                className="px-8 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98] flex items-center gap-2"
+                className="px-8 py-2.5 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/10 hover:bg-primary transition-all active:scale-[0.98] flex items-center gap-2"
                 onClick={save}
                 disabled={saving}
               >

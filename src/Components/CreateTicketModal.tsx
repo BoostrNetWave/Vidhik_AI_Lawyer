@@ -88,8 +88,8 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
         {/* Header */}
         <div className="px-10 py-8 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-              <LifeBuoy className="text-indigo-600" size={24} />
+            <div className="w-12 h-12 rounded-2xl bg-secondary border border-border flex items-center justify-center">
+              <LifeBuoy className="text-primary" size={24} />
             </div>
             <div>
               <h2 className="text-2xl font-extrabold text-slate-900">New Support Ticket</h2>
@@ -103,7 +103,7 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
 
         <div className="p-10">
           {error && (
-            <div className="mb-8 p-4 bg-red-50 text-red-700 rounded-2xl flex items-center gap-3 ring-1 ring-red-100 animate-in slide-in-from-top-2">
+            <div className="mb-8 p-4 bg-secondary text-primary rounded-2xl flex items-center gap-3 ring-1 ring-ring animate-in slide-in-from-top-2">
               <AlertCircle size={18} />
               <span className="text-sm font-bold">{error}</span>
             </div>
@@ -113,12 +113,12 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
             <Field label="Subject" hint="Brief summary of the issue">
               <div className="relative group">
                 <input
-                  className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-semibold transition-all outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white placeholder:text-slate-400"
+                  className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-semibold transition-all outline-none focus:ring-4 focus:ring-ring/10 focus:border-border focus:bg-white placeholder:text-slate-400"
                   placeholder="e.g., Cannot access booking calendar"
                   value={form.subject}
                   onChange={e => set("subject", e.target.value)}
                 />
-                <div className="absolute inset-0 rounded-2xl border border-indigo-500/0 group-focus-within:border-indigo-500/10 pointer-events-none transition-all"></div>
+                <div className="absolute inset-0 rounded-2xl border border-border/0 group-focus-within:border-border/10 pointer-events-none transition-all"></div>
               </div>
             </Field>
 
@@ -126,10 +126,10 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
               <Field label="Category" hint="Impact area">
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                    <Tag size={18} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                    <Tag size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                   </div>
                   <select
-                    className="w-full bg-gradient-to-br from-slate-50/50 to-white border-2 border-slate-200 rounded-2xl pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 focus:shadow-lg focus:shadow-indigo-100/50 cursor-pointer appearance-none hover:border-slate-300"
+                    className="w-full bg-gradient-to-br from-slate-50/50 to-white border-2 border-slate-200 rounded-2xl pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none focus:ring-4 focus:ring-ring/20 focus:border-border focus:shadow-lg focus:shadow-primary/10 cursor-pointer appearance-none hover:border-slate-300"
                     value={form.category}
                     onChange={e => set("category", e.target.value)}
                   >
@@ -140,19 +140,19 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
                     <option value="Other">📌 Other</option>
                   </select>
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown size={18} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                    <ChevronDown size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                   </div>
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/0 to-purple-500/0 group-focus-within:from-indigo-500/5 group-focus-within:to-purple-500/5 pointer-events-none transition-all"></div>
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/90/0 to-primary/0 group-focus-within:from-primary/90/5 group-focus-within:to-primary/5 pointer-events-none transition-all"></div>
                 </div>
               </Field>
 
               <Field label="Priority" hint="Urgency level">
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                    <Zap size={18} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                    <Zap size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                   </div>
                   <select
-                    className="w-full bg-gradient-to-br from-slate-50/50 to-white border-2 border-slate-200 rounded-2xl pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 focus:shadow-lg focus:shadow-indigo-100/50 cursor-pointer appearance-none hover:border-slate-300"
+                    className="w-full bg-gradient-to-br from-slate-50/50 to-white border-2 border-slate-200 rounded-2xl pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none focus:ring-4 focus:ring-ring/20 focus:border-border focus:shadow-lg focus:shadow-primary/10 cursor-pointer appearance-none hover:border-slate-300"
                     value={form.priority}
                     onChange={e => set("priority", e.target.value)}
                   >
@@ -162,9 +162,9 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
                     <option value="Urgent">🔴 Urgent</option>
                   </select>
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown size={18} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                    <ChevronDown size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                   </div>
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/0 to-purple-500/0 group-focus-within:from-indigo-500/5 group-focus-within:to-purple-500/5 pointer-events-none transition-all"></div>
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/90/0 to-primary/0 group-focus-within:from-primary/90/5 group-focus-within:to-primary/5 pointer-events-none transition-all"></div>
                 </div>
               </Field>
             </div>
@@ -172,7 +172,7 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
             <Field label="Detailed Description" hint="Include steps to reproduce or relevant details">
               <div className="relative">
                 <textarea
-                  className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-medium transition-all outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white placeholder:text-slate-400 min-h-[150px] resize-y"
+                  className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-medium transition-all outline-none focus:ring-4 focus:ring-ring/10 focus:border-border focus:bg-white placeholder:text-slate-400 min-h-[150px] resize-y"
                   placeholder="Explain the issue you're facing in detail..."
                   value={form.description}
                   onChange={e => set("description", e.target.value)}
@@ -197,7 +197,7 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
                   htmlFor="ticket-attachment"
                   className="flex items-center gap-3 px-5 py-4 bg-slate-50 border border-slate-200 border-dashed rounded-2xl cursor-pointer hover:bg-slate-100 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary">
                     <Paperclip size={20} />
                   </div>
                   <div className="flex flex-col">
@@ -215,7 +215,7 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
                         e.preventDefault();
                         setFile(null);
                       }}
-                      className="ml-auto p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      className="ml-auto p-2 text-slate-400 hover:text-primary hover:bg-secondary rounded-xl transition-all"
                     >
                       <X size={18} />
                     </button>
@@ -234,7 +234,7 @@ export default function CreateTicketModal({ visible, onClose, onCreated }: Creat
               Discard
             </button>
             <button
-              className="flex-[2] px-8 py-3.5 rounded-2xl bg-indigo-600 text-white font-bold text-sm shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-3 group"
+              className="flex-[2] px-8 py-3.5 rounded-2xl bg-primary text-white font-bold text-sm shadow-xl shadow-primary/10 hover:bg-primary transition-all active:scale-[0.98] flex items-center justify-center gap-3 group"
               onClick={create}
               disabled={saving}
             >

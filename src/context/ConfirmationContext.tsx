@@ -50,7 +50,7 @@ export const ConfirmationProvider: React.FC<{ children: ReactNode }> = ({ childr
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md relative z-10 overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6">
                             <div className="flex items-start gap-4">
-                                <div className={`p-3 rounded-full shrink-0 ${options.type === 'info' ? 'bg-primary/10 text-primary' : 'bg-red-100 text-red-600'}`}>
+                                <div className={`p-3 rounded-full shrink-0 ${options.type === 'info' ? 'bg-primary/10 text-primary' : 'bg-muted text-primary'}`}>
                                     <AlertTriangle className="w-6 h-6" />
                                 </div>
                                 <div className="space-y-2">
@@ -70,7 +70,7 @@ export const ConfirmationProvider: React.FC<{ children: ReactNode }> = ({ childr
                                 onClick={handleConfirm}
                                 className={`px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md transition-all active:scale-95 ${options.type === 'info'
                                         ? 'bg-primary hover:bg-primary/90 shadow-primary/20'
-                                        : 'bg-red-600 hover:bg-red-700 shadow-red-200'
+                                        : 'bg-primary hover:bg-primary shadow-primary/10'
                                     }`}
                             >
                                 {options.confirmText || 'Confirm'}

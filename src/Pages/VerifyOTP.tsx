@@ -109,7 +109,7 @@ const VerifyOTP: React.FC = () => {
                     <CardContent className="space-y-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-3 text-red-700 text-sm animate-shake">
+                                <div className="bg-secondary border border-border rounded-lg p-3 flex items-center gap-3 text-primary text-sm animate-shake">
                                     <AlertCircle className="h-5 w-5 flex-shrink-0" />
                                     <p>{error}</p>
                                 </div>

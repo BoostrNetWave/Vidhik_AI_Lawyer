@@ -73,8 +73,8 @@ export default function CalendarSyncModal({ visible, onClose, userId, initial, o
       <div className="bg-white rounded-[2.5rem] w-full max-w-2xl relative shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 my-8">
         <div className="px-10 py-8 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-              <CalendarCheck2 className="text-indigo-600" size={24} />
+            <div className="w-12 h-12 rounded-2xl bg-secondary border border-border flex items-center justify-center">
+              <CalendarCheck2 className="text-primary" size={24} />
             </div>
             <div>
               <h2 className="text-2xl font-extrabold text-slate-900">Calendar Sync</h2>
@@ -89,7 +89,7 @@ export default function CalendarSyncModal({ visible, onClose, userId, initial, o
         <div className="p-10">
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className={`p-6 rounded-3xl border-2 transition-all ${form.googleEnabled ? "border-indigo-100 bg-indigo-50/20 shadow-sm" : "border-slate-50 bg-slate-50/50"}`}>
+              <div className={`p-6 rounded-3xl border-2 transition-all ${form.googleEnabled ? "border-border bg-secondary shadow-sm" : "border-slate-50 bg-slate-50/50"}`}>
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-bold text-slate-900">Google Calendar</h3>
                   <input type="checkbox" checked={form.googleEnabled} onChange={e => set("googleEnabled", e.target.checked)} />
@@ -104,7 +104,7 @@ export default function CalendarSyncModal({ visible, onClose, userId, initial, o
                 />
               </div>
 
-              <div className={`p-6 rounded-3xl border-2 transition-all ${form.outlookEnabled ? "border-blue-100 bg-blue-50/20 shadow-sm" : "border-slate-50 bg-slate-50/50"}`}>
+              <div className={`p-6 rounded-3xl border-2 transition-all ${form.outlookEnabled ? "border-border bg-secondary shadow-sm" : "border-slate-50 bg-slate-50/50"}`}>
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-bold text-slate-900">Outlook Calendar</h3>
                   <input type="checkbox" checked={form.outlookEnabled} onChange={e => set("outlookEnabled", e.target.checked)} />
@@ -135,7 +135,7 @@ export default function CalendarSyncModal({ visible, onClose, userId, initial, o
           <div className="mt-10 pt-8 border-t border-slate-100 flex gap-3">
             <button className="flex-1 px-6 py-3 rounded-2xl border border-slate-200 text-sm font-bold" onClick={onClose}>Discard</button>
             <button
-              className="flex-[2] px-8 py-3 rounded-2xl bg-indigo-600 text-white font-bold text-sm shadow-xl flex items-center justify-center gap-3"
+              className="flex-[2] px-8 py-3 rounded-2xl bg-primary text-white font-bold text-sm shadow-xl flex items-center justify-center gap-3"
               onClick={save}
               disabled={saving}
             >

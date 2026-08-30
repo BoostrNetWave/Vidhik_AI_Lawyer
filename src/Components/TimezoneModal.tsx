@@ -81,8 +81,8 @@ export default function TimezoneModal({ visible, onClose, userId, current, onSav
       <div className="bg-white rounded-[2rem] w-full max-w-md relative shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
         <div className="px-8 py-6 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-              <Globe className="text-indigo-600" size={20} />
+            <div className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center">
+              <Globe className="text-primary" size={20} />
             </div>
             <div>
               <h2 className="text-xl font-extrabold text-slate-900">Time Zone</h2>
@@ -99,7 +99,7 @@ export default function TimezoneModal({ visible, onClose, userId, current, onSav
             <div className="flex flex-col gap-2">
               <label className="text-sm font-bold text-slate-800 px-1">Select Jurisdiction</label>
               <select
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-ring/20 focus:border-border cursor-pointer"
                 value={zone}
                 onChange={e => setZone(e.target.value)}
               >
@@ -107,11 +107,11 @@ export default function TimezoneModal({ visible, onClose, userId, current, onSav
               </select>
             </div>
             <button
-              className="w-full bg-white border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/50 rounded-xl px-4 py-3 flex items-center justify-center gap-3 transition-all group"
+              className="w-full bg-white border border-slate-200 hover:border-border hover:bg-secondary rounded-xl px-4 py-3 flex items-center justify-center gap-3 transition-all group"
               type="button"
               onClick={autoDetect}
             >
-              <Navigation size={18} className="text-indigo-500 group-hover:scale-110 transition-transform" />
+              <Navigation size={18} className="text-primary group-hover:scale-110 transition-transform" />
               <span className="text-sm font-bold text-slate-700">Auto-Detect Current Region</span>
             </button>
             <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
@@ -119,7 +119,7 @@ export default function TimezoneModal({ visible, onClose, userId, current, onSav
                 {nowPreview ? (
                   <>
                     <div className="text-base">{nowPreview.split(" at ")[0]}</div>
-                    <div className="text-2xl text-indigo-600 mt-1">{nowPreview.split(" at ")[1] || nowPreview}</div>
+                    <div className="text-2xl text-primary mt-1">{nowPreview.split(" at ")[1] || nowPreview}</div>
                   </>
                 ) : <span className="text-slate-400">Loading preview...</span>}
               </div>
@@ -128,7 +128,7 @@ export default function TimezoneModal({ visible, onClose, userId, current, onSav
           <div className="mt-8 pt-6 border-t border-slate-100 flex gap-3">
             <button className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm font-bold" onClick={onClose}>Cancel</button>
             <button
-              className="flex-[2] px-8 py-3 rounded-xl bg-indigo-600 text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2"
+              className="flex-[2] px-8 py-3 rounded-xl bg-primary text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2"
               onClick={save}
               disabled={saving}
             >

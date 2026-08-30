@@ -27,7 +27,7 @@ export default function ViewBlogPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -36,7 +36,7 @@ export default function ViewBlogPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
                 <p className="text-slate-500">Blog not found</p>
-                <button onClick={() => navigate("/blog-posts")} className="mt-4 text-indigo-600 hover:underline">
+                <button onClick={() => navigate("/blog-posts")} className="mt-4 text-primary hover:underline">
                     Back to Posts
                 </button>
             </div>
@@ -57,7 +57,7 @@ export default function ViewBlogPage() {
                 </div>
                 <button
                     onClick={() => navigate(`/blogs/edit/${id}`)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg shadow-indigo-100 w-fit"
+                    className="bg-primary hover:bg-primary text-white font-bold py-2 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg shadow-primary/10 w-fit"
                 >
                     <Edit3 className="w-4 h-4" />
                     Edit Content
@@ -89,7 +89,7 @@ export default function ViewBlogPage() {
                         {blog.author}
                     </div>
                     {blog.premium && (
-                        <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ml-auto">
+                        <span className="bg-muted text-primary px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ml-auto">
                             Premium Content
                         </span>
                     )}
@@ -106,8 +106,8 @@ export default function ViewBlogPage() {
 
                     {blog.premium && (
                         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gradient-to-b from-white/30 to-white pt-20">
-                            <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl border border-indigo-100 shadow-2xl flex flex-col items-center max-w-md text-center">
-                                <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-200">
+                            <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl border border-border shadow-2xl flex flex-col items-center max-w-md text-center">
+                                <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary/10">
                                     <Lock className="w-8 h-8 text-white" />
                                 </div>
                                 <h3 className="text-2xl font-extrabold text-slate-900 mb-2">Premium Content</h3>
@@ -116,7 +116,7 @@ export default function ViewBlogPage() {
                                 </p>
                                 <button
                                     onClick={() => navigate("/payments")}
-                                    className="w-full bg-indigo-600 hover:bg-slate-900 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-xl shadow-indigo-200 active:scale-95 flex items-center justify-center gap-2 group"
+                                    className="w-full bg-primary hover:bg-slate-900 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-xl shadow-primary/10 active:scale-95 flex items-center justify-center gap-2 group"
                                 >
                                     <span>Unlock Full Access</span>
                                     <ArrowLeft className="w-5 h-5 rotate-180 group-hover:translate-x-1 transition-transform" />

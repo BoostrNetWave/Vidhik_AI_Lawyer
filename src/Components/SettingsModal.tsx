@@ -103,7 +103,7 @@ export default function SettingsModal({ visible, onClose, userId, initial, onSav
       <div className="relative">
         <input
           type={type}
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-ring/20 focus:border-border"
           value={value}
           onChange={onChange}
         />
@@ -122,8 +122,8 @@ export default function SettingsModal({ visible, onClose, userId, initial, onSav
       <div className="bg-white rounded-[2rem] w-full max-w-2xl relative shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
         <div className="px-8 py-6 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-              <Settings className="text-indigo-600" size={20} />
+            <div className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center">
+              <Settings className="text-primary" size={20} />
             </div>
             <div>
               <h2 className="text-xl font-extrabold text-slate-900">Booking Preferences</h2>
@@ -170,7 +170,7 @@ export default function SettingsModal({ visible, onClose, userId, initial, onSav
           <div className="mt-10 flex justify-end gap-3 pt-6 border-t border-slate-100">
             <button className="px-6 py-2.5 rounded-xl border border-slate-200 text-sm font-bold" onClick={onClose}>Discard</button>
             <button
-              className="px-8 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-sm shadow-lg flex items-center gap-2"
+              className="px-8 py-2.5 rounded-xl bg-primary text-white font-bold text-sm shadow-lg flex items-center gap-2"
               onClick={save}
               disabled={saving}
             >
