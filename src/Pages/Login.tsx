@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, AlertCircle, Eye, EyeOff, Shield, Sparkles, Scale, Star, ShieldCheck, Check } from 'lucide-react';
-import logo from '../assets/logo.jpeg';
+import { Mail, Lock, Eye, EyeOff, Loader2, Scale, Star, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Button } from '../Components/ui/button';
 import { Input } from '../Components/ui/input';
 import { Label } from '../Components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../Components/ui/card';
-import { Badge } from '../Components/ui/badge';
 import api from '../lib/api';
 
 const Login: React.FC = () => {
@@ -24,11 +21,9 @@ const Login: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Login form submitted');
         setError('');
         setLoading(true);
 
-        // Basic validation
         if (!email.trim()) {
             setError('Email is required');
             setLoading(false);
@@ -58,7 +53,6 @@ const Login: React.FC = () => {
         } catch (err: any) {
             console.error('Login error:', err);
             
-            // Check if account is not verified
             if (err.response?.status === 403 && err.response?.data?.isVerified === false) {
                 const unverifiedEmail = err.response.data.email || email.trim();
                 localStorage.setItem('pending_verification_email', unverifiedEmail);
@@ -76,13 +70,13 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="flex min-h-screen w-full font-sans bg-slate-50">
+        <div className="flex min-h-screen w-full font-sans bg-zinc-50">
             {/* Left - Branding Panel */}
-            <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-[#0F172A] via-[#1E1B4B] to-[#020617] relative overflow-hidden items-center justify-center p-12 select-none">
+            <div className="hidden lg:flex lg:w-5/12 bg-zinc-950 relative overflow-hidden items-center justify-center p-12 select-none">
                 {/* Decorative glows */}
-                <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-primary/90/10 to-transparent blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
-                <div className="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-zinc-800/20 to-transparent blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-zinc-800/30 blur-[100px] pointer-events-none" />
+                <div className="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full bg-zinc-800/30 blur-[100px] pointer-events-none" />
                 
                 {/* Dots grid pattern */}
                 <div 
@@ -94,12 +88,10 @@ const Login: React.FC = () => {
                 />
 
                 <div className="relative z-10 text-white max-w-md">
-                    <div className="inline-flex items-center gap-3 mb-10">
-                        <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center overflow-hidden p-1 shadow-md">
-                            <img src={logo} alt="Logo" className="w-full h-full object-contain" />
-                        </div>
-                        <span className="font-display text-2xl font-bold tracking-tight text-white">Vidhik <span className="text-muted-foreground">AI</span></span>
-                    </div>
+                    <Link to="/" className="inline-flex items-center gap-2 mb-10 transition-transform duration-300 hover:scale-105">
+                        <Scale className="h-8 w-8 text-zinc-300" />
+                        <span className="font-display text-2xl font-bold tracking-tight">Vidhik <span className="text-zinc-400">AI</span></span>
+                    </Link>
                     
                     <h2 className="font-display text-4xl font-extrabold mb-6 leading-tight">
                         Advanced Practice Space for Lawyers
@@ -108,82 +100,66 @@ const Login: React.FC = () => {
                         Manage consultations, review documents, research precedents, and collaborate efficiently in a secure environment built for the modern legal professional.
                     </p>
                     
-                    {/* Features checklist */}
-                    <div className="space-y-4 mb-10 bg-white/[0.02] backdrop-blur-md rounded-2xl p-6 border border-white/[0.06] shadow-[0_20px_50px_rgba(0,0,0,0.25)]">
-                        <div className="flex items-start gap-3">
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-muted-foreground">
-                                <Check className="h-3 w-3" />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-semibold text-white">AI Case Law Analyzer</h4>
-                                <p className="text-xs text-slate-400 leading-normal">Parse filings and identify precedents in minutes.</p>
-                            </div>
+                    {/* Premium Card Testimonial */}
+                    <div className="bg-zinc-900/40 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]">
+                        <div className="flex gap-1 mb-4">
+                            {[...Array(5)].map((_, i) => (
+                                <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                            ))}
                         </div>
-                        <div className="flex items-start gap-3">
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-muted-foreground">
-                                <Check className="h-3 w-3" />
+                        <p className="text-sm text-slate-200 leading-relaxed mb-4 italic">
+                            "Vidhik AI has completely transformed our approach to legal research. The document automation is incredibly accurate and fast."
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold shadow-md">
+                                RK
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-white">Automated Booking Calendar</h4>
-                                <p className="text-xs text-slate-400 leading-normal">Sync consultations and track billable meetings.</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-muted-foreground">
-                                <Check className="h-3 w-3" />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-semibold text-white">Encrypted Portal</h4>
-                                <p className="text-xs text-slate-400 leading-normal">Client communication protected by enterprise-grade security.</p>
+                                <p className="text-sm font-semibold text-white">Rajesh Kumar</p>
+                                <p className="text-xs text-slate-400">Corporate Legal Advisor</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Trust badges */}
+                    {/* Security Badge */}
                     <div className="flex items-center gap-6 mt-10 text-slate-400/80 text-xs">
                         <div className="flex items-center gap-1.5">
-                            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                            <span>SOC 2 Compliant</span>
+                            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                            <span>AES-256 Bit Encrypted</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                            <span>HIPAA Ready</span>
+                            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                            <span>ISO 27001 Certified</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Right - Form Container */}
-            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-[#FAFAFC] relative overflow-hidden">
-                {/* Decorative glows on the right panel */}
-                <div className="absolute top-0 right-0 -z-10 w-[300px] h-[300px] rounded-full bg-muted/30 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -z-10 w-[300px] h-[300px] rounded-full bg-muted/30 blur-3xl pointer-events-none" />
-                
+            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-zinc-50 relative overflow-hidden">
                 {/* Dots grid pattern for Right Panel */}
                 <div 
-                    className="absolute inset-0 opacity-[0.015] pointer-events-none"
+                    className="absolute inset-0 opacity-[0.03] pointer-events-none"
                     style={{
-                        backgroundImage: `radial-gradient(circle at 1px 1px, #7C3AED 1px, transparent 0)`,
+                        backgroundImage: `radial-gradient(circle at 1px 1px, #18181b 1px, transparent 0)`,
                         backgroundSize: '20px 20px'
                     }}
                 />
 
-                <div className="w-full max-w-md">
+                <div className="w-full max-w-md relative z-10">
                     {/* Small Logo for mobile view */}
                     <div className="text-center mb-8 lg:hidden">
-                        <div className="inline-flex items-center gap-2 mb-2">
-                            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center overflow-hidden p-0.5 border border-slate-100 shadow-sm">
-                                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
-                            </div>
+                        <Link to="/" className="inline-flex items-center gap-2">
+                            <Scale className="h-7 w-7 text-primary" />
                             <span className="font-display text-xl font-bold tracking-tight text-slate-900">
                                 Vidhik <span className="text-primary">AI</span>
                             </span>
-                        </div>
+                        </Link>
                     </div>
 
-                    <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-[0_20px_50px_-12px_rgba(124,58,237,0.08)] rounded-2xl p-8 sm:p-10 w-full relative">
+                    <div className="bg-white/60 backdrop-blur-3xl border border-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] rounded-3xl p-8 sm:p-10 w-full relative">
                         <div className="text-center mb-8">
-                            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 font-display flex items-center justify-center gap-2">
+                            <h2 className="text-3xl font-extrabold tracking-tight text-zinc-900 font-display">
                                 Welcome Back
                             </h2>
                             <p className="mt-2.5 text-sm text-slate-500">
@@ -191,112 +167,100 @@ const Login: React.FC = () => {
                             </p>
                         </div>
 
-                        <form className="space-y-5" onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit} className="space-y-5">
                             {error && (
-                                <div className="bg-secondary border border-border rounded-lg p-3.5 flex items-start gap-2.5 text-primary text-sm animate-shake">
-                                    <AlertCircle className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-primary" />
+                                <div className="bg-secondary border border-border rounded-lg p-3.5 flex items-start gap-2.5 text-primary text-sm">
+                                    <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                                     <p className="leading-normal font-medium">{error}</p>
                                 </div>
                             )}
 
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                                    Email address
-                                </Label>
+                                <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Email Address</Label>
                                 <div className="relative">
                                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
-                                    <Input
-                                        id="email"
-                                        name="email"
+                                    <Input 
                                         type="email"
-                                        autoComplete="email"
-                                        required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:border-border focus:ring-ring/20 focus-visible:ring-ring/20 focus-visible:border-border transition-all rounded-lg"
-                                        placeholder="Enter your email address"
+                                        placeholder="name@company.com" 
+                                        autoComplete="email" 
+                                        className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:border-zinc-900 focus:ring-zinc-900/10 focus-visible:ring-zinc-900/10 focus-visible:border-zinc-900 transition-all rounded-lg"
+                                        required
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                                    Password
-                                </Label>
+                                <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Password</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
                                     <Input
-                                        id="password"
-                                        name="password"
                                         type={showPassword ? "text" : "password"}
-                                        autoComplete="current-password"
-                                        required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-10 pr-10 h-11 bg-slate-50/50 border-slate-200 focus:border-border focus:ring-ring/20 focus-visible:ring-ring/20 focus-visible:border-border transition-all rounded-lg"
-                                        placeholder="Enter your password"
+                                        placeholder="••••••••"
+                                        autoComplete="current-password"
+                                        className="pl-10 pr-10 h-11 bg-zinc-50 border-zinc-200 focus:border-zinc-900 focus:ring-zinc-900/10 focus-visible:ring-zinc-900/10 focus-visible:border-zinc-900 transition-all rounded-lg"
+                                        required
                                     />
                                     <button
                                         type="button"
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none flex items-center justify-center"
-                                        aria-label={showPassword ? "Hide password" : "Show password"}
                                     >
-                                        {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                                        {showPassword ? (
+                                            <EyeOff className="h-4 w-4" />
+                                        ) : (
+                                            <Eye className="h-4 w-4" />
+                                        )}
+                                        <span className="sr-only">
+                                            {showPassword ? "Hide password" : "Show password"}
+                                        </span>
                                     </button>
                                 </div>
                             </div>
 
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <input
-                                        id="remember"
-                                        name="remember"
-                                        type="checkbox"
-                                        className="h-4.5 w-4.5 rounded border-slate-300 text-primary focus:ring-ring cursor-pointer"
+                                <div className="flex items-center space-x-2">
+                                    <input 
+                                        type="checkbox" 
+                                        id="remember" 
+                                        className="rounded border-slate-300 text-zinc-900 focus:ring-zinc-900"
                                     />
-                                    <label htmlFor="remember" className="ml-2 text-xs font-semibold text-slate-500 cursor-pointer select-none">
+                                    <Label htmlFor="remember" className="text-xs font-semibold text-slate-500 cursor-pointer select-none">
                                         Remember me
-                                    </label>
+                                    </Label>
                                 </div>
-                                <button
-                                    type="button"
-                                    className="text-xs font-semibold text-primary hover:text-primary transition-colors"
+                                <Link
+                                    to="/forgot-password"
+                                    className="text-xs font-semibold text-zinc-900 hover:text-zinc-600 transition-colors"
                                 >
                                     Forgot password?
-                                </button>
+                                </Link>
                             </div>
 
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-gradient-to-r from-primary/90 to-primary hover:from-primary/90 hover:to-primary text-white font-semibold h-11 rounded-lg flex items-center justify-center transition-all duration-300 shadow-[0_10px_20px_-5px_rgba(124,58,237,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none"
+                            <Button 
+                                type="submit" 
+                                disabled={loading} 
+                                className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold h-11 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none"
                             >
                                 {loading ? (
-                                    <div className="flex items-center justify-center gap-2">
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                         Signing in...
-                                    </div>
+                                    </>
                                 ) : (
-                                    <div className="flex items-center justify-center gap-1.5">
-                                        <Sparkles className="h-4 w-4" />
-                                        Sign In
-                                    </div>
+                                    <span>Sign in</span>
                                 )}
                             </Button>
                         </form>
 
-                        <div className="mt-8 text-center text-sm text-slate-500 border-t border-slate-100 pt-6">
-                            <p>
-                                Don't have an account?{" "}
-                                <Link
-                                    to="/signup"
-                                    className="font-semibold text-primary hover:text-primary transition-colors inline-flex items-center gap-0.5 group"
-                                >
-                                    Create lawyer account
-                                    <span className="transform transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-                                </Link>
-                            </p>
+                        <div className="mt-8 text-center text-sm text-zinc-500 border-t border-zinc-100 pt-6">
+                            Don't have an account?{" "}
+                            <Link to="/signup" className="font-semibold text-zinc-900 hover:text-zinc-600 transition-colors">
+                                Sign up
+                            </Link>
                         </div>
                     </div>
                 </div>

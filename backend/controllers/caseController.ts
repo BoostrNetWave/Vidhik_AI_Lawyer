@@ -114,16 +114,6 @@ export const submitPlan = async (req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
-        if (!kaseCheck.meetingJoinedByClient || !kaseCheck.meetingJoinedByLawyer) {
-            res.status(400).json({ message: 'Both client and lawyer must join the consultation meeting before the action roadmap can be submitted.' });
-            return;
-        }
-
-        if (!kaseCheck.meetingSummaryUrl) {
-            res.status(400).json({ message: 'You must upload the meeting summary document before submitting the action roadmap.' });
-            return;
-        }
-
         for (let i = 0; i < milestones.length; i++) {
             const m = milestones[i];
             if (!m.title || !m.title.trim() || !m.description || !m.description.trim()) {
