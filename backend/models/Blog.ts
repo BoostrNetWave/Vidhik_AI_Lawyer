@@ -9,6 +9,7 @@ export interface IBlog extends Document {
     price: number;
     image?: string;
     author: string;
+    authorId?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -47,6 +48,10 @@ const blogSchema: Schema = new Schema({
     author: {
         type: String,
         default: 'Legal Admin'
+    },
+    authorId: {
+        type: String,
+        index: true
     }
 }, {
     timestamps: true

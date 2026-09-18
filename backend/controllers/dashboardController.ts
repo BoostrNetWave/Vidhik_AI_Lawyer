@@ -5,15 +5,34 @@ import Blog from '../models/Blog.js';
 import SupportTicket from '../models/SupportTicket.js';
 import User from '../models/User.js';
 import SystemConfig from '../models/SystemConfig.js';
+import Booking from '../models/Booking.js';
+import LiveConsultation from '../models/LiveConsultation.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+
+// Helper to construct all valid matching identifiers for the lawyer
+const getLawyerMatchList = (lawyerId: string, userId?: string) => {
+    const lawyerObjId = mongoose.Types.ObjectId.isValid(lawyerId) ? new mongoose.Types.ObjectId(lawyerId) : null;
+    const list: any[] = [];
+    if (lawyerObjId) list.push(lawyerObjId);
+    if (lawyerId) list.push(lawyerId.toString());
+    if (userId) list.push(userId);
+    return { lawyerObjId, list };
+};
 
 export const getStats = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const lawyerId = req.user.id;
-        const userId = req.user.userId; // string userId for support tickets
+        const userId = req.user.userId;
+        const { list } = getLawyerMatchList(lawyerId, userId);
 
         // Fetch lawyer profile to determine subscription plan and commission
-        const lawyerUser = await User.findById(lawyerId);
+        const lawyerUser = await User.findOne({
+            $or: [
+                ...(mongoose.Types.ObjectId.isValid(lawyerId) ? [{ _id: new mongoose.Types.ObjectId(lawyerId) }] : []),
+                ...(userId ? [{ userId }] : [])
+            ]
+        });
+
         const lawyerPlanName = lawyerUser ? (lawyerUser.subscription || 'Free') : 'Free';
         const plansConfig = await SystemConfig.findOne({ key: 'LAWYER_PRICING_PLANS' });
         let commissionPercent = 15; // Default fallback for Free
@@ -26,66 +45,122 @@ export const getStats = async (req: AuthRequest, res: Response): Promise<void> =
             }
         }
 
-        const totalEarnings = await Case.aggregate([
-            { $match: { lawyer: new mongoose.Types.ObjectId(lawyerId), status: { $in: ['active', 'completed'] } } },
+        // 1. Total Revenue Calculation (Cases + LiveConsultations + Bookings)
+        const caseEarnings = await Case.aggregate([
+            { $match: { lawyer: { $in: list }, status: { $in: ['active', 'completed'] } } },
             { $group: { _id: null, total: { $sum: '$totalFee' } } }
         ]);
 
-        const grossEarnings = totalEarnings[0]?.total || 0;
-        const netEarnings = grossEarnings * (1 - commissionPercent / 100);
+        const bookingEarnings = await Booking.aggregate([
+            { $match: { userId: { $in: [userId, lawyerId.toString()] }, status: 'completed' } },
+            { $group: { _id: null, total: { $sum: '$amount' } } }
+        ]);
 
-        const upcomingConsultations = await Case.countDocuments({
-            lawyer: lawyerId,
+        const liveConsultEarnings = await LiveConsultation.aggregate([
+            { $match: { lawyer: { $in: list }, status: { $in: ['completed', 'scheduled'] } } },
+            { $group: { _id: null, total: { $sum: '$totalFee' } } }
+        ]);
+
+        const grossEarnings = (caseEarnings[0]?.total || 0) + (bookingEarnings[0]?.total || 0) + (liveConsultEarnings[0]?.total || 0);
+        const netEarnings = Math.round(grossEarnings * (1 - commissionPercent / 100));
+
+        // 2. Pending Bookings (Awaiting confirmation / payment across all booking models)
+        const pendingCases = await Case.countDocuments({
+            lawyer: { $in: list },
             status: { $in: ['pending_lawyer', 'pending_payment'] }
         });
 
-        // Blogs and Tickets are filtered by lawyer (user)
-        const publishedBlogs = await Blog.countDocuments({ authorId: userId, status: 'Published' });
-        const draftBlogs = await Blog.countDocuments({ authorId: userId, status: 'Draft' });
+        const pendingBookings = await Booking.countDocuments({
+            userId: { $in: [userId, lawyerId.toString()] },
+            status: 'pending'
+        });
 
-        const openTickets = await SupportTicket.countDocuments({ userId, status: 'Open' });
-        const closedTickets = await SupportTicket.countDocuments({ userId, status: 'Closed' });
-        const urgentTickets = await SupportTicket.countDocuments({ userId, status: 'Open', priority: 'Urgent' });
+        const pendingLiveConsults = await LiveConsultation.countDocuments({
+            lawyer: { $in: list },
+            status: { $in: ['pending_lawyer_approval', 'pending_user_approval', 'pending_payment'] }
+        });
 
-        // Calculate monthly earnings from active/completed cases in the current month (based on createdAt)
+        const upcomingConsultations = pendingCases + pendingBookings + pendingLiveConsults;
+
+        // 3. Published Content (Filtered by lawyer's authorId, userId, or author name)
+        const blogAuthorCriteria: any[] = [
+            ...(userId ? [{ authorId: userId }] : []),
+            ...(lawyerId ? [{ authorId: lawyerId.toString() }] : [])
+        ];
+        if (lawyerUser?.fullName) {
+            blogAuthorCriteria.push({ author: lawyerUser.fullName });
+        }
+
+        const blogFilter = blogAuthorCriteria.length > 0 ? { $or: blogAuthorCriteria } : {};
+        const publishedBlogs = await Blog.countDocuments({ ...blogFilter, status: 'Published' });
+        const draftBlogs = await Blog.countDocuments({ ...blogFilter, status: 'Draft' });
+
+        // 4. Ticket Status (Filtered by lawyer's userId / id)
+        const ticketUserIds = [userId, lawyerId.toString(), lawyerUser?.email].filter(Boolean);
+        const ticketFilter = ticketUserIds.length > 0 ? { userId: { $in: ticketUserIds } } : {};
+        const openTickets = await SupportTicket.countDocuments({ ...ticketFilter, status: 'Open' });
+        const closedTickets = await SupportTicket.countDocuments({ ...ticketFilter, status: 'Closed' });
+        const urgentTickets = await SupportTicket.countDocuments({ ...ticketFilter, status: 'Open', priority: 'Urgent' });
+
+        // Calculate monthly earnings from current month
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth();
+        const monthStart = new Date(currentYear, currentMonth, 1);
+        const nextMonthStart = new Date(currentYear, currentMonth + 1, 1);
 
-        const monthlyEarningsResult = await Case.aggregate([
+        const monthlyCaseEarnings = await Case.aggregate([
             {
                 $match: {
-                    lawyer: new mongoose.Types.ObjectId(lawyerId),
+                    lawyer: { $in: list },
                     status: { $in: ['active', 'completed'] },
-                    createdAt: {
-                        $gte: new Date(currentYear, currentMonth, 1),
-                        $lt: new Date(currentYear, currentMonth + 1, 1)
-                    }
+                    createdAt: { $gte: monthStart, $lt: nextMonthStart }
                 }
             },
             { $group: { _id: null, total: { $sum: '$totalFee' } } }
         ]);
-        const monthlyGross = monthlyEarningsResult[0]?.total || 0;
-        const monthlyNet = monthlyGross * (1 - commissionPercent / 100);
+
+        const monthlyBookingEarnings = await Booking.aggregate([
+            {
+                $match: {
+                    userId: { $in: [userId, lawyerId.toString()] },
+                    status: 'completed',
+                    createdAt: { $gte: monthStart, $lt: nextMonthStart }
+                }
+            },
+            { $group: { _id: null, total: { $sum: '$amount' } } }
+        ]);
+
+        const monthlyGross = (monthlyCaseEarnings[0]?.total || 0) + (monthlyBookingEarnings[0]?.total || 0);
+        const monthlyNet = Math.round(monthlyGross * (1 - commissionPercent / 100));
 
         // Calculate last month earnings
-        const lastMonthDate = new Date(currentYear, currentMonth - 1, 1);
-        const lastMonthNextDate = new Date(currentYear, currentMonth, 1);
+        const lastMonthStart = new Date(currentYear, currentMonth - 1, 1);
+        const lastMonthEnd = new Date(currentYear, currentMonth, 1);
 
-        const lastMonthEarningsResult = await Case.aggregate([
+        const lastMonthCaseEarnings = await Case.aggregate([
             {
                 $match: {
-                    lawyer: new mongoose.Types.ObjectId(lawyerId),
+                    lawyer: { $in: list },
                     status: { $in: ['active', 'completed'] },
-                    createdAt: {
-                        $gte: lastMonthDate,
-                        $lt: lastMonthNextDate
-                    }
+                    createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd }
                 }
             },
             { $group: { _id: null, total: { $sum: '$totalFee' } } }
         ]);
-        const lastMonthGross = lastMonthEarningsResult[0]?.total || 0;
-        const lastMonthNet = lastMonthGross * (1 - commissionPercent / 100);
+
+        const lastMonthBookingEarnings = await Booking.aggregate([
+            {
+                $match: {
+                    userId: { $in: [userId, lawyerId.toString()] },
+                    status: 'completed',
+                    createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd }
+                }
+            },
+            { $group: { _id: null, total: { $sum: '$amount' } } }
+        ]);
+
+        const lastMonthGross = (lastMonthCaseEarnings[0]?.total || 0) + (lastMonthBookingEarnings[0]?.total || 0);
+        const lastMonthNet = Math.round(lastMonthGross * (1 - commissionPercent / 100));
 
         res.json({
             stats: {
@@ -103,6 +178,7 @@ export const getStats = async (req: AuthRequest, res: Response): Promise<void> =
             }
         });
     } catch (error: any) {
+        console.error('getStats error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -110,29 +186,51 @@ export const getStats = async (req: AuthRequest, res: Response): Promise<void> =
 export const getRevenue = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const lawyerId = req.user.id;
-        // Group earnings by month
-        const revenue = await Case.aggregate([
-            { $match: { lawyer: new mongoose.Types.ObjectId(lawyerId), status: { $in: ['active', 'completed'] } } },
+        const userId = req.user.userId;
+        const { list } = getLawyerMatchList(lawyerId, userId);
+
+        // Fetch lawyer profile to determine commission
+        const lawyerUser = await User.findOne({
+            $or: [
+                ...(mongoose.Types.ObjectId.isValid(lawyerId) ? [{ _id: new mongoose.Types.ObjectId(lawyerId) }] : []),
+                ...(userId ? [{ userId }] : [])
+            ]
+        });
+
+        const lawyerPlanName = lawyerUser ? (lawyerUser.subscription || 'Free') : 'Free';
+        const plansConfig = await SystemConfig.findOne({ key: 'LAWYER_PRICING_PLANS' });
+        let commissionPercent = 15;
+        if (plansConfig && Array.isArray(plansConfig.value)) {
+            const plan = plansConfig.value.find(
+                (p: any) => p.name.toLowerCase() === lawyerPlanName.toLowerCase()
+            ) || plansConfig.value.find((p: any) => p.name.toLowerCase() === 'free');
+            if (plan && plan.limits && plan.limits.commissionPercent !== undefined) {
+                commissionPercent = Number(plan.limits.commissionPercent);
+            }
+        }
+
+        // Group case earnings by month
+        const caseRevenue = await Case.aggregate([
+            { $match: { lawyer: { $in: list }, status: { $in: ['active', 'completed'] } } },
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
-                    earnings: { $sum: "$totalFee" },
+                    grossEarnings: { $sum: "$totalFee" },
                     consultations: { $sum: 1 }
                 }
             },
-            { $sort: { "_id": 1 } },
-            {
-                $project: {
-                    _id: 0,
-                    month: "$_id",
-                    earnings: 1,
-                    consultations: 1
-                }
-            }
+            { $sort: { "_id": 1 } }
         ]);
 
-        res.json({ monthlyRevenue: revenue });
+        const monthlyRevenue = caseRevenue.map(r => ({
+            month: r._id,
+            earnings: Math.round(r.grossEarnings * (1 - commissionPercent / 100)),
+            consultations: r.consultations
+        }));
+
+        res.json({ monthlyRevenue });
     } catch (error: any) {
+        console.error('getRevenue error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -140,8 +238,11 @@ export const getRevenue = async (req: AuthRequest, res: Response): Promise<void>
 export const getServiceDistribution = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const lawyerId = req.user.id;
+        const userId = req.user.userId;
+        const { list } = getLawyerMatchList(lawyerId, userId);
+
         const distribution = await Case.aggregate([
-            { $match: { lawyer: new mongoose.Types.ObjectId(lawyerId) } },
+            { $match: { lawyer: { $in: list } } },
             {
                 $group: {
                     _id: "$title",
@@ -158,6 +259,7 @@ export const getServiceDistribution = async (req: AuthRequest, res: Response): P
         ]);
         res.json({ serviceDistribution: distribution });
     } catch (error: any) {
+        console.error('getServiceDistribution error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -165,7 +267,30 @@ export const getServiceDistribution = async (req: AuthRequest, res: Response): P
 export const getTransactions = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const lawyerId = req.user.id;
-        const cases = await Case.find({ lawyer: lawyerId })
+        const userId = req.user.userId;
+        const { list } = getLawyerMatchList(lawyerId, userId);
+
+        // Fetch lawyer profile for commission
+        const lawyerUser = await User.findOne({
+            $or: [
+                ...(mongoose.Types.ObjectId.isValid(lawyerId) ? [{ _id: new mongoose.Types.ObjectId(lawyerId) }] : []),
+                ...(userId ? [{ userId }] : [])
+            ]
+        });
+
+        const lawyerPlanName = lawyerUser ? (lawyerUser.subscription || 'Free') : 'Free';
+        const plansConfig = await SystemConfig.findOne({ key: 'LAWYER_PRICING_PLANS' });
+        let commissionPercent = 15;
+        if (plansConfig && Array.isArray(plansConfig.value)) {
+            const plan = plansConfig.value.find(
+                (p: any) => p.name.toLowerCase() === lawyerPlanName.toLowerCase()
+            ) || plansConfig.value.find((p: any) => p.name.toLowerCase() === 'free');
+            if (plan && plan.limits && plan.limits.commissionPercent !== undefined) {
+                commissionPercent = Number(plan.limits.commissionPercent);
+            }
+        }
+
+        const cases = await Case.find({ lawyer: { $in: list } })
             .populate('client', 'fullName email')
             .sort({ createdAt: -1 })
             .limit(10);
@@ -175,12 +300,13 @@ export const getTransactions = async (req: AuthRequest, res: Response): Promise<
             clientName: (c.client as any)?.fullName || 'Client',
             serviceType: c.title,
             date: c.bookingDate || c.createdAt,
-            amount: c.totalFee,
+            amount: Math.round(c.totalFee * (1 - commissionPercent / 100)),
             status: c.status === 'active' || c.status === 'completed' ? 'completed' : c.status === 'cancelled' ? 'cancelled' : 'pending'
         }));
         
         res.json({ recentTransactions });
     } catch (error: any) {
+        console.error('getTransactions error:', error);
         res.status(500).json({ message: error.message });
     }
 };

@@ -523,14 +523,123 @@ export default function CasesPage() {
                                     </div>
 
                                 {!selectedCase.planSubmitted ? (
-                                    /* ROADMAP BUILDER */
-                                    <div className="bg-slate-50/40 border border-slate-200 rounded-3xl p-6 space-y-6">
-                                        <div className="space-y-1">
-                                            <h4 className="font-extrabold text-slate-900 text-sm">Outline Case Milestones</h4>
-                                            <p className="text-xs text-slate-500 leading-normal">
-                                                Create a transparent work process for your client. The sum of all progress increments must equal 100%. Payouts can be configured per milestone.
-                                            </p>
+                                    /* ROADMAP BUILDER & CONSULTATION GATE */
+                                    !selectedCase.meetingJoinedByClient || !selectedCase.meetingJoinedByLawyer ? (
+                                        <div className="bg-secondary border border-border rounded-3xl p-8 space-y-6">
+                                            <div className="flex items-start gap-4">
+                                                <AlertCircle className="h-6 w-6 text-primary shrink-0 mt-0.5 animate-pulse" />
+                                                <div className="space-y-2">
+                                                    <h4 className="font-extrabold text-primary text-sm uppercase tracking-wider">Video Consultation Attendance Required</h4>
+                                                    <p className="text-xs text-primary leading-relaxed font-semibold">
+                                                        Before you can upload the meeting summary and proceed to design the case roadmap, both you and the client must join the live consultation video call.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white border border-border rounded-2xl p-4 space-y-3 shadow-sm text-xs font-semibold text-slate-600">
+                                                <h5 className="font-bold text-slate-800 text-xs">Live Attendance Tracker</h5>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Your Status</span>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByLawyer ? 'bg-secondary text-primary' : 'bg-secondary text-primary'}`}>
+                                                            {selectedCase.meetingJoinedByLawyer ? 'Joined' : 'Pending'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Client Status</span>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByClient ? 'bg-secondary text-primary' : 'bg-secondary text-primary'}`}>
+                                                            {selectedCase.meetingJoinedByClient ? 'Joined' : 'Pending'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {selectedCase.meetingLink && (
+                                                <div className="flex justify-end">
+                                                    <button
+                                                        onClick={() => navigate(`/cases/${selectedCase._id}/meet`)}
+                                                        className="bg-primary hover:bg-primary text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md shadow-primary/10 transition-all"
+                                                    >
+                                                        <Video className="w-4 h-4" />
+                                                        Join Video Consultation
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
+                                    ) : !selectedCase.meetingSummaryUrl ? (
+                                        <div className="bg-secondary border border-border rounded-3xl p-8 space-y-6">
+                                            <div className="flex items-start gap-4">
+                                                <FileText className="h-6 w-6 text-primary shrink-0 mt-0.5" />
+                                                <div className="space-y-1.5">
+                                                    <h4 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider">Video Consultation Completed - Meeting Summary Required</h4>
+                                                    <p className="text-xs text-slate-650 leading-relaxed font-semibold">
+                                                        You have both successfully attended the consultation. Please upload the meeting summary briefing document to unlock the Action Roadmap Builder.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="border border-dashed border-slate-300 bg-white p-6 rounded-2xl text-center space-y-3">
+                                                <input 
+                                                    type="file" 
+                                                    id="summary-upload-direct"
+                                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        if (e.target.files && e.target.files[0]) {
+                                                            setSummaryFile(e.target.files[0]);
+                                                        }
+                                                    }}
+                                                />
+                                                {summaryFile ? (
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800">
+                                                            <FileText size={16} className="text-primary" />
+                                                            <span className="truncate max-w-[200px]">{summaryFile.name}</span>
+                                                        </div>
+                                                        <p className="text-[10px] text-slate-400 font-semibold">Size: {(summaryFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                    </div>
+                                                ) : (
+                                                    <label htmlFor="summary-upload-direct" className="cursor-pointer space-y-1 block">
+                                                        <Upload size={24} className="mx-auto text-slate-400" />
+                                                        <p className="text-xs font-bold text-primary hover:underline">Select Brief Summary File</p>
+                                                        <p className="text-[10px] text-slate-400 font-semibold">PDF, Word, or Image up to 10MB</p>
+                                                    </label>
+                                                )}
+                                            </div>
+
+                                            {summaryFile && (
+                                                <div className="flex justify-end gap-3">
+                                                    <button
+                                                        onClick={() => setSummaryFile(null)}
+                                                        className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl text-xs"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={handleUploadSummaryDirect}
+                                                        disabled={isUploadingSummary}
+                                                        className="px-5 py-2.5 bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md disabled:bg-muted"
+                                                    >
+                                                        {isUploadingSummary ? (
+                                                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                        ) : (
+                                                            <>
+                                                                <Upload size={13} />
+                                                                Upload & Unlock Roadmap
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-slate-50/40 border border-slate-200 rounded-3xl p-6 space-y-6">
+                                            <div className="space-y-1">
+                                                <h4 className="font-extrabold text-slate-900 text-sm">Outline Case Milestones</h4>
+                                                <p className="text-xs text-slate-500 leading-normal">
+                                                    Create a transparent work process for your client. The sum of all progress increments must equal 100%. Payouts can be configured per milestone.
+                                                </p>
+                                            </div>
 
                                         <div className="space-y-4">
                                             {builderMilestones.map((bm, idx) => (
@@ -618,6 +727,7 @@ export default function CasesPage() {
                                             </button>
                                         </div>
                                     </div>
+                                    )
                                 ) : (
                                     /* ROADMAP VIEW & MANAGEMENT */
                                     <div className="space-y-6">
