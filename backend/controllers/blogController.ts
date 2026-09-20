@@ -52,9 +52,10 @@ export const createBlog = async (req: AuthRequest, res: Response): Promise<void>
 
         // Check lawyer's blog limit
         const lawyerUser = await User.findById(req.user.id);
+        // Subscription limits are disabled: lawyers enjoy unlimited blog publishing capacity
         const lawyerPlanName = lawyerUser ? (lawyerUser.subscription || 'Free') : 'Free';
         const plansConfig = await SystemConfig.findOne({ key: 'LAWYER_PRICING_PLANS' });
-        let blogsLimit = 2;
+        let blogsLimit = 999999;
         if (plansConfig && Array.isArray(plansConfig.value)) {
             const plan = plansConfig.value.find(
                 (p: any) => p.name.toLowerCase() === lawyerPlanName.toLowerCase()
@@ -63,18 +64,7 @@ export const createBlog = async (req: AuthRequest, res: Response): Promise<void>
                 blogsLimit = Number(plan.limits.blogsPerWeek);
             }
         }
-
-        const now = new Date();
-        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
-        const blogCount = await Blog.countDocuments({
-            authorId: userId,
-            createdAt: { $gte: startOfWeek }
-        });
-
-        if (blogCount >= blogsLimit) {
-            res.status(403).json({ message: `You have reached your weekly limit of ${blogsLimit} blog posts for your ${lawyerPlanName} plan. Please upgrade to write more articles.` });
-            return;
-        }
+        // Unlimited mode: no limit block enforced for lawyers
 
         // Force the authorId from the authenticated user session
         blogData.authorId = userId;

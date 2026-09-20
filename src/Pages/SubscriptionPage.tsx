@@ -134,11 +134,17 @@ export default function SubscriptionPage() {
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-8">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
                         <div className="space-y-1">
-                            <span className="px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 rounded-lg text-[10px] font-bold tracking-widest uppercase inline-block">
-                                Active Chamber Plan
-                            </span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 rounded-lg text-[10px] font-bold tracking-widest uppercase inline-block">
+                                    Active Chamber Plan
+                                </span>
+                                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-[10px] font-bold tracking-widest uppercase inline-flex items-center gap-1">
+                                    <Check className="h-3 w-3 text-emerald-600" />
+                                    No Usage Limits Enforced
+                                </span>
+                            </div>
                             <h2 className="text-3xl font-black text-slate-900 capitalize mt-2">{subscription} Plan</h2>
-                            <p className="text-sm text-slate-500">Monitor your active resource caps and platform rates below.</p>
+                            <p className="text-sm text-slate-500">Full unrestricted chamber privileges enabled. Lawyers can manage unlimited cases, write unlimited blog posts, and handle consultations without restriction.</p>
                         </div>
                         <div className="flex items-center gap-2 bg-secondary text-primary px-4 py-2 rounded-full border border-border text-xs font-bold uppercase tracking-wider">
                             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
@@ -155,23 +161,22 @@ export default function SubscriptionPage() {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Active Case Capacity</p>
-                                    <p className="text-lg font-bold text-slate-800 mt-0.5">
-                                        {usage.activeCases} / {limits.activeCases >= 999999 ? "∞" : limits.activeCases} Cases
+                                    <p className="text-lg font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                                        <span>{usage.activeCases}</span>
+                                        <span className="text-xs text-slate-400 font-semibold">/</span>
+                                        <span className="text-emerald-650 font-extrabold text-primary">Unlimited (∞)</span>
                                     </p>
                                 </div>
                             </div>
                             <div className="space-y-1">
                                 <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                                     <div 
-                                        className={`h-2 rounded-full transition-all duration-500 ${
-                                            limits.activeCases >= 999999 ? "w-0 bg-primary" :
-                                            (usage.activeCases / limits.activeCases >= 0.8) ? "bg-primary" : "bg-primary"
-                                        }`}
-                                        style={{ width: `${limits.activeCases >= 999999 ? 100 : Math.min((usage.activeCases / limits.activeCases) * 100, 100)}%` }}
+                                        className="h-2 rounded-full bg-primary transition-all duration-500"
+                                        style={{ width: '100%' }}
                                     />
                                 </div>
-                                <span className="text-[10px] text-slate-400 font-bold block text-right">
-                                    {limits.activeCases >= 999999 ? "Unlimited capacity" : `${limits.activeCases - usage.activeCases} slots remaining`}
+                                <span className="text-[10px] text-emerald-600 font-bold block text-right">
+                                    Unlimited capacity (No cap)
                                 </span>
                             </div>
                         </div>
@@ -184,23 +189,22 @@ export default function SubscriptionPage() {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Weekly Blog Posts</p>
-                                    <p className="text-lg font-bold text-slate-800 mt-0.5">
-                                        {usage.blogsThisWeek} / {limits.blogsPerWeek >= 999999 ? "∞" : limits.blogsPerWeek} Articles
+                                    <p className="text-lg font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
+                                        <span>{usage.blogsThisWeek}</span>
+                                        <span className="text-xs text-slate-400 font-semibold">/</span>
+                                        <span className="text-emerald-650 font-extrabold text-primary">Unlimited (∞)</span>
                                     </p>
                                 </div>
                             </div>
                             <div className="space-y-1">
                                 <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                                     <div 
-                                        className={`h-2 rounded-full transition-all duration-500 ${
-                                            limits.blogsPerWeek >= 999999 ? "w-0 bg-primary" :
-                                            (usage.blogsThisWeek / limits.blogsPerWeek >= 0.8) ? "bg-primary" : "bg-primary"
-                                        }`}
-                                        style={{ width: `${limits.blogsPerWeek >= 999999 ? 100 : Math.min((usage.blogsThisWeek / limits.blogsPerWeek) * 100, 100)}%` }}
+                                        className="h-2 rounded-full bg-primary transition-all duration-500"
+                                        style={{ width: '100%' }}
                                     />
                                 </div>
-                                <span className="text-[10px] text-slate-400 font-bold block text-right">
-                                    {limits.blogsPerWeek >= 999999 ? "Unlimited postings" : `${Math.max(limits.blogsPerWeek - usage.blogsThisWeek, 0)} posts remaining this week`}
+                                <span className="text-[10px] text-emerald-600 font-bold block text-right">
+                                    Unlimited postings (No cap)
                                 </span>
                             </div>
                         </div>

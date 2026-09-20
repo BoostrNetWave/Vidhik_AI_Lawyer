@@ -339,9 +339,9 @@ export const getSubscriptionStats = async (req: AuthRequest, res: Response): Pro
             createdAt: { $gte: startOfWeek }
         });
 
-        // Current plan limits
-        let activeCasesLimit = 5;
-        let blogsPerWeekLimit = 2;
+        // Current plan limits - unlimited access for lawyers
+        let activeCasesLimit = 999999;
+        let blogsPerWeekLimit = 999999;
         let commissionPercent = 15;
 
         if (plansConfig && Array.isArray(plansConfig.value)) {
@@ -367,7 +367,8 @@ export const getSubscriptionStats = async (req: AuthRequest, res: Response): Pro
                 limits: {
                     activeCases: activeCasesLimit,
                     blogsPerWeek: blogsPerWeekLimit,
-                    commissionPercent
+                    commissionPercent,
+                    unlimited: true
                 }
             }
         });

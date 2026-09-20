@@ -49,9 +49,10 @@ export const createCase = async (req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
+        // Subscription limits are disabled: lawyers enjoy unlimited case creation capacity
         const lawyerPlanName = lawyerUser.subscription || 'Free';
         const plansConfig = await SystemConfig.findOne({ key: 'LAWYER_PRICING_PLANS' });
-        let activeCasesLimit = 5;
+        let activeCasesLimit = 999999;
         if (plansConfig && Array.isArray(plansConfig.value)) {
             const plan = plansConfig.value.find(
                 (p: any) => p.name.toLowerCase() === lawyerPlanName.toLowerCase()
@@ -60,16 +61,7 @@ export const createCase = async (req: AuthRequest, res: Response): Promise<void>
                 activeCasesLimit = Number(plan.limits.activeCases);
             }
         }
-
-        const activeCasesCount = await Case.countDocuments({
-            lawyer: req.user.id,
-            status: { $in: ['active', 'pending_lawyer', 'pending_payment'] }
-        });
-
-        if (activeCasesCount >= activeCasesLimit) {
-            res.status(403).json({ message: `You have reached your active case limit of ${activeCasesLimit} cases for your ${lawyerPlanName} plan. Please upgrade to handle more cases.` });
-            return;
-        }
+        // Unlimited mode: no limit block enforced for lawyers
 
         const clientUser = await User.findOne({ email: clientEmail.toLowerCase().trim(), role: 'user' });
         if (!clientUser) {
