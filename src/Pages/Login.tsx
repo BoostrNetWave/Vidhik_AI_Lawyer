@@ -7,6 +7,8 @@ import { Input } from '../Components/ui/input';
 import { Label } from '../Components/ui/label';
 import api from '../lib/api';
 
+import logo from '../assets/logo.png';
+
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -29,30 +31,19 @@ const Login: React.FC = () => {
             setLoading(false);
             return;
         }
-        if (!password.trim()) {
-            setError('Password is required');
-            setLoading(false);
-            return;
-        }
 
         try {
             const response = await api.post('/auth/login', { 
                 email: email.trim(), 
                 password: password.trim() 
             });
-            
             if (response.data && response.data.token) {
                 const { token, user } = response.data;
                 login(token, user);
-                
-                setTimeout(() => {
-                    navigate(from, { replace: true });
-                }, 100);
+                navigate(from, { replace: true });
             }
-            
         } catch (err: any) {
             console.error('Login error:', err);
-            
             if (err.response?.status === 403 && err.response?.data?.isVerified === false) {
                 const unverifiedEmail = err.response.data.email || email.trim();
                 localStorage.setItem('pending_verification_email', unverifiedEmail);
@@ -62,7 +53,6 @@ const Login: React.FC = () => {
                 });
                 return;
             }
-            
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
         } finally {
             setLoading(false);
@@ -70,9 +60,9 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="flex min-h-screen w-full font-sans bg-zinc-50">
+        <div className="flex min-h-screen w-full font-sans bg-slate-900">
             {/* Left - Branding Panel */}
-            <div className="hidden lg:flex lg:w-5/12 bg-zinc-950 relative overflow-hidden items-center justify-center p-12 select-none">
+            <div className="hidden lg:flex lg:w-5/12 bg-zinc-950 relative overflow-hidden items-center justify-center p-12 select-none border-r border-zinc-800/80">
                 {/* Decorative glows */}
                 <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-zinc-800/20 to-transparent blur-3xl pointer-events-none" />
                 <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-zinc-800/30 blur-[100px] pointer-events-none" />
@@ -88,9 +78,8 @@ const Login: React.FC = () => {
                 />
 
                 <div className="relative z-10 text-white max-w-md">
-                    <Link to="/" className="inline-flex items-center gap-2 mb-10 transition-transform duration-300 hover:scale-105">
-                        <Scale className="h-8 w-8 text-zinc-300" />
-                        <span className="font-display text-2xl font-bold tracking-tight">Vidhik <span className="text-zinc-400">AI</span></span>
+                    <Link to="/" className="inline-flex items-center mb-10 transition-transform duration-300 hover:scale-105 bg-white px-4 py-2 rounded-2xl shadow-sm border border-white/20">
+                        <img src={logo} alt="Vidhik AI" className="h-8 w-auto object-contain" />
                     </Link>
                     
                     <h2 className="font-display text-4xl font-extrabold mb-6 leading-tight">
@@ -120,18 +109,6 @@ const Login: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Security Badge */}
-                    <div className="flex items-center gap-6 mt-10 text-slate-400/80 text-xs">
-                        <div className="flex items-center gap-1.5">
-                            <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                            <span>AES-256 Bit Encrypted</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                            <span>ISO 27001 Certified</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -149,11 +126,8 @@ const Login: React.FC = () => {
                 <div className="w-full max-w-md relative z-10">
                     {/* Small Logo for mobile view */}
                     <div className="text-center mb-8 lg:hidden">
-                        <Link to="/" className="inline-flex items-center gap-2">
-                            <Scale className="h-7 w-7 text-primary" />
-                            <span className="font-display text-xl font-bold tracking-tight text-slate-900">
-                                Vidhik <span className="text-primary">AI</span>
-                            </span>
+                        <Link to="/" className="inline-flex items-center">
+                            <img src={logo} alt="Vidhik AI" className="h-9 w-auto object-contain" />
                         </Link>
                     </div>
 

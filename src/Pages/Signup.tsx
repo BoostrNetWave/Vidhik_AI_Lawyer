@@ -107,12 +107,9 @@ const Signup: React.FC = () => {
                 />
 
                 <div className="relative z-10 text-white max-w-md">
-                    <div className="inline-flex items-center gap-3 mb-10">
-                        <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center overflow-hidden p-1 shadow-md">
-                            <img src={logo} alt="Logo" className="w-full h-full object-contain" />
-                        </div>
-                        <span className="font-display text-2xl font-bold tracking-tight text-white">Vidhik <span className="text-muted-foreground">AI</span></span>
-                    </div>
+                    <Link to="/" className="inline-flex items-center mb-10 transition-transform duration-300 hover:scale-105 bg-white px-4 py-2 rounded-2xl shadow-sm border border-white/20">
+                        <img src={logo} alt="Vidhik AI" className="h-8 w-auto object-contain" />
+                    </Link>
                     
                     <h2 className="font-display text-4xl font-extrabold mb-6 leading-tight">
                         Grow Your Legal Practice Digitally
@@ -151,18 +148,6 @@ const Signup: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Trust badges */}
-                    <div className="flex items-center gap-6 mt-10 text-slate-400/80 text-xs">
-                        <div className="flex items-center gap-1.5">
-                            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                            <span>SOC 2 Compliant</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                            <span>HIPAA Ready</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -184,14 +169,9 @@ const Signup: React.FC = () => {
                 <div className="w-full max-w-md">
                     {/* Small Logo for mobile view */}
                     <div className="text-center mb-8 lg:hidden">
-                        <div className="inline-flex items-center gap-2 mb-2">
-                            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center overflow-hidden p-0.5 border border-slate-100 shadow-sm">
-                                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
-                            </div>
-                            <span className="font-display text-xl font-bold tracking-tight text-slate-900">
-                                Vidhik <span className="text-primary">AI</span>
-                            </span>
-                        </div>
+                        <Link to="/" className="inline-flex items-center">
+                            <img src={logo} alt="Vidhik AI" className="h-9 w-auto object-contain" />
+                        </Link>
                     </div>
 
                     <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-[0_20px_50px_-12px_rgba(124,58,237,0.08)] rounded-2xl p-8 sm:p-10 w-full relative">
