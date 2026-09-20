@@ -183,7 +183,7 @@ export default function ConsultationsPage() {
                                             onClick={() => navigate(`/consultations/${consultation._id}/meet`)}
                                             className="bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs px-5 py-2 flex items-center gap-1.5 shadow-md shadow-primary/10"
                                         >
-                                            <Video size={14} /> Join Jitsi Call
+                                            <Video size={14} /> Join Video Room
                                         </button>
                                     )}
 

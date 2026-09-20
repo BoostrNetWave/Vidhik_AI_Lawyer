@@ -74,5 +74,19 @@ export const consultationService = {
     async cancelConsultation(id: string): Promise<IConsultation> {
         const response = await api.post(`/consultations/${id}/cancel`);
         return response.data;
+    },
+
+    async sendSignal(id: string, signalData: any): Promise<any> {
+        const response = await api.post(`/consultations/${id}/signals`, signalData);
+        return response.data;
+    },
+
+    async getSignals(id: string): Promise<any[]> {
+        const response = await api.get(`/consultations/${id}/signals`);
+        return response.data;
+    },
+
+    async clearSignals(id: string): Promise<void> {
+        await api.post(`/consultations/${id}/signals/clear`);
     }
 };

@@ -2,6 +2,7 @@ import { Response } from 'express';
 import LiveConsultation from '../models/LiveConsultation.js';
 import User from '../models/User.js';
 import { sendEmail } from '../utils/emailService.js';
+import Signal from '../models/Signal.js';
 
 export const getConsultationsForLawyer = async (req: any, res: Response): Promise<void> => {
     try {
@@ -172,3 +173,43 @@ export const cancelConsultation = async (req: any, res: Response): Promise<void>
         res.status(500).json({ message: error.message });
     }
 };
+
+export const sendConsultationSignal = async (req: any, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { sender, type, sdp, candidate } = req.body;
+
+        const signal = await Signal.create({
+            consultationId: id,
+            sender,
+            type,
+            sdp,
+            candidate: typeof candidate === 'string' ? candidate : JSON.stringify(candidate)
+        });
+
+        res.status(201).json(signal);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getConsultationSignals = async (req: any, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const signals = await Signal.find({ consultationId: id }).sort({ createdAt: 1 });
+        res.json(signals);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const clearConsultationSignals = async (req: any, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        await Signal.deleteMany({ consultationId: id });
+        res.json({ message: 'Signals cleared successfully' });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
