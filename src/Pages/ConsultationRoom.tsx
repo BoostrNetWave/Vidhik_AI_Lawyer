@@ -43,8 +43,11 @@ export default function ConsultationRoom() {
 
     const localVideoCallback = useCallback((node: HTMLVideoElement | null) => {
         (localVideoRef as any).current = node;
-        if (node && localStream) {
-            node.srcObject = localStream;
+        const stream = localStreamRef.current || localStream;
+        if (node && stream) {
+            if (node.srcObject !== stream) {
+                node.srcObject = stream;
+            }
             node.play().catch(err => console.warn("Local video play blocked:", err));
         }
     }, [localStream]);
@@ -56,6 +59,17 @@ export default function ConsultationRoom() {
             node.play().catch(err => console.warn("Remote video play blocked:", err));
         }
     }, [remoteStream]);
+
+    // Ensure instant local feed display whenever joining call or video state changes
+    useEffect(() => {
+        const stream = localStreamRef.current || localStream;
+        if (localVideoRef.current && stream && !isVideoMuted) {
+            if (localVideoRef.current.srcObject !== stream) {
+                localVideoRef.current.srcObject = stream;
+            }
+            localVideoRef.current.play().catch(err => console.warn("Local video play error:", err));
+        }
+    }, [hasJoinedCall, localStream, isVideoMuted]);
 
     useEffect(() => {
         if (remoteStream) {
@@ -74,22 +88,6 @@ export default function ConsultationRoom() {
             setIsRemoteVideoActive(false);
         }
     }, [remoteStream]);
-
-    const fetchDetails = async () => {
-        try {
-            const data = await consultationService.getConsultationById(id!);
-            setConsultation(data);
-        } catch (err) {
-            console.error(err);
-            error("Failed to load room details");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchDetails();
-    }, [id]);
 
     // Local stream acquisition
     const startLocalStream = async () => {
@@ -123,6 +121,51 @@ export default function ConsultationRoom() {
             }
         }
     };
+
+    const fetchDetails = async () => {
+        try {
+            const data = await consultationService.getConsultationById(id!);
+            setConsultation(data);
+        } catch (err) {
+            console.error(err);
+            error("Failed to load room details");
+        }
+    };
+
+    useEffect(() => {
+        const initRoom = async () => {
+            try {
+                setLoading(true);
+                const [data] = await Promise.all([
+                    consultationService.getConsultationById(id!),
+                    startLocalStream().catch(err => {
+                        console.warn("Could not acquire local preview on mount:", err);
+                        return null;
+                    })
+                ]);
+                setConsultation(data);
+            } catch (err) {
+                console.error(err);
+                error("Failed to load room details");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initRoom();
+
+        return () => {
+            if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
+            }
+            if (peerConnectionRef.current) {
+                peerConnectionRef.current.close();
+            }
+            if (localStreamRef.current) {
+                localStreamRef.current.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [id]);
 
     const handleRenegotiationReset = async () => {
         if (resettingRef.current) return;
@@ -277,12 +320,18 @@ export default function ConsultationRoom() {
     const startCall = async () => {
         setHasJoinedCall(true);
         try {
-            await consultationService.clearSignals(id!);
-
             let stream = localStreamRef.current;
             if (!stream) {
                 stream = await startLocalStream();
             }
+
+            if (localVideoRef.current && stream) {
+                localVideoRef.current.srcObject = stream;
+                localVideoRef.current.play().catch(() => {});
+            }
+
+            // Fire clearSignals in background without stalling video rendering
+            consultationService.clearSignals(id!).catch(err => console.error("Error clearing signals:", err));
 
             const pc = setupPeerConnection(stream);
             setIsConnecting(true);
@@ -304,23 +353,6 @@ export default function ConsultationRoom() {
             setHasJoinedCall(false);
         }
     };
-
-    // Stop streams & clean up on unmount
-    useEffect(() => {
-        startLocalStream().catch(() => {});
-
-        return () => {
-            if (pollingIntervalRef.current) {
-                clearInterval(pollingIntervalRef.current);
-            }
-            if (peerConnectionRef.current) {
-                peerConnectionRef.current.close();
-            }
-            if (localStreamRef.current) {
-                localStreamRef.current.getTracks().forEach(track => track.stop());
-            }
-        };
-    }, []);
 
     // Controls
     const handleToggleAudio = () => {
