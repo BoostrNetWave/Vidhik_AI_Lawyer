@@ -12,7 +12,7 @@ export interface ISignal extends Document {
 
 const signalSchema = new Schema({
     caseId: { type: Schema.Types.ObjectId, ref: 'Case', required: false },
-    consultationId: { type: Schema.Types.ObjectId, ref: 'Consultation', required: false },
+    consultationId: { type: Schema.Types.ObjectId, ref: 'LiveConsultation', required: false },
     sender: { type: String, enum: ['client', 'lawyer'], required: true },
     type: { type: String, enum: ['offer', 'answer', 'candidate'], required: true },
     sdp: { type: String },

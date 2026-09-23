@@ -152,6 +152,9 @@ export default function ConsultationRoom() {
                 setConsultation(data);
                 if (data?.status === 'completed') {
                     setShowSummaryModal(true);
+                } else {
+                    // Let backend know lawyer has joined consultation
+                    await consultationService.joinConsultation(id!).catch(e => console.warn(e));
                 }
             } catch (err) {
                 console.error(err);
@@ -318,7 +321,9 @@ export default function ConsultationRoom() {
                                     sdp: answerSignal.sdp
                                 }));
                                 console.log("Lawyer set remote answer successfully");
-                            } else if (activePc.signalingState !== 'stable') {
+                            } else {
+                                // Answer SDP changed, but we are not in have-local-offer. Client must have refreshed/reset.
+                                console.log("Client answer SDP changed, triggering session reset...");
                                 handleRenegotiationReset();
                             }
                         }
@@ -651,39 +656,54 @@ export default function ConsultationRoom() {
                                 </button>
                             </div>
                         ) : (
-                            /* Active Remote Video View */
-                            remoteStream && isRemoteVideoActive ? (
-                                <video
-                                    ref={remoteVideoCallback}
-                                    autoPlay
-                                    playsInline
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="flex flex-col items-center justify-center p-8 space-y-4 text-center">
-                                    <div className="relative">
-                                        <div className="h-28 w-28 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-400 overflow-hidden shadow-2xl">
-                                            <User className="h-14 w-14 text-slate-500" />
+                            /* Remote Video (Full Screen / Large) */
+                            remoteStream ? (
+                                <>
+                                    <video
+                                        ref={remoteVideoCallback}
+                                        autoPlay
+                                        playsInline
+                                        className={`w-full h-full object-cover transition-opacity duration-500 ${
+                                            isRemoteVideoActive ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+                                        }`}
+                                    />
+                                    
+                                    {/* Remote Camera Off Placeholder */}
+                                    {!isRemoteVideoActive && (
+                                        <div className="flex flex-col items-center justify-center text-center p-8 space-y-4 animate-in fade-in duration-300">
+                                            <div className="h-24 w-24 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 text-3xl font-bold shadow-xl">
+                                                {consultation.client?.fullName?.split(' ').map((n: string) => n[0]).join('') || 'CL'}
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h4 className="text-white font-extrabold text-base tracking-tight">
+                                                    {consultation.client?.fullName || 'Client'}
+                                                </h4>
+                                                <p className="text-xs text-slate-400 font-semibold flex items-center gap-1.5 justify-center">
+                                                    <VideoOff className="w-3.5 h-3.5 text-primary" /> Camera is turned off / busy
+                                                </p>
+                                            </div>
                                         </div>
-                                        {(isConnected || consultation.meetingJoinedByClient) && (
-                                            <div className="absolute bottom-1 right-1 h-5 w-5 bg-green-500 rounded-full border-4 border-slate-950 animate-pulse" />
-                                        )}
+                                    )}
+                                </>
+                            ) : (
+                                /* Waiting Overlay */
+                                <div className="flex flex-col items-center justify-center text-center p-8 space-y-4 animate-pulse">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-ping"></div>
+                                        <div className="relative h-20 w-20 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-muted-foreground">
+                                            <Video className="w-10 h-10 animate-bounce" />
+                                        </div>
                                     </div>
-                                    <div className="space-y-1">
-                                        <h4 className="text-white font-bold text-base">{consultation.client?.fullName || "Client"}</h4>
-                                        <p className="text-xs text-slate-400 font-medium">
-                                            {isConnected 
-                                                ? (remoteStream && !isRemoteVideoActive ? "Client camera is turned off" : "Connected (Audio Only)")
-                                                : isConnecting 
-                                                    ? "Connecting to client..." 
-                                                    : consultation.meetingJoinedByClient
-                                                        ? "Client has entered room • Connecting video..."
-                                                        : "Waiting for client to enter room..."
-                                            }
+                                    <div className="space-y-1.5">
+                                        <h4 className="text-white font-extrabold text-base tracking-tight">
+                                            Waiting for Client to join...
+                                        </h4>
+                                        <p className="text-xs text-slate-400 max-w-xs font-semibold">
+                                            Once the client connects to this encrypted room, the call session will start automatically.
                                         </p>
-                                        {consultation.meetingJoinedByClient && !isConnected && (
-                                            <span className="inline-block mt-2 px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-bold animate-pulse">
-                                                Client Present in Room
+                                        {consultation.meetingJoinedByClient && (
+                                            <span className="inline-block mt-2 px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-bold">
+                                                Client Present in Room • Synchronizing...
                                             </span>
                                         )}
                                     </div>

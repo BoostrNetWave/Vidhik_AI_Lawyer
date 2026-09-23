@@ -58,6 +58,7 @@ router.post('/:id/upload', upload.single('file'), uploadConsultationDocument);
 router.post('/:id/cancel', cancelConsultation);
 router.post('/:id/join', joinConsultation);
 router.post('/:id/end', endConsultation);
+router.post('/:id/signal', sendConsultationSignal);
 router.post('/:id/signals', sendConsultationSignal);
 router.get('/:id/signals', getConsultationSignals);
 router.post('/:id/signals/clear', clearConsultationSignals);
