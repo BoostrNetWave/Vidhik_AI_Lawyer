@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     Video, Calendar, Clock, RefreshCcw, Check, X, 
-    FileText, ExternalLink, ArrowRight, CornerDownRight, Plus, Eye
+    FileText, ExternalLink, ArrowRight, CornerDownRight, Plus, Eye,
+    ShieldCheck, Lock, AlertCircle
 } from 'lucide-react';
 import { consultationService, IConsultation } from '../services/consultationService';
 import { useToast } from '../context/ToastContext';
@@ -18,6 +19,9 @@ export default function ConsultationsPage() {
     const [counterDate, setCounterDate] = useState("");
     const [counterTime, setCounterTime] = useState("");
     const [submittingCounter, setSubmittingCounter] = useState(false);
+
+    // Completed summary modal
+    const [selectedSummary, setSelectedSummary] = useState<IConsultation | null>(null);
 
     useEffect(() => {
         fetchConsultations();
@@ -140,6 +144,16 @@ export default function ConsultationsPage() {
                                     <div className="flex flex-wrap items-center gap-3">
                                         <h3 className="text-xl font-extrabold text-slate-900 leading-tight">{consultation.title}</h3>
                                         {getStatusBadge(consultation.status)}
+                                        {consultation.status === 'scheduled' && consultation.meetingJoinedByClient && (
+                                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 animate-pulse">
+                                                Client in Room
+                                            </span>
+                                        )}
+                                        {consultation.status === 'scheduled' && consultation.meetingJoinedByLawyer && (
+                                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                                You Joined
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
                                         <span className="flex items-center gap-1.5">
@@ -183,7 +197,18 @@ export default function ConsultationsPage() {
                                             onClick={() => navigate(`/consultations/${consultation._id}/meet`)}
                                             className="bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs px-5 py-2 flex items-center gap-1.5 shadow-md shadow-primary/10"
                                         >
-                                            <Video size={14} /> Join Video Room
+                                            <Video size={14} />
+                                            {consultation.meetingJoinedByClient ? "Client Joined • Join Room" : "Join Video Room"}
+                                        </button>
+                                    )}
+
+                                    {consultation.status === 'completed' && (
+                                        <button 
+                                            onClick={() => setSelectedSummary(consultation)}
+                                            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl font-bold text-xs px-4 py-2 flex items-center gap-1.5 shadow-sm"
+                                        >
+                                            <FileText size={14} className="text-primary" />
+                                            View Summary
                                         </button>
                                     )}
 
@@ -296,6 +321,113 @@ export default function ConsultationsPage() {
                                 {submittingCounter ? "Submitting Counter..." : "Propose Counter Time"}
                             </button>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal: View Meeting Summary */}
+            {selectedSummary && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden border border-slate-200 shadow-2xl flex flex-col max-h-[90vh]">
+                        <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                    Completed Session
+                                </span>
+                                <h3 className="text-xl font-extrabold text-slate-900">Consultation Summary</h3>
+                            </div>
+                            <button 
+                                onClick={() => setSelectedSummary(null)}
+                                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-5 overflow-y-auto flex-1 font-sans">
+                            <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-3">
+                                <div className="flex justify-between items-start gap-2">
+                                    <div>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Topic / Title</span>
+                                        <h4 className="text-sm font-bold text-slate-900 mt-0.5">{selectedSummary.title}</h4>
+                                    </div>
+                                    <span className="text-xs font-extrabold text-primary bg-primary/10 px-2.5 py-1 rounded-lg">
+                                        ₹{selectedSummary.totalFee} Fee
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60 text-xs">
+                                    <div>
+                                        <span className="text-[10px] font-semibold text-slate-400 uppercase block">Client</span>
+                                        <span className="font-bold text-slate-800">{selectedSummary.client?.fullName}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] font-semibold text-slate-400 uppercase block">Meeting Duration</span>
+                                        <span className="font-bold text-slate-800">{selectedSummary.meetingDuration ? `${selectedSummary.meetingDuration} mins` : "Completed"}</span>
+                                    </div>
+                                </div>
+
+                                <div className="text-xs text-slate-500 pt-1">
+                                    Scheduled: {new Date(selectedSummary.scheduledDate).toLocaleDateString()} at {selectedSummary.scheduledTime}
+                                </div>
+                            </div>
+
+                            {selectedSummary.meetingNotes ? (
+                                <div className="space-y-1.5">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Recorded Notes & Advice</span>
+                                    <div className="p-4 bg-slate-50 border border-slate-150 rounded-2xl text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
+                                        {selectedSummary.meetingNotes}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-4 bg-slate-50 border border-slate-150 rounded-2xl text-xs text-slate-500 italic text-center">
+                                    No meeting notes recorded.
+                                </div>
+                            )}
+
+                            {selectedSummary.documents && selectedSummary.documents.length > 0 && (
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Shared Documents ({selectedSummary.documents.length})</span>
+                                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                                        {selectedSummary.documents.map((doc, idx) => (
+                                            <div key={idx} className="p-3 bg-slate-50 border border-slate-150 rounded-xl flex items-center justify-between gap-3 text-xs">
+                                                <div className="flex items-center gap-2 truncate">
+                                                    <FileText size={16} className="text-primary shrink-0" />
+                                                    <span className="font-bold text-slate-800 truncate">{doc.name}</span>
+                                                </div>
+                                                <a
+                                                    href={`/lawyer${doc.url}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="text-primary hover:underline font-bold text-[11px] shrink-0"
+                                                >
+                                                    Download
+                                                </a>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="p-4 bg-slate-100 border border-slate-200 rounded-2xl text-xs text-slate-700 space-y-1">
+                                <p className="font-bold flex items-center gap-1.5 text-slate-900">
+                                    <Lock size={14} className="text-slate-500" />
+                                    Session Finalized • Rejoin Disabled
+                                </p>
+                                <p className="text-[11px] text-slate-500 leading-relaxed">
+                                    This consultation is complete. If the client requires further sessions, they will book and pay for a new consultation.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-slate-50 border-t border-slate-100">
+                            <button 
+                                onClick={() => setSelectedSummary(null)}
+                                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl h-11 text-xs transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

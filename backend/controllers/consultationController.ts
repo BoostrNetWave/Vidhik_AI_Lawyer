@@ -213,3 +213,99 @@ export const clearConsultationSignals = async (req: any, res: Response): Promise
     }
 };
 
+export const joinConsultation = async (req: any, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const userId = (req.user._id || req.user.id).toString();
+
+        const consultation = await LiveConsultation.findById(id);
+        if (!consultation) {
+            res.status(404).json({ message: 'Consultation not found' });
+            return;
+        }
+
+        if (consultation.status === 'completed' || consultation.status === 'cancelled') {
+            res.status(400).json({ message: 'This consultation has ended and cannot be rejoined' });
+            return;
+        }
+
+        const isClient = consultation.client.toString() === userId;
+        const isLawyer = consultation.lawyer.toString() === userId;
+
+        if (!isClient && !isLawyer && req.user.role !== 'admin') {
+            res.status(403).json({ message: 'Unauthorized to join this consultation' });
+            return;
+        }
+
+        if (isClient) {
+            consultation.meetingJoinedByClient = true;
+            if (!consultation.clientJoinedAt) {
+                consultation.clientJoinedAt = new Date();
+            }
+        } else if (isLawyer) {
+            consultation.meetingJoinedByLawyer = true;
+            if (!consultation.lawyerJoinedAt) {
+                consultation.lawyerJoinedAt = new Date();
+            }
+        }
+
+        await consultation.save();
+
+        const updated = await LiveConsultation.findById(id)
+            .populate('client', 'fullName email phone location')
+            .populate('lawyer', 'fullName email phone location title expertise avatar');
+
+        res.json(updated);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const endConsultation = async (req: any, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { meetingNotes, meetingSummary } = req.body;
+        const userId = (req.user._id || req.user.id).toString();
+
+        const consultation = await LiveConsultation.findById(id);
+        if (!consultation) {
+            res.status(404).json({ message: 'Consultation not found' });
+            return;
+        }
+
+        const isClient = consultation.client.toString() === userId;
+        const isLawyer = consultation.lawyer.toString() === userId;
+
+        if (!isClient && !isLawyer && req.user.role !== 'admin') {
+            res.status(403).json({ message: 'Unauthorized to end this consultation' });
+            return;
+        }
+
+        consultation.status = 'completed';
+        consultation.completedAt = new Date();
+
+        if (meetingNotes) consultation.meetingNotes = meetingNotes;
+        if (meetingSummary) consultation.meetingSummary = meetingSummary;
+
+        const startTime = consultation.clientJoinedAt || consultation.lawyerJoinedAt || consultation.createdAt;
+        if (startTime) {
+            const diffMs = consultation.completedAt.getTime() - new Date(startTime).getTime();
+            consultation.meetingDuration = Math.max(1, Math.round(diffMs / 60000));
+        }
+
+        await consultation.save();
+
+        // Clear WebRTC signals from DB
+        await Signal.deleteMany({ consultationId: id });
+
+        const updated = await LiveConsultation.findById(id)
+            .populate('client', 'fullName email phone location')
+            .populate('lawyer', 'fullName email phone location title expertise avatar');
+
+        res.json(updated);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+

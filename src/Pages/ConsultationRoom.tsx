@@ -41,6 +41,12 @@ export default function ConsultationRoom() {
     const [isConnected, setIsConnected] = useState(false);
     const [hasJoinedCall, setHasJoinedCall] = useState(false);
 
+    // End call & summary modals
+    const [showEndModal, setShowEndModal] = useState(false);
+    const [showSummaryModal, setShowSummaryModal] = useState(false);
+    const [meetingNotes, setMeetingNotes] = useState("");
+    const [isEnding, setIsEnding] = useState(false);
+
     const localVideoCallback = useCallback((node: HTMLVideoElement | null) => {
         (localVideoRef as any).current = node;
         const stream = localStreamRef.current || localStream;
@@ -144,6 +150,9 @@ export default function ConsultationRoom() {
                     })
                 ]);
                 setConsultation(data);
+                if (data?.status === 'completed') {
+                    setShowSummaryModal(true);
+                }
             } catch (err) {
                 console.error(err);
                 error("Failed to load room details");
@@ -154,7 +163,33 @@ export default function ConsultationRoom() {
 
         initRoom();
 
+        // Background polling for client presence & completed status
+        const statusPoll = setInterval(async () => {
+            if (!id) return;
+            try {
+                const refreshed = await consultationService.getConsultationById(id);
+                if (refreshed) {
+                    setConsultation(prev => {
+                        if (prev && prev.status !== 'completed' && refreshed.status === 'completed') {
+                            if (localStreamRef.current) {
+                                localStreamRef.current.getTracks().forEach(t => t.stop());
+                            }
+                            if (peerConnectionRef.current) {
+                                peerConnectionRef.current.close();
+                            }
+                            setShowSummaryModal(true);
+                            error("This consultation has ended.");
+                        }
+                        return refreshed;
+                    });
+                }
+            } catch (err) {
+                console.error("Consultation status polling error:", err);
+            }
+        }, 2500);
+
         return () => {
+            clearInterval(statusPoll);
             if (pollingIntervalRef.current) {
                 clearInterval(pollingIntervalRef.current);
             }
@@ -283,7 +318,7 @@ export default function ConsultationRoom() {
                                     sdp: answerSignal.sdp
                                 }));
                                 console.log("Lawyer set remote answer successfully");
-                            } else {
+                            } else if (activePc.signalingState !== 'stable') {
                                 handleRenegotiationReset();
                             }
                         }
@@ -330,8 +365,15 @@ export default function ConsultationRoom() {
                 localVideoRef.current.play().catch(() => {});
             }
 
-            // Fire clearSignals in background without stalling video rendering
-            consultationService.clearSignals(id!).catch(err => console.error("Error clearing signals:", err));
+            // Mark consultation as joined by lawyer in database
+            consultationService.joinConsultation(id!)
+                .then(updated => {
+                    if (updated) setConsultation(updated);
+                })
+                .catch(err => console.error("Error updating lawyer joined state:", err));
+
+            // Await clearSignals to finish BEFORE creating and sending the offer
+            await consultationService.clearSignals(id!).catch(err => console.error("Error clearing signals:", err));
 
             const pc = setupPeerConnection(stream);
             setIsConnecting(true);
@@ -436,8 +478,35 @@ export default function ConsultationRoom() {
     };
 
     const handleDisconnect = () => {
-        consultationService.clearSignals(id!).catch(err => console.error(err));
-        navigate('/consultations');
+        if (hasJoinedCall) {
+            setShowEndModal(true);
+        } else {
+            consultationService.clearSignals(id!).catch(err => console.error(err));
+            navigate('/consultations');
+        }
+    };
+
+    const handleEndCall = async () => {
+        setIsEnding(true);
+        try {
+            if (localStreamRef.current) {
+                localStreamRef.current.getTracks().forEach(t => t.stop());
+            }
+            if (peerConnectionRef.current) {
+                peerConnectionRef.current.close();
+            }
+            await consultationService.clearSignals(id!).catch(console.error);
+            const ended = await consultationService.endConsultation(id!, { meetingNotes });
+            setConsultation(ended);
+            setShowEndModal(false);
+            setShowSummaryModal(true);
+            success("Consultation session ended and notes saved.");
+        } catch (err) {
+            console.error("Error ending consultation:", err);
+            error("Failed to end consultation");
+        } finally {
+            setIsEnding(false);
+        }
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -526,6 +595,19 @@ export default function ConsultationRoom() {
                                     <p className="text-xs text-slate-400 font-semibold">Check your audio and video before entering the consultation.</p>
                                 </div>
 
+                                {/* Client Presence Indicator in Lobby */}
+                                {consultation.meetingJoinedByClient ? (
+                                    <div className="w-full flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-2.5 rounded-xl text-xs font-bold animate-pulse">
+                                        <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
+                                        Client is in the room • Ready to connect
+                                    </div>
+                                ) : (
+                                    <div className="w-full flex items-center justify-center gap-2 bg-slate-800/80 border border-slate-700/60 text-slate-400 px-4 py-2 rounded-xl text-xs font-semibold">
+                                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                        Client has not joined yet
+                                    </div>
+                                )}
+
                                 {/* Local Camera Preview in Lobby */}
                                 <div className="w-full h-48 bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden relative flex items-center justify-center shadow-inner">
                                     {isVideoMuted ? (
@@ -565,7 +647,7 @@ export default function ConsultationRoom() {
                                     className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                                 >
                                     <Video className="w-4 h-4" />
-                                    Join Consultation Now
+                                    {consultation.meetingJoinedByClient ? "Client is in Room • Join Now" : "Join Consultation Now"}
                                 </button>
                             </div>
                         ) : (
@@ -583,7 +665,7 @@ export default function ConsultationRoom() {
                                         <div className="h-28 w-28 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-400 overflow-hidden shadow-2xl">
                                             <User className="h-14 w-14 text-slate-500" />
                                         </div>
-                                        {isConnected && (
+                                        {(isConnected || consultation.meetingJoinedByClient) && (
                                             <div className="absolute bottom-1 right-1 h-5 w-5 bg-green-500 rounded-full border-4 border-slate-950 animate-pulse" />
                                         )}
                                     </div>
@@ -594,9 +676,16 @@ export default function ConsultationRoom() {
                                                 ? (remoteStream && !isRemoteVideoActive ? "Client camera is turned off" : "Connected (Audio Only)")
                                                 : isConnecting 
                                                     ? "Connecting to client..." 
-                                                    : "Waiting for client to enter room..."
+                                                    : consultation.meetingJoinedByClient
+                                                        ? "Client has entered room • Connecting video..."
+                                                        : "Waiting for client to enter room..."
                                             }
                                         </p>
+                                        {consultation.meetingJoinedByClient && !isConnected && (
+                                            <span className="inline-block mt-2 px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-bold animate-pulse">
+                                                Client Present in Room
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             )
@@ -684,8 +773,8 @@ export default function ConsultationRoom() {
                             <div className="w-px h-8 bg-slate-800 mx-2" />
 
                             <button
-                                onClick={handleDisconnect}
-                                className="h-12 px-6 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/10 active:scale-[0.98]"
+                                onClick={() => setShowEndModal(true)}
+                                className="h-12 px-6 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-600/20 active:scale-[0.98]"
                                 title="End Call"
                             >
                                 <PhoneOff className="w-5 h-5" />
@@ -729,20 +818,28 @@ export default function ConsultationRoom() {
                                         </div>
                                         <div>
                                             <h4 className="font-extrabold text-slate-900 text-sm leading-none">{consultation.client?.fullName}</h4>
-                                            <p className="text-[10px] text-slate-400 mt-1">{consultation.client?.email}</p>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-bold truncate max-w-[200px]">{consultation.client?.email}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Description / Topic Details</span>
-                                    <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 border border-slate-100 p-4 rounded-2xl whitespace-pre-wrap">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Advocate (You)</span>
+                                    <div className="bg-slate-50 border border-slate-100 p-3 rounded-xl text-xs font-semibold text-slate-700">
+                                        <p className="text-slate-950 font-bold">{consultation.lawyer?.fullName}</p>
+                                        <p className="text-[10px] text-primary font-bold uppercase mt-0.5">{consultation.lawyer?.expertise || "Advocate"}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Description / Inquiry Details</span>
+                                    <p className="text-xs text-slate-650 leading-relaxed bg-slate-50 border border-slate-100 p-4 rounded-2xl whitespace-pre-wrap font-medium">
                                         {consultation.description}
                                     </p>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Scheduled Consultation Time</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Scheduled Time</span>
                                     <div className="bg-slate-50 border border-slate-150 p-4 rounded-2xl flex items-center gap-3 text-xs font-semibold text-slate-700">
                                         <Clock className="w-4 h-4 text-primary" />
                                         <span>
@@ -754,7 +851,7 @@ export default function ConsultationRoom() {
                         ) : (
                             <div className="space-y-4 animate-in fade-in duration-200 flex flex-col h-full">
                                 <div className="flex justify-between items-center mb-1 shrink-0">
-                                    <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">Shared Files</h4>
+                                    <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">Shared Documents</h4>
                                     <button 
                                         onClick={fetchDetails}
                                         className="text-[10px] font-bold text-primary flex items-center gap-1"
@@ -775,17 +872,17 @@ export default function ConsultationRoom() {
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={uploadingDoc}
-                                        className="w-full bg-slate-900 text-white hover:bg-slate-800 rounded-xl font-bold text-xs gap-2 h-11 flex items-center justify-center"
+                                        className="w-full bg-slate-900 text-white hover:bg-slate-800 rounded-xl font-bold text-xs flex items-center justify-center gap-2 h-11 transition-colors"
                                     >
-                                        <Upload className="h-4 w-4 mr-2" />
-                                        {uploadingDoc ? "Uploading Document..." : "Upload New File"}
+                                        <Upload className="h-4 w-4" />
+                                        {uploadingDoc ? "Uploading..." : "Upload New File"}
                                     </button>
                                     <p className="text-[9px] text-slate-400 text-center mt-1.5 leading-relaxed">
-                                        Supported: PDFs, Word, and images up to 10MB.
+                                        Share legal drafts, case files, or review documents.
                                     </p>
                                 </div>
 
-                                <div className="h-px bg-slate-100 shrink-0" />
+                                <hr className="border-slate-100 shrink-0" />
 
                                 <div className="flex-1 overflow-y-auto space-y-3 min-h-0">
                                     {consultation.documents?.length === 0 ? (
@@ -822,6 +919,126 @@ export default function ConsultationRoom() {
                     </div>
                 </div>
             </div>
+
+            {/* Modal: Confirm End Call with Notes */}
+            {showEndModal && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg p-6 space-y-5 shadow-2xl">
+                        <div className="flex items-center gap-3">
+                            <div className="h-12 w-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 shrink-0">
+                                <PhoneOff className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white">Conclude Consultation?</h3>
+                                <p className="text-xs text-slate-400">This will finalize the session and prevent any rejoining.</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 text-left">
+                            <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                                Legal Advice & Meeting Summary Notes (Optional)
+                            </label>
+                            <textarea
+                                value={meetingNotes}
+                                onChange={(e) => setMeetingNotes(e.target.value)}
+                                placeholder="Summarize your advice, key points discussed, or next legal steps for the client..."
+                                rows={4}
+                                className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3.5 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-primary"
+                            />
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowEndModal(false)}
+                                className="flex-1 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-xl font-bold text-xs h-11 transition-colors"
+                                disabled={isEnding}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleEndCall}
+                                className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs h-11 transition-colors shadow-lg shadow-red-600/20 flex items-center justify-center gap-2"
+                                disabled={isEnding}
+                            >
+                                {isEnding ? "Concluding..." : "Confirm & End Session"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal: Consultation Summary (Rejoin Prevented) */}
+            {showSummaryModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden border border-slate-200 shadow-2xl flex flex-col max-h-[90vh]">
+                        <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                    Consultation Concluded
+                                </span>
+                                <h3 className="text-xl font-extrabold text-slate-900">Session Summary</h3>
+                            </div>
+                            <div className="h-10 w-10 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center text-emerald-600">
+                                <ShieldCheck className="w-5 h-5" />
+                            </div>
+                        </div>
+
+                        <div className="p-6 space-y-5 overflow-y-auto flex-1 font-sans">
+                            <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-3">
+                                <div className="flex justify-between items-start gap-2">
+                                    <div>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Topic / Title</span>
+                                        <h4 className="text-sm font-bold text-slate-900 mt-0.5">{consultation.title}</h4>
+                                    </div>
+                                    <span className="text-xs font-extrabold text-primary bg-primary/10 px-2.5 py-1 rounded-lg">
+                                        ₹{consultation.totalFee} Fee
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60 text-xs">
+                                    <div>
+                                        <span className="text-[10px] font-semibold text-slate-400 uppercase block">Client</span>
+                                        <span className="font-bold text-slate-800">{consultation.client?.fullName}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] font-semibold text-slate-400 uppercase block">Total Duration</span>
+                                        <span className="font-bold text-slate-800">{consultation.meetingDuration ? `${consultation.meetingDuration} mins` : "Completed"}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {consultation.meetingNotes && (
+                                <div className="space-y-1.5">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Recorded Notes & Legal Advice</span>
+                                    <div className="p-4 bg-slate-50 border border-slate-150 rounded-2xl text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
+                                        {consultation.meetingNotes}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Rejoin Blocked Notice */}
+                            <div className="p-4 bg-slate-100 border border-slate-200 rounded-2xl text-xs text-slate-700 space-y-1">
+                                <p className="font-bold flex items-center gap-1.5 text-slate-900">
+                                    <Lock className="w-3.5 h-3.5 text-slate-500" />
+                                    Session Finalized • Rejoin Disabled
+                                </p>
+                                <p className="text-[11px] text-slate-500 leading-relaxed">
+                                    This consultation has concluded. If the client requests follow-up sessions, they will be required to book and pay for a new consultation.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-slate-50 border-t border-slate-100">
+                            <button
+                                onClick={() => navigate('/consultations')}
+                                className="w-full bg-primary hover:bg-primary/95 text-white font-bold rounded-xl h-11 text-xs shadow-md shadow-primary/20 transition-all"
+                            >
+                                Back to Consultations
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

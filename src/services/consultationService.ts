@@ -35,6 +35,14 @@ export interface IConsultation {
     totalFee: number;
     meetingLink?: string;
     documents: IConsultationDoc[];
+    meetingJoinedByClient?: boolean;
+    meetingJoinedByLawyer?: boolean;
+    clientJoinedAt?: string;
+    lawyerJoinedAt?: string;
+    completedAt?: string;
+    meetingDuration?: number;
+    meetingNotes?: string;
+    meetingSummary?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -73,6 +81,16 @@ export const consultationService = {
 
     async cancelConsultation(id: string): Promise<IConsultation> {
         const response = await api.post(`/consultations/${id}/cancel`);
+        return response.data;
+    },
+
+    async joinConsultation(id: string): Promise<IConsultation> {
+        const response = await api.post(`/consultations/${id}/join`);
+        return response.data;
+    },
+
+    async endConsultation(id: string, data?: { meetingNotes?: string; meetingSummary?: string }): Promise<IConsultation> {
+        const response = await api.post(`/consultations/${id}/end`, data || {});
         return response.data;
     },
 

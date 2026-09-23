@@ -17,6 +17,14 @@ export interface ILiveConsultation extends Document {
         uploadedBy: 'client' | 'lawyer';
         uploadedAt: Date;
     }[];
+    meetingJoinedByClient?: boolean;
+    meetingJoinedByLawyer?: boolean;
+    clientJoinedAt?: Date;
+    lawyerJoinedAt?: Date;
+    completedAt?: Date;
+    meetingDuration?: number;
+    meetingNotes?: string;
+    meetingSummary?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -41,7 +49,15 @@ const liveConsultationSchema = new Schema({
         url: { type: String, required: true },
         uploadedBy: { type: String, enum: ['client', 'lawyer'], required: true },
         uploadedAt: { type: Date, default: Date.now }
-    }]
+    }],
+    meetingJoinedByClient: { type: Boolean, default: false },
+    meetingJoinedByLawyer: { type: Boolean, default: false },
+    clientJoinedAt: { type: Date },
+    lawyerJoinedAt: { type: Date },
+    completedAt: { type: Date },
+    meetingDuration: { type: Number, default: 0 },
+    meetingNotes: { type: String, default: '' },
+    meetingSummary: { type: String, default: '' }
 }, {
     timestamps: true
 });
