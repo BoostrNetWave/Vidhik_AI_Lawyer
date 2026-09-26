@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, User, Calendar, CreditCard, FileText, LifeBuoy, Settings, LogOut, Briefcase, Zap, Video } from 'lucide-react';
+import { Home, User, Calendar, CreditCard, FileText, LifeBuoy, Settings, LogOut, Briefcase, Zap, Video, Globe } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 import logo from '../assets/logo.jpeg';
@@ -21,6 +21,7 @@ const navItems: NavItem[] = [
   { label: "Payments", icon: <CreditCard size={20} />, to: "/payments" },
   { label: "Blog Posts", icon: <FileText size={20} />, to: "/blog-posts" },
   { label: "Support", icon: <LifeBuoy size={20} />, to: "/support" },
+  { label: "Website Content", icon: <Globe size={20} />, to: "/website-content" },
 ];
 
 function Sidebar() {

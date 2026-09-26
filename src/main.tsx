@@ -26,6 +26,7 @@ import ConsultationMeeting from "./Pages/ConsultationMeeting";
 import SubscriptionPage from "./Pages/SubscriptionPage";
 import ConsultationsPage from "./Pages/ConsultationsPage";
 import ConsultationRoom from "./Pages/ConsultationRoom";
+import WebsiteContentPage from "./Pages/WebsiteContentPage";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
@@ -65,6 +66,7 @@ const router = createBrowserRouter([
       { path: "cases/:id/meet", element: <ConsultationMeeting /> },
       { path: "consultations", element: <ConsultationsPage /> },
       { path: "consultations/:id/meet", element: <ConsultationRoom /> },
+      { path: "website-content", element: <WebsiteContentPage /> },
     ],
   },
 ], {
