@@ -141,3 +141,38 @@ export const updatePassword = async (req: Request, res: Response): Promise<void>
         res.status(500).json({ message: error.message });
     }
 };
+
+export const getPublicLawyers = async (req: Request, res: Response): Promise<void> => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control');
+
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+
+    try {
+        const lawyers = await User.find({
+            role: 'lawyer',
+            isApproved: true,
+            isSuspended: { $ne: true }
+        })
+        .select('-password -verificationOTP -otpExpires')
+        .sort({ rating: -1, createdAt: -1 });
+
+        const enriched = lawyers.map(l => {
+            const obj = l.toObject() as any;
+            if (obj.avatar && !obj.avatar.startsWith('http')) {
+                obj.avatar = `https://user.vidhikai.com/user${obj.avatar}`;
+            }
+            return obj;
+        });
+
+        res.set('Cache-Control', 'no-store');
+        res.json(enriched);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+

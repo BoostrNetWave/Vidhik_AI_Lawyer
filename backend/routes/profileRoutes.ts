@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { getProfile, updateProfile, getPayouts, updatePayouts, uploadAvatar, updatePassword } from '../controllers/profileController.js';
+import { getProfile, updateProfile, getPayouts, updatePayouts, uploadAvatar, updatePassword, getPublicLawyers } from '../controllers/profileController.js';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -44,5 +44,8 @@ router.post('/profile/password', updatePassword);
 // Payout routes
 router.get('/payouts/:userId', getPayouts);
 router.post('/payouts', updatePayouts);
+
+// Public routes
+router.get('/public/lawyers', getPublicLawyers);
 
 export default router;
