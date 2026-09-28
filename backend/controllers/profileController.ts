@@ -164,12 +164,13 @@ export const getPublicLawyers = async (req: Request, res: Response): Promise<voi
         const enriched = lawyers.map(l => {
             const obj = l.toObject() as any;
             if (obj.avatar && !obj.avatar.startsWith('http')) {
-                let cleanPath = obj.avatar;
-                if (cleanPath.startsWith('/lawyer/uploads/')) {
-                    cleanPath = cleanPath.replace('/lawyer', '');
+                let filename = obj.avatar;
+                if (filename.includes('/uploads/')) {
+                    filename = filename.substring(filename.indexOf('/uploads/') + 9);
+                } else if (filename.startsWith('/')) {
+                    filename = filename.substring(1);
                 }
-                if (!cleanPath.startsWith('/')) cleanPath = `/${cleanPath}`;
-                obj.avatar = `https://lawyer.vidhikai.com/lawyer${cleanPath}`;
+                obj.avatar = `https://user.vidhikai.com/user/uploads/${filename}`;
             }
             return obj;
         });
