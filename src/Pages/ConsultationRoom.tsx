@@ -278,14 +278,20 @@ export default function ConsultationRoom() {
         // Capture remote tracks
         pc.ontrack = (event) => {
             console.log("Lawyer received remote track:", event.track.kind);
-            const remoteTracks = pc.getReceivers()
-                .map(r => r.track)
-                .filter(t => t && t.readyState === 'live');
-
-            if (remoteTracks.length > 0) {
-                setRemoteStream(new MediaStream(remoteTracks));
+            if (event.streams && event.streams[0]) {
+                setRemoteStream(event.streams[0]);
                 setIsConnected(true);
                 setIsConnecting(false);
+            } else {
+                const remoteTracks = pc.getReceivers()
+                    .map(r => r.track)
+                    .filter(t => t && t.readyState === 'live');
+
+                if (remoteTracks.length > 0) {
+                    setRemoteStream(new MediaStream(remoteTracks));
+                    setIsConnected(true);
+                    setIsConnecting(false);
+                }
             }
         };
 
@@ -298,7 +304,6 @@ export default function ConsultationRoom() {
             } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
                 setIsConnected(false);
                 setRemoteStream(null);
-                handleRenegotiationReset();
             }
         };
 
@@ -347,9 +352,16 @@ export default function ConsultationRoom() {
                         }
                         processedCandidatesRef.current.add(signal._id);
                         try {
-                            const candidateObj = JSON.parse(signal.candidate);
-                            if (candidateObj) {
+                            let candidateObj = signal.candidate;
+                            if (typeof candidateObj === 'string') {
+                                try { candidateObj = JSON.parse(candidateObj); } catch (e) {}
+                            }
+                            if (typeof candidateObj === 'string') {
+                                try { candidateObj = JSON.parse(candidateObj); } catch (e) {}
+                            }
+                            if (candidateObj && (candidateObj.candidate !== undefined || candidateObj.sdpMid !== undefined)) {
                                 await pc.addIceCandidate(new RTCIceCandidate(candidateObj));
+                                console.log("Lawyer added remote candidate successfully");
                             }
                         } catch (iceErr) {
                             console.error("Error adding lawyer ICE candidate:", iceErr);
