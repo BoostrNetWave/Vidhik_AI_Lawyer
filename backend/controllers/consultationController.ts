@@ -229,8 +229,11 @@ export const joinConsultation = async (req: any, res: Response): Promise<void> =
             return;
         }
 
-        const isClient = consultation.client.toString() === userId;
-        const isLawyer = consultation.lawyer.toString() === userId;
+        const clientObjId = (consultation.client as any)?._id ? (consultation.client as any)._id.toString() : consultation.client.toString();
+        const lawyerObjId = (consultation.lawyer as any)?._id ? (consultation.lawyer as any)._id.toString() : consultation.lawyer.toString();
+
+        const isClient = clientObjId === userId;
+        const isLawyer = lawyerObjId === userId;
 
         if (!isClient && !isLawyer && req.user.role !== 'admin') {
             res.status(403).json({ message: 'Unauthorized to join this consultation' });
@@ -273,8 +276,11 @@ export const endConsultation = async (req: any, res: Response): Promise<void> =>
             return;
         }
 
-        const isClient = consultation.client.toString() === userId;
-        const isLawyer = consultation.lawyer.toString() === userId;
+        const clientObjId = (consultation.client as any)?._id ? (consultation.client as any)._id.toString() : consultation.client.toString();
+        const lawyerObjId = (consultation.lawyer as any)?._id ? (consultation.lawyer as any)._id.toString() : consultation.lawyer.toString();
+
+        const isClient = clientObjId === userId;
+        const isLawyer = lawyerObjId === userId;
 
         if (!isClient && !isLawyer && req.user.role !== 'admin') {
             res.status(403).json({ message: 'Unauthorized to end this consultation' });
