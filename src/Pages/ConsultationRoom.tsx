@@ -255,8 +255,21 @@ export default function ConsultationRoom() {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
-            ]
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' },
+                {
+                    urls: [
+                        'turn:openrelay.metered.ca:80',
+                        'turn:openrelay.metered.ca:443',
+                        'turn:openrelay.metered.ca:443?transport=tcp'
+                    ],
+                    username: 'openrelay',
+                    credential: 'openrelay'
+                }
+            ],
+            iceCandidatePoolSize: 10
         });
 
         // Add local tracks
@@ -352,16 +365,9 @@ export default function ConsultationRoom() {
                         }
                         processedCandidatesRef.current.add(signal._id);
                         try {
-                            let candidateObj = signal.candidate;
-                            if (typeof candidateObj === 'string') {
-                                try { candidateObj = JSON.parse(candidateObj); } catch (e) {}
-                            }
-                            if (typeof candidateObj === 'string') {
-                                try { candidateObj = JSON.parse(candidateObj); } catch (e) {}
-                            }
-                            if (candidateObj && (candidateObj.candidate !== undefined || candidateObj.sdpMid !== undefined)) {
+                            const candidateObj = JSON.parse(signal.candidate);
+                            if (candidateObj) {
                                 await pc.addIceCandidate(new RTCIceCandidate(candidateObj));
-                                console.log("Lawyer added remote candidate successfully");
                             }
                         } catch (iceErr) {
                             console.error("Error adding lawyer ICE candidate:", iceErr);
