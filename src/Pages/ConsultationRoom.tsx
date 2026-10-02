@@ -249,6 +249,15 @@ export default function ConsultationRoom() {
         }
     };
 
+    useEffect(() => {
+        if (remoteVideoRef.current && remoteStream) {
+            if (remoteVideoRef.current.srcObject !== remoteStream) {
+                remoteVideoRef.current.srcObject = remoteStream;
+            }
+            remoteVideoRef.current.play().catch(err => console.warn("Remote video play error:", err));
+        }
+    }, [remoteStream]);
+
     // Peer Connection Setup
     const setupPeerConnection = (stream: MediaStream) => {
         const pc = new RTCPeerConnection({
@@ -262,8 +271,11 @@ export default function ConsultationRoom() {
                 {
                     urls: [
                         'turn:openrelay.metered.ca:80',
+                        'turn:openrelay.metered.ca:80?transport=tcp',
                         'turn:openrelay.metered.ca:443',
-                        'turn:openrelay.metered.ca:443?transport=tcp'
+                        'turn:openrelay.metered.ca:443?transport=tcp',
+                        'turns:openrelay.metered.ca:443',
+                        'turns:openrelay.metered.ca:443?transport=tcp'
                     ],
                     username: 'openrelay',
                     credential: 'openrelay'
@@ -291,20 +303,15 @@ export default function ConsultationRoom() {
         // Capture remote tracks
         pc.ontrack = (event) => {
             console.log("Lawyer received remote track:", event.track.kind);
-            if (event.streams && event.streams[0]) {
-                setRemoteStream(event.streams[0]);
+            const remoteTracks = pc.getReceivers()
+                .map(r => r.track)
+                .filter(t => t && t.readyState === 'live');
+
+            console.log("Lawyer active remote tracks count:", remoteTracks.length);
+            if (remoteTracks.length > 0) {
+                setRemoteStream(new MediaStream(remoteTracks));
                 setIsConnected(true);
                 setIsConnecting(false);
-            } else {
-                const remoteTracks = pc.getReceivers()
-                    .map(r => r.track)
-                    .filter(t => t && t.readyState === 'live');
-
-                if (remoteTracks.length > 0) {
-                    setRemoteStream(new MediaStream(remoteTracks));
-                    setIsConnected(true);
-                    setIsConnecting(false);
-                }
             }
         };
 
@@ -317,6 +324,7 @@ export default function ConsultationRoom() {
             } else if (state === 'disconnected' || state === 'failed' || state === 'closed') {
                 setIsConnected(false);
                 setRemoteStream(null);
+                handleRenegotiationReset();
             }
         };
 
