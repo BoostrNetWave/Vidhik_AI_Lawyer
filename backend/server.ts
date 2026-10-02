@@ -51,19 +51,30 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
-app.use('/api/blogs', blogRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/support', supportRoutes);
-app.use('/api/auth', authRoutes);
+// Routes - Mounted with /api prefix as well as root & plural aliases for Nginx proxy compatibility
+const registerRoute = (basePath: string, router: any) => {
+    app.use(`/api${basePath}`, router);
+    app.use(basePath, router);
+};
+
+registerRoute('/blogs', blogRoutes);
+registerRoute('/dashboard', dashboardRoutes);
+registerRoute('/support', supportRoutes);
+registerRoute('/auth', authRoutes);
 app.use('/api', profileRoutes);
 app.use('/api', bookingRoutes);
 app.use('/api', appointmentRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/cases', caseRoutes);
-app.use('/api/consultations', consultationRoutes);
-app.use('/api/website-content', websiteContentRoutes);
+app.use('/', profileRoutes);
+app.use('/', bookingRoutes);
+app.use('/', appointmentRoutes);
+registerRoute('/settings', settingsRoutes);
+registerRoute('/payments', paymentRoutes);
+registerRoute('/payment', paymentRoutes);
+registerRoute('/subscription', paymentRoutes);
+registerRoute('/subscriptions', paymentRoutes);
+registerRoute('/cases', caseRoutes);
+registerRoute('/consultations', consultationRoutes);
+registerRoute('/website-content', websiteContentRoutes);
 
 // Database connection & Server start
 const startServer = async () => {
