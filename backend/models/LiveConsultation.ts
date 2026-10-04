@@ -25,6 +25,11 @@ export interface ILiveConsultation extends Document {
     meetingDuration?: number;
     meetingNotes?: string;
     meetingSummary?: string;
+    isPaidByUser?: boolean;
+    payoutStatus?: 'none' | 'pending' | 'requested' | 'approved' | 'rejected';
+    payoutRequestedAt?: Date;
+    payoutProcessedAt?: Date;
+    payoutTransactionId?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -57,7 +62,16 @@ const liveConsultationSchema = new Schema({
     completedAt: { type: Date },
     meetingDuration: { type: Number, default: 0 },
     meetingNotes: { type: String, default: '' },
-    meetingSummary: { type: String, default: '' }
+    meetingSummary: { type: String, default: '' },
+    isPaidByUser: { type: Boolean, default: false },
+    payoutStatus: { 
+        type: String, 
+        enum: ['none', 'pending', 'requested', 'approved', 'rejected'], 
+        default: 'none' 
+    },
+    payoutRequestedAt: { type: Date },
+    payoutProcessedAt: { type: Date },
+    payoutTransactionId: { type: String }
 }, {
     timestamps: true
 });
