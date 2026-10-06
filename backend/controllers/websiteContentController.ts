@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import WebsiteContent from '../models/WebsiteContent.js';
 
 // Default content seed — mirrors current hardcoded content from the landing page
@@ -124,12 +125,38 @@ export const getPageContent = async (req: Request, res: Response): Promise<void>
         const content = await WebsiteContent.find(filter).sort({ section: 1, order: 1 });
 
         // Transform to a nested map: { section: { key: value, ... }, ... }
-        const contentMap: Record<string, any> = {};
+        const contentMap: Record<string, any> = { hero: {}, pricing: {}, faq: {}, features: {}, banner: {} };
         for (const item of content) {
             if (!contentMap[item.section]) contentMap[item.section] = {};
             // Use the last part of the key as the field name inside the section
             const fieldName = item.key.includes('.') ? item.key.split('.').slice(1).join('.') : item.key;
             contentMap[item.section][fieldName] = item.value;
+        }
+
+        // Overlay central SystemConfig settings if present
+        try {
+            const db = mongoose.connection.db;
+            if (db) {
+                const sysConfigs = await db.collection('systemconfigs').find({}).toArray();
+                sysConfigs.forEach((cfg: any) => {
+                    if (!cfg.key || !cfg.value) return;
+                    const { key, value } = cfg;
+                    if (key === 'LANDING_HERO_TITLE') contentMap.hero.headline = value;
+                    else if (key === 'LANDING_HERO_SUBTITLE') contentMap.hero.subheadline = value;
+                    else if (key === 'LANDING_HERO_BADGE') contentMap.hero.badge_text = value;
+                    else if (key === 'LANDING_HERO_PRIMARY_CTA_TEXT') contentMap.hero.cta_primary_text = value;
+                    else if (key === 'LANDING_HERO_PRIMARY_CTA_LINK') contentMap.hero.cta_primary_link = value;
+                    else if (key === 'LANDING_HERO_SECONDARY_CTA_TEXT') contentMap.hero.cta_secondary_text = value;
+                    else if (key === 'LANDING_HERO_SECONDARY_CTA_LINK') contentMap.hero.cta_secondary_link = value;
+                    else if (key === 'LANDING_HERO_IMAGE') contentMap.hero.dashboard_image_url = value;
+                    else if (key === 'LANDING_PRICING_PLANS' || key === 'USER_PRICING_PLANS') contentMap.pricing.plans = value;
+                    else if (key === 'LANDING_FAQS') contentMap.faq.items = value;
+                    else if (key === 'LANDING_FEATURES') contentMap.features.items = value;
+                    else if (key === 'LANDING_ANNOUNCEMENT_BANNER') contentMap.banner = value;
+                });
+            }
+        } catch (sysErr) {
+            console.warn('SystemConfig overlay skipped:', sysErr);
         }
 
         res.json({ success: true, data: contentMap, raw: content });
