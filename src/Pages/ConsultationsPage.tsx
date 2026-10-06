@@ -84,6 +84,17 @@ export default function ConsultationsPage() {
         }
     };
 
+    const handleRequestPayout = async (id: string) => {
+        try {
+            await consultationService.requestPayout(id);
+            success("Video consultation payout request submitted to Super Admin!");
+            fetchConsultations();
+        } catch (err: any) {
+            console.error(err);
+            error(err.response?.data?.message || "Failed to request consultation payout");
+        }
+    };
+
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'pending_lawyer_approval':
@@ -109,7 +120,7 @@ export default function ConsultationsPage() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Live Consultations</h1>
-                    <p className="text-slate-500 text-sm mt-1">Manage private scheduled legal counseling slots with your clients.</p>
+                    <p className="text-slate-500 text-sm mt-1">Manage private scheduled legal counseling slots and request consultation payouts.</p>
                 </div>
                 <button
                     onClick={fetchConsultations}
@@ -154,6 +165,17 @@ export default function ConsultationsPage() {
                                                 You Joined
                                             </span>
                                         )}
+                                        {/* Payout Status Badge */}
+                                        {consultation.payoutStatus === 'approved' && (
+                                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                                Payout Settled (Paid)
+                                            </span>
+                                        )}
+                                        {consultation.payoutStatus === 'requested' && (
+                                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
+                                                Payout Requested (Awaiting Admin Transfer)
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
                                         <span className="flex items-center gap-1.5">
@@ -164,7 +186,7 @@ export default function ConsultationsPage() {
                                             <Clock size={14} className="text-primary" />
                                             {consultation.scheduledTime}
                                         </span>
-                                        <span className="flex items-center gap-1.5">
+                                        <span className="flex items-center gap-1.5 font-bold text-slate-900">
                                             ₹{consultation.totalFee} Fee
                                         </span>
                                     </div>
@@ -210,6 +232,20 @@ export default function ConsultationsPage() {
                                             <FileText size={14} className="text-primary" />
                                             View Summary
                                         </button>
+                                    )}
+
+                                    {/* Request Consultation Payout Action */}
+                                    {(consultation.isPaidByUser || ['scheduled', 'completed'].includes(consultation.status)) && (
+                                        <>
+                                            {consultation.payoutStatus !== 'approved' && consultation.payoutStatus !== 'requested' && (
+                                                <button
+                                                    onClick={() => handleRequestPayout(consultation._id)}
+                                                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs px-4 py-2 flex items-center gap-1 shadow-sm transition-colors"
+                                                >
+                                                    Request Payout (₹{consultation.totalFee})
+                                                </button>
+                                            )}
+                                        </>
                                     )}
 
                                     {consultation.status !== 'completed' && consultation.status !== 'cancelled' && (

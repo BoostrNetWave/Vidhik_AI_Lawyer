@@ -43,6 +43,10 @@ export interface IConsultation {
     meetingDuration?: number;
     meetingNotes?: string;
     meetingSummary?: string;
+    isPaidByUser?: boolean;
+    payoutStatus?: 'none' | 'pending' | 'requested' | 'approved' | 'rejected';
+    payoutRequestedAt?: string;
+    payoutProcessedAt?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -65,6 +69,11 @@ export const consultationService = {
 
     async proposeNewTime(id: string, data: { scheduledDate: string; scheduledTime: string }): Promise<IConsultation> {
         const response = await api.post(`/consultations/${id}/propose`, data);
+        return response.data;
+    },
+
+    async requestPayout(id: string): Promise<any> {
+        const response = await api.post(`/consultations/${id}/request-payout`);
         return response.data;
     },
 

@@ -33,10 +33,15 @@ export const createTicket = async (req: Request, res: Response): Promise<void> =
         const ticketCount = await SupportTicket.countDocuments();
         const ticketId = `TKT-${Math.floor(10000 + Math.random() * 90000)}-${ticketCount + 1}`;
 
+        let attachment: string | undefined = undefined;
+        if (req.file) {
+            attachment = `/uploads/${req.file.filename}`;
+        }
+
         const ticket = new SupportTicket({
             ...req.body,
             ticketId,
-            attachment: req.file ? req.file.path : undefined
+            attachment
         });
 
         const newTicket = await ticket.save();

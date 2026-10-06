@@ -11,8 +11,10 @@ import {
     getConsultationSignals,
     clearConsultationSignals,
     joinConsultation,
-    endConsultation
+    endConsultation,
+    requestConsultationPayout
 } from '../controllers/consultationController.js';
+
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -54,6 +56,7 @@ router.get('/', getConsultationsForLawyer);
 router.get('/:id', getConsultationById);
 router.post('/:id/accept', acceptConsultation);
 router.post('/:id/propose', proposeConsultationTime);
+router.post('/:id/request-payout', requestConsultationPayout);
 router.post('/:id/upload', upload.single('file'), uploadConsultationDocument);
 router.post('/:id/cancel', cancelConsultation);
 router.post('/:id/join', joinConsultation);

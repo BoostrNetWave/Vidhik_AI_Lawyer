@@ -8,7 +8,7 @@ export interface ISupportTicket extends Document {
     priority: 'Low' | 'Medium' | 'High' | 'Urgent';
     description: string;
     attachment?: string;
-    status: 'Open' | 'Closed' | 'Pending';
+    status: 'Open' | 'Closed' | 'Pending' | 'In Progress' | 'Waiting for Customer' | 'Resolved';
     adminReply?: string;
     createdAt: Date;
     updatedAt: Date;
@@ -48,7 +48,7 @@ const supportTicketSchema: Schema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Open', 'Closed', 'Pending'],
+        enum: ['Open', 'Closed', 'Pending', 'In Progress', 'Waiting for Customer', 'Resolved'],
         default: 'Open'
     },
     adminReply: {

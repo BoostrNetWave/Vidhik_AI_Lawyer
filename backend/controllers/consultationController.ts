@@ -314,4 +314,41 @@ export const endConsultation = async (req: any, res: Response): Promise<void> =>
     }
 };
 
+export const requestConsultationPayout = async (req: any, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const userId = (req.user._id || req.user.id).toString();
+
+        const consultation = await LiveConsultation.findById(id);
+        if (!consultation) {
+            res.status(404).json({ message: 'Consultation not found' });
+            return;
+        }
+
+        const lawyerObjId = (consultation.lawyer as any)?._id ? (consultation.lawyer as any)._id.toString() : consultation.lawyer.toString();
+        if (lawyerObjId !== userId) {
+            res.status(403).json({ message: 'Unauthorized to request payout for this consultation' });
+            return;
+        }
+
+        if (!consultation.isPaidByUser && consultation.status !== 'scheduled' && consultation.status !== 'completed') {
+            res.status(400).json({ message: 'Payout can only be requested after client payment is processed.' });
+            return;
+        }
+
+        consultation.payoutStatus = 'requested';
+        consultation.payoutRequestedAt = new Date();
+        await consultation.save();
+
+        const updated = await LiveConsultation.findById(id)
+            .populate('client', 'fullName email phone location')
+            .populate('lawyer', 'fullName email phone location title expertise avatar');
+
+        res.json({ message: 'Payout request submitted to admin successfully', consultation: updated });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 

@@ -117,25 +117,43 @@ export default function ViewTicketModal({ visible, onClose, ticket }: ViewTicket
                     )}
 
                     {/* Attachment */}
-                    {ticket.attachment && (
-                        <div>
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Attachment</label>
-                            <a
-                                href={`/lawyer/${ticket.attachment.replace(/\\/g, '/')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all group"
-                            >
-                                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                    <FileText size={20} />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">View Attachment</span>
-                                    <span className="text-xs text-slate-400">Click to open file</span>
-                                </div>
-                            </a>
-                        </div>
-                    )}
+                    {ticket.attachment && (() => {
+                        const getAttachmentUrl = (url?: string) => {
+                            if (!url) return '';
+                            if (url.startsWith('http://') || url.startsWith('https://')) return url;
+                            let clean = url.replace(/\\/g, '/').trim();
+                            clean = clean.replace(/^\.\//, '');
+                            if (!clean.startsWith('/')) clean = '/' + clean;
+
+                            if (typeof window !== 'undefined' && window.location) {
+                                if (['5173', '3000', '5174', '5175', '5176'].includes(window.location.port)) {
+                                    return `http://localhost:5025${clean}`;
+                                }
+                                return `${window.location.origin}${clean}`;
+                            }
+                            return clean;
+                        };
+
+                        return (
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Attachment</label>
+                                <a
+                                    href={getAttachmentUrl(ticket.attachment)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all group"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                        <FileText size={20} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">View Attachment</span>
+                                        <span className="text-xs text-slate-400">Click to open file</span>
+                                    </div>
+                                </a>
+                            </div>
+                        );
+                    })()}
 
                     {/* Timestamps */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
