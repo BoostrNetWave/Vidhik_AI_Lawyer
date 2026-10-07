@@ -5,10 +5,10 @@ import WebsiteContent from '../models/WebsiteContent.js';
 // Default content seed — mirrors current hardcoded content from the landing page
 const DEFAULT_CONTENT = [
     // ─── HERO ───────────────────────────────────────────────────────────────────
-    { section: 'hero', page: 'landing', key: 'hero.badge_text', contentType: 'text', value: 'Get started with Vidhik AI', label: 'Badge Text', order: 1 },
-    { section: 'hero', page: 'landing', key: 'hero.headline', contentType: 'text', value: 'Legal work, drafted with intelligence.', label: 'Headline', order: 2 },
-    { section: 'hero', page: 'landing', key: 'hero.subheadline', contentType: 'text', value: 'Generate professional legal documents, review contracts, and move from legal questions to usable work — faster.', label: 'Subheadline', order: 3 },
-    { section: 'hero', page: 'landing', key: 'hero.cta_primary_text', contentType: 'text', value: 'Start Free Trial', label: 'Primary CTA Button Text', order: 4 },
+    { section: 'hero', page: 'landing', key: 'hero.badge_text', contentType: 'text', value: 'AI-POWERED LEGAL PLATFORM', label: 'Badge Text', order: 1 },
+    { section: 'hero', page: 'landing', key: 'hero.headline', contentType: 'text', value: 'Affordable Legal Service', label: 'Headline', order: 2 },
+    { section: 'hero', page: 'landing', key: 'hero.subheadline', contentType: 'text', value: 'Create legal documents, review contracts, and get legal help instantly using AI. Designed for startups, freelancers, and businesses.', label: 'Subheadline', order: 3 },
+    { section: 'hero', page: 'landing', key: 'hero.cta_primary_text', contentType: 'text', value: 'Get Started Free', label: 'Primary CTA Button Text', order: 4 },
     { section: 'hero', page: 'landing', key: 'hero.cta_secondary_text', contentType: 'text', value: 'Watch Demo', label: 'Secondary CTA Button Text', order: 5 },
     { section: 'hero', page: 'landing', key: 'hero.trust_text', contentType: 'text', value: 'Trusted by legal professionals', label: 'Trust Badge Text', order: 6 },
     { section: 'hero', page: 'landing', key: 'hero.dashboard_image_url', contentType: 'url', value: '', label: 'Dashboard Preview Image URL', description: 'URL to the hero dashboard screenshot. Leave empty to use default local image.', order: 7 },
