@@ -139,7 +139,7 @@ export const getPageContent = async (req: Request, res: Response): Promise<void>
             if (db) {
                 const sysConfigs = await db.collection('systemconfigs').find({}).toArray();
                 sysConfigs.forEach((cfg: any) => {
-                    if (!cfg.key || !cfg.value) return;
+                    if (!cfg.key || cfg.value === undefined || cfg.value === null) return;
                     const { key, value } = cfg;
                     if (key === 'LANDING_HERO_TITLE') contentMap.hero.headline = value;
                     else if (key === 'LANDING_HERO_SUBTITLE') contentMap.hero.subheadline = value;
@@ -148,10 +148,37 @@ export const getPageContent = async (req: Request, res: Response): Promise<void>
                     else if (key === 'LANDING_HERO_PRIMARY_CTA_LINK') contentMap.hero.cta_primary_link = value;
                     else if (key === 'LANDING_HERO_SECONDARY_CTA_TEXT') contentMap.hero.cta_secondary_text = value;
                     else if (key === 'LANDING_HERO_SECONDARY_CTA_LINK') contentMap.hero.cta_secondary_link = value;
+                    else if (key === 'LANDING_HERO_TRUST_TEXT') contentMap.hero.trust_text = value;
+                    else if (key === 'LANDING_HERO_STAT_NUMBER') contentMap.hero.stat_number = value;
                     else if (key === 'LANDING_HERO_IMAGE') contentMap.hero.dashboard_image_url = value;
-                    else if (key === 'LANDING_PRICING_PLANS' || key === 'USER_PRICING_PLANS') contentMap.pricing.plans = value;
-                    else if (key === 'LANDING_FAQS') contentMap.faq.items = value;
-                    else if (key === 'LANDING_FEATURES') contentMap.features.items = value;
+
+                    else if (key === 'LANDING_WORKFLOW_TAG') { if (!contentMap.workflow) contentMap.workflow = {}; contentMap.workflow.section_tag = value; }
+                    else if (key === 'LANDING_WORKFLOW_TITLE') { if (!contentMap.workflow) contentMap.workflow = {}; contentMap.workflow.headline = value; }
+                    else if (key === 'LANDING_WORKFLOW_SUBTITLE') { if (!contentMap.workflow) contentMap.workflow = {}; contentMap.workflow.subheadline = value; }
+                    else if (key === 'LANDING_WORKFLOW_STEPS') { if (!contentMap.workflow) contentMap.workflow = {}; contentMap.workflow.steps = value; }
+
+                    else if (key === 'LANDING_AUDIENCE_TAG') { if (!contentMap.audience) contentMap.audience = {}; contentMap.audience.section_tag = value; }
+                    else if (key === 'LANDING_AUDIENCE_TITLE') { if (!contentMap.audience) contentMap.audience = {}; contentMap.audience.headline = value; }
+                    else if (key === 'LANDING_AUDIENCE_CARDS') { if (!contentMap.audience) contentMap.audience = {}; contentMap.audience.cards = value; }
+
+                    else if (key === 'LANDING_TESTIMONIALS_TITLE') { if (!contentMap.testimonials) contentMap.testimonials = {}; contentMap.testimonials.headline = value; }
+                    else if (key === 'LANDING_TESTIMONIALS_SUBTITLE') { if (!contentMap.testimonials) contentMap.testimonials = {}; contentMap.testimonials.subheadline = value; }
+                    else if (key === 'LANDING_TESTIMONIALS_ITEMS') { if (!contentMap.testimonials) contentMap.testimonials = {}; contentMap.testimonials.items = value; }
+
+                    else if (key === 'LANDING_PRICING_TITLE') { if (!contentMap.pricing) contentMap.pricing = {}; contentMap.pricing.headline = value; }
+                    else if (key === 'LANDING_PRICING_SUBTITLE') { if (!contentMap.pricing) contentMap.pricing = {}; contentMap.pricing.subheadline = value; }
+                    else if (key === 'LANDING_PRICING_PLANS' || key === 'USER_PRICING_PLANS') { if (!contentMap.pricing) contentMap.pricing = {}; contentMap.pricing.plans = value; }
+
+                    else if (key === 'LANDING_FAQ_TITLE') { if (!contentMap.faq) contentMap.faq = {}; contentMap.faq.headline = value; }
+                    else if (key === 'LANDING_FAQS') { if (!contentMap.faq) contentMap.faq = {}; contentMap.faq.items = value; }
+
+                    else if (key === 'LANDING_NAVBAR_BRAND') { if (!contentMap.navbar) contentMap.navbar = {}; contentMap.navbar.brand_name = value; }
+                    else if (key === 'LANDING_LOGO_URL') { if (!contentMap.navbar) contentMap.navbar = {}; contentMap.navbar.logo_url = value; }
+                    else if (key === 'LANDING_FOOTER_TAGLINE') { if (!contentMap.footer) contentMap.footer = {}; contentMap.footer.tagline = value; }
+                    else if (key === 'LANDING_FOOTER_COPYRIGHT') { if (!contentMap.footer) contentMap.footer = {}; contentMap.footer.copyright = value; }
+                    else if (key === 'LANDING_FOOTER_STATUS_TEXT') { if (!contentMap.footer) contentMap.footer = {}; contentMap.footer.status_text = value; }
+
+                    else if (key === 'LANDING_FEATURES') { if (!contentMap.features) contentMap.features = {}; contentMap.features.items = value; }
                     else if (key === 'LANDING_ANNOUNCEMENT_BANNER') contentMap.banner = value;
                 });
             }
