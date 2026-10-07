@@ -170,7 +170,7 @@ export const getPublicLawyers = async (req: Request, res: Response): Promise<voi
                 } else if (filename.startsWith('/')) {
                     filename = filename.substring(1);
                 }
-                obj.avatar = `https://user.vidhikai.com/user/uploads/${filename}`;
+                obj.avatar = `https://lawyer.vidhikai.com/lawyer/uploads/${filename}`;
             }
             return obj;
         });
