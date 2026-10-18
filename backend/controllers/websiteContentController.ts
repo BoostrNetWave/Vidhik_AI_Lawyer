@@ -125,7 +125,7 @@ export const getPageContent = async (req: Request, res: Response): Promise<void>
         const content = await WebsiteContent.find(filter).sort({ section: 1, order: 1 });
 
         // Transform to a nested map: { section: { key: value, ... }, ... }
-        const contentMap: Record<string, any> = { hero: {}, pricing: {}, faq: {}, features: {}, banner: {} };
+        const contentMap: Record<string, any> = { hero: {}, pricing: {}, faq: {}, features: {}, banner: {}, services: {}, documents: {} };
         for (const item of content) {
             if (!contentMap[item.section]) contentMap[item.section] = {};
             // Use the last part of the key as the field name inside the section
@@ -149,8 +149,19 @@ export const getPageContent = async (req: Request, res: Response): Promise<void>
                     else if (key === 'LANDING_HERO_SECONDARY_CTA_TEXT') contentMap.hero.cta_secondary_text = value;
                     else if (key === 'LANDING_HERO_SECONDARY_CTA_LINK') contentMap.hero.cta_secondary_link = value;
                     else if (key === 'LANDING_HERO_TRUST_TEXT') contentMap.hero.trust_text = value;
+                    else if (key === 'LANDING_HERO_TRUST_RATING') contentMap.hero.trust_rating = value;
                     else if (key === 'LANDING_HERO_STAT_NUMBER') contentMap.hero.stat_number = value;
                     else if (key === 'LANDING_HERO_IMAGE') contentMap.hero.dashboard_image_url = value;
+
+                    else if (key === 'LANDING_SERVICES_TAG') { if (!contentMap.services) contentMap.services = {}; contentMap.services.section_tag = value; }
+                    else if (key === 'LANDING_SERVICES_TITLE') { if (!contentMap.services) contentMap.services = {}; contentMap.services.headline = value; }
+                    else if (key === 'LANDING_SERVICES_SUBTITLE') { if (!contentMap.services) contentMap.services = {}; contentMap.services.subheadline = value; }
+                    else if (key === 'LANDING_SERVICES_CARDS') { if (!contentMap.services) contentMap.services = {}; contentMap.services.cards = value; }
+
+                    else if (key === 'LANDING_DOCUMENTS_TITLE') { if (!contentMap.documents) contentMap.documents = {}; contentMap.documents.headline = value; }
+                    else if (key === 'LANDING_DOCUMENTS_SUBTITLE') { if (!contentMap.documents) contentMap.documents = {}; contentMap.documents.subheadline = value; }
+                    else if (key === 'LANDING_DOCUMENTS_CATEGORIES') { if (!contentMap.documents) contentMap.documents = {}; contentMap.documents.categories = value; }
+                    else if (key === 'LANDING_DOCUMENTS_ITEMS') { if (!contentMap.documents) contentMap.documents = {}; contentMap.documents.items = value; }
 
                     else if (key === 'LANDING_WORKFLOW_TAG') { if (!contentMap.workflow) contentMap.workflow = {}; contentMap.workflow.section_tag = value; }
                     else if (key === 'LANDING_WORKFLOW_TITLE') { if (!contentMap.workflow) contentMap.workflow = {}; contentMap.workflow.headline = value; }
