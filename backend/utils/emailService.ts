@@ -15,18 +15,27 @@ const maskSecret = (str?: string) => {
  * with sensible fallbacks and auto-detection based on the email domain.
  */
 export const getEmailConfig = () => {
-    const rawUser = (process.env.SMTP_USER || '').trim();
-    const rawPass = (process.env.SMTP_PASS || '').trim();
-    const explicitHost = (process.env.SMTP_HOST || '').trim();
-    const explicitPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
-    const explicitSecure = process.env.SMTP_SECURE !== undefined
+    let rawUser = (process.env.SMTP_USER || '').trim();
+    let rawPass = (process.env.SMTP_PASS || '').trim();
+    let explicitHost = (process.env.SMTP_HOST || '').trim();
+    let explicitPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
+    let explicitSecure = process.env.SMTP_SECURE !== undefined
         ? (process.env.SMTP_SECURE === 'true' || process.env.SMTP_SECURE === '1')
         : undefined;
     const explicitService = (process.env.SMTP_SERVICE || '').trim().toLowerCase();
 
-    // Default sender email & fallback
-    const user = rawUser || 'sibsankar2727@gmail.com';
-    const pass = rawPass || 'ulqi aihu ajut qdnl';
+    // If server .env still contains the legacy expired credentials or is unset,
+    // automatically use the verified active Gmail SMTP credentials:
+    if (!rawUser || rawUser === 'sibsankar2727@gmail.com' || rawPass === 'ulqi aihu ajut qdnl') {
+        rawUser = 'noreply.vidhikai@gmail.com';
+        rawPass = 'mmax iqxa mnsc zpsd';
+        explicitHost = 'smtp.gmail.com';
+        explicitPort = 465;
+        explicitSecure = true;
+    }
+
+    const user = rawUser;
+    const pass = rawPass;
 
     let host = explicitHost;
     let port = explicitPort;

@@ -134,6 +134,12 @@ jobs:
             -o StrictHostKeyChecking=no \
             ${SERVER_USER}@${SERVER_HOST} \
             "cd /var/www/html/Vidhik_AI_Lawyer/backend && \
+             touch .env && \
+             (grep -q '^SMTP_USER=' .env && sed -i 's|^SMTP_USER=.*|SMTP_USER=noreply.vidhikai@gmail.com|' .env || echo 'SMTP_USER=noreply.vidhikai@gmail.com' >> .env) && \
+             (grep -q '^SMTP_PASS=' .env && sed -i 's|^SMTP_PASS=.*|SMTP_PASS=mmax iqxa mnsc zpsd|' .env || echo 'SMTP_PASS=mmax iqxa mnsc zpsd' >> .env) && \
+             (grep -q '^SMTP_HOST=' .env && sed -i 's|^SMTP_HOST=.*|SMTP_HOST=smtp.gmail.com|' .env || echo 'SMTP_HOST=smtp.gmail.com' >> .env) && \
+             (grep -q '^SMTP_PORT=' .env && sed -i 's|^SMTP_PORT=.*|SMTP_PORT=465|' .env || echo 'SMTP_PORT=465' >> .env) && \
+             (grep -q '^SMTP_SECURE=' .env && sed -i 's|^SMTP_SECURE=.*|SMTP_SECURE=true|' .env || echo 'SMTP_SECURE=true' >> .env) && \
              if pm2 describe vidhik-lawyer-backend > /dev/null 2>&1; then \
                pm2 restart vidhik-lawyer-backend --update-env; \
              else \
