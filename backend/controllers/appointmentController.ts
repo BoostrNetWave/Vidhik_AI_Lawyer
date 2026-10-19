@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import User from '../models/User.js';
 import Booking from '../models/Booking.js';
 import Settings from '../models/Settings.js';
 import { sendEmail } from '../utils/emailService.js';
@@ -19,26 +20,62 @@ export const createBooking = async (req: Request, res: Response): Promise<void> 
             status: 'pending'
         });
 
-        // 2. Check User Settings for Email Notifications
-        const settings = await Settings.findOne({ userId });
+        // 2. Fetch Lawyer user and Settings for Email Notifications
+        const [lawyer, settings] = await Promise.all([
+            User.findById(userId),
+            Settings.findOne({ userId })
+        ]);
 
-        if (settings && settings.notifications.newBooking) {
-            // Send email to the LAWYER (supportEmail or hardcoded for now)
-            const lawyerEmail = settings.general.supportEmail; // Or fetch User.email
+        const lawyerEmail = settings?.general?.supportEmail || lawyer?.email;
+        const lawyerName = lawyer?.fullName || 'Advocate';
+        const formattedDate = new Date(date).toLocaleString('en-IN');
 
-            await sendEmail(
-                lawyerEmail,
-                `New Booking Received: ${clientName}`,
-                `<p>You have a new booking from <strong>${clientName}</strong> for <strong>${serviceType}</strong> on <strong>${new Date(date).toLocaleString()}</strong>.</p>`
-            );
+        const emailPromises: Promise<any>[] = [];
 
-            // Optional: Send confirmation to CLIENT
-            await sendEmail(
-                email,
-                `Booking Confirmation: ${serviceType}`,
-                `<p>Hi ${clientName}, your booking for <strong>${serviceType}</strong> on <strong>${new Date(date).toLocaleString()}</strong> is pending confirmation.</p>`
+        // Send to LAWYER unless explicitly turned off
+        const notifyLawyer = settings?.notifications?.newBooking !== false;
+        if (notifyLawyer && lawyerEmail) {
+            emailPromises.push(
+                sendEmail(
+                    lawyerEmail,
+                    `New Booking Received: ${clientName} - ${serviceType}`,
+                    `<h2 style="color: #1e1b4b; margin-top: 0;">New Appointment Booking Received</h2>
+                     <p>Hello <strong>Adv. ${lawyerName}</strong>,</p>
+                     <p>You have received a new consultation appointment booking from <strong>${clientName}</strong>.</p>
+                     <div style="background-color: #f8fafc; border-left: 4px solid #6366f1; padding: 16px; border-radius: 4px; margin: 20px 0;">
+                         <p style="margin: 0 0 8px 0;"><strong>Client Name:</strong> ${clientName}</p>
+                         <p style="margin: 0 0 8px 0;"><strong>Client Email:</strong> ${email}</p>
+                         <p style="margin: 0 0 8px 0;"><strong>Service:</strong> ${serviceType}</p>
+                         <p style="margin: 0 0 8px 0;"><strong>Scheduled Time:</strong> ${formattedDate}</p>
+                         ${amount ? `<p style="margin: 0 0 8px 0;"><strong>Fee:</strong> ₹${Number(amount).toLocaleString('en-IN')}</p>` : ''}
+                         ${notes ? `<p style="margin: 0;"><strong>Notes:</strong> ${notes}</p>` : ''}
+                     </div>
+                     <p>Please log in to your Lawyer Admin Portal under Appointments to view details and manage this session.</p>`
+                )
             );
         }
+
+        // Send confirmation to CLIENT
+        if (email) {
+            emailPromises.push(
+                sendEmail(
+                    email,
+                    `Booking Confirmation: ${serviceType}`,
+                    `<h2 style="color: #1e1b4b; margin-top: 0;">Appointment Booking Received</h2>
+                     <p>Hello <strong>${clientName}</strong>,</p>
+                     <p>Your appointment booking for <strong>${serviceType}</strong> with <strong>Adv. ${lawyerName}</strong> has been received and is pending confirmation.</p>
+                     <div style="background-color: #f8fafc; border-left: 4px solid #10b981; padding: 16px; border-radius: 4px; margin: 20px 0;">
+                         <p style="margin: 0 0 8px 0;"><strong>Service:</strong> ${serviceType}</p>
+                         <p style="margin: 0 0 8px 0;"><strong>Date & Time:</strong> ${formattedDate}</p>
+                         <p style="margin: 0 0 8px 0;"><strong>Advocate:</strong> Adv. ${lawyerName}</p>
+                         ${amount ? `<p style="margin: 0;"><strong>Amount:</strong> ₹${Number(amount).toLocaleString('en-IN')}</p>` : ''}
+                     </div>
+                     <p>You will be notified once your appointment is confirmed. Thank you for choosing Vidhik AI!</p>`
+                )
+            );
+        }
+
+        await Promise.allSettled(emailPromises);
 
         res.status(201).json(newBooking);
     } catch (error: any) {

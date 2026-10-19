@@ -38,4 +38,51 @@ router.get('/me', protect, async (req: any, res) => {
     }
 });
 
+import { getEmailConfig, verifyEmailConfiguration, sendEmail } from '../utils/emailService.js';
+
+router.post('/test-smtp', async (req, res) => {
+    try {
+        const targetEmail = req.body?.email || process.env.SMTP_USER || 'sibsankar2727@gmail.com';
+        const config = getEmailConfig();
+        const verified = await verifyEmailConfiguration();
+
+        if (!verified) {
+            return res.status(500).json({
+                success: false,
+                message: 'SMTP connection verification failed. Please verify credentials or Google App Password.',
+                config: {
+                    host: config.host || config.service,
+                    port: config.port,
+                    secure: config.secure,
+                    user: config.user
+                }
+            });
+        }
+
+        const sent = await sendEmail(
+            targetEmail,
+            'Vidhik AI Lawyer Admin - SMTP Diagnostics Test',
+            `<h3>Lawyer Backend SMTP Test</h3>
+             <p>This is a test email sent from the Vidhik AI Lawyer Backend server.</p>
+             <p><strong>SMTP Host:</strong> ${config.host || config.service}</p>
+             <p><strong>SMTP Port:</strong> ${config.port}</p>
+             <p><strong>Sender:</strong> ${config.user}</p>
+             <p>Everything is working as expected!</p>`
+        );
+
+        return res.json({
+            success: sent,
+            message: sent ? `Test email dispatched to ${targetEmail}` : 'Verification passed but sendMail failed.',
+            config: {
+                host: config.host || config.service,
+                port: config.port,
+                secure: config.secure,
+                user: config.user
+            }
+        });
+    } catch (err: any) {
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 export default router;

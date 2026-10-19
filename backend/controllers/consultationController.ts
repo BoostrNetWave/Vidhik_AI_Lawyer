@@ -52,16 +52,26 @@ export const acceptConsultation = async (req: any, res: Response): Promise<void>
 
         const clientUser = await User.findById(consultation.client);
         if (clientUser) {
-            await sendEmail(
-                clientUser.email,
-                `Consultation Request Approved: ${consultation.title}`,
-                `<h3>Consultation Request Approved</h3>
-                 <p>Hello ${clientUser.fullName},</p>
-                 <p>Advocate <strong>${req.user.fullName}</strong> has approved your consultation request: <strong>${consultation.title}</strong>.</p>
-                 <p><strong>Scheduled Date:</strong> ${new Date(consultation.scheduledDate).toLocaleDateString()}</p>
-                 <p><strong>Scheduled Time:</strong> ${consultation.scheduledTime}</p>
-                 <p>Please log in to your dashboard to complete the payment. The meeting details will be shared once the payment is completed.</p>`
-            );
+            await Promise.allSettled([
+                sendEmail(
+                    clientUser.email,
+                    `Consultation Request Approved: ${consultation.title}`,
+                    `<h3>Consultation Request Approved</h3>
+                     <p>Hello ${clientUser.fullName},</p>
+                     <p>Advocate <strong>${req.user.fullName}</strong> has approved your consultation request: <strong>${consultation.title}</strong>.</p>
+                     <p><strong>Scheduled Date:</strong> ${new Date(consultation.scheduledDate).toLocaleDateString()}</p>
+                     <p><strong>Scheduled Time:</strong> ${consultation.scheduledTime}</p>
+                     <p>Please log in to your dashboard to complete the payment. The meeting details will be shared once the payment is completed.</p>`
+                ),
+                req.user.email ? sendEmail(
+                    req.user.email,
+                    `You Approved Consultation: ${consultation.title}`,
+                    `<h3>Consultation Approved</h3>
+                     <p>Hello Adv. ${req.user.fullName},</p>
+                     <p>You have approved the consultation request for <strong>${clientUser.fullName}</strong> (${consultation.title}) on <strong>${new Date(consultation.scheduledDate).toLocaleDateString()} at ${consultation.scheduledTime}</strong>.</p>
+                     <p>The client has been notified to complete payment. You will receive meeting details once paid.</p>`
+                ) : Promise.resolve()
+            ]);
         }
 
         res.json(consultation);
@@ -95,16 +105,26 @@ export const proposeConsultationTime = async (req: any, res: Response): Promise<
 
         const clientUser = await User.findById(consultation.client);
         if (clientUser) {
-            await sendEmail(
-                clientUser.email,
-                `New Date/Time Proposed by Lawyer for Consultation: ${consultation.title}`,
-                `<h3>Proposed Changes from Advocate</h3>
-                 <p>Hello ${clientUser.fullName},</p>
-                 <p>Advocate <strong>${req.user.fullName}</strong> has proposed a new slot for the consultation: <strong>${consultation.title}</strong>.</p>
-                 <p><strong>Proposed Date:</strong> ${new Date(scheduledDate).toLocaleDateString()}</p>
-                 <p><strong>Proposed Time:</strong> ${scheduledTime}</p>
-                 <p>Please log in to your dashboard to accept the proposed slot or make a counter-proposal.</p>`
-            );
+            await Promise.allSettled([
+                sendEmail(
+                    clientUser.email,
+                    `New Date/Time Proposed by Lawyer for Consultation: ${consultation.title}`,
+                    `<h3>Proposed Changes from Advocate</h3>
+                     <p>Hello ${clientUser.fullName},</p>
+                     <p>Advocate <strong>${req.user.fullName}</strong> has proposed a new slot for the consultation: <strong>${consultation.title}</strong>.</p>
+                     <p><strong>Proposed Date:</strong> ${new Date(scheduledDate).toLocaleDateString()}</p>
+                     <p><strong>Proposed Time:</strong> ${scheduledTime}</p>
+                     <p>Please log in to your dashboard to accept the proposed slot or make a counter-proposal.</p>`
+                ),
+                req.user.email ? sendEmail(
+                    req.user.email,
+                    `You Proposed a New Slot: ${consultation.title}`,
+                    `<h3>Counter-Proposal Sent</h3>
+                     <p>Hello Adv. ${req.user.fullName},</p>
+                     <p>You have proposed a new slot for <strong>${clientUser.fullName}</strong> (${consultation.title}) on <strong>${new Date(scheduledDate).toLocaleDateString()} at ${scheduledTime}</strong>.</p>
+                     <p>The client has been notified to review and accept.</p>`
+                ) : Promise.resolve()
+            ]);
         }
 
         res.json(consultation);
@@ -159,13 +179,22 @@ export const cancelConsultation = async (req: any, res: Response): Promise<void>
 
         const clientUser = await User.findById(consultation.client);
         if (clientUser) {
-            await sendEmail(
-                clientUser.email,
-                `Live Consultation Request Cancelled/Declined: ${consultation.title}`,
-                `<h3>Consultation Declined</h3>
-                 <p>Hello ${clientUser.fullName},</p>
-                 <p>Advocate <strong>${req.user.fullName}</strong> has declined or cancelled the consultation request: <strong>${consultation.title}</strong>.</p>`
-            );
+            await Promise.allSettled([
+                sendEmail(
+                    clientUser.email,
+                    `Live Consultation Request Cancelled/Declined: ${consultation.title}`,
+                    `<h3>Consultation Declined</h3>
+                     <p>Hello ${clientUser.fullName},</p>
+                     <p>Advocate <strong>${req.user.fullName}</strong> has declined or cancelled the consultation request: <strong>${consultation.title}</strong>.</p>`
+                ),
+                req.user.email ? sendEmail(
+                    req.user.email,
+                    `Consultation Cancelled: ${consultation.title}`,
+                    `<h3>Consultation Cancelled</h3>
+                     <p>Hello Adv. ${req.user.fullName},</p>
+                     <p>You have cancelled or declined the consultation request for <strong>${clientUser.fullName}</strong>: <strong>${consultation.title}</strong>.</p>`
+                ) : Promise.resolve()
+            ]);
         }
 
         res.json(consultation);

@@ -155,6 +155,32 @@ export const submitPlan = async (req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
+        // Notify client that action roadmap has been submitted and send confirmation to lawyer
+        const clientEmail = (kase.client as any)?.email;
+        const clientName = (kase.client as any)?.fullName || 'Client';
+        const lawyerName = req.user.fullName || 'Advocate';
+
+        if (clientEmail) {
+            await Promise.allSettled([
+                sendEmail(
+                    clientEmail,
+                    `Action Roadmap Submitted: ${kase.title}`,
+                    `<h2 style="color: #1e1b4b; margin-top: 0;">Case Action Roadmap Ready for Review</h2>
+                     <p>Hello <strong>${clientName}</strong>,</p>
+                     <p>Advocate <strong>Adv. ${lawyerName}</strong> has submitted the detailed <strong>Action Roadmap</strong> with <strong>${kase.milestones.length} milestones</strong> for your case: <strong>${kase.title}</strong>.</p>
+                     <p>Please log in to your dashboard under <strong>Case Management</strong> to review and approve the roadmap so legal work can commence.</p>`
+                ),
+                req.user.email ? sendEmail(
+                    req.user.email,
+                    `Roadmap Submitted: ${kase.title}`,
+                    `<h2 style="color: #1e1b4b; margin-top: 0;">Action Roadmap Submitted</h2>
+                     <p>Hello <strong>Adv. ${lawyerName}</strong>,</p>
+                     <p>You have successfully submitted the action roadmap for case: <strong>${kase.title}</strong> with ${kase.milestones.length} milestones.</p>
+                     <p>The client <strong>${clientName}</strong> has been notified to review and approve.</p>`
+                ) : Promise.resolve()
+            ]);
+        }
+
         res.json(kase);
     } catch (error: any) {
         res.status(500).json({ message: error.message });
@@ -287,16 +313,29 @@ export const confirmBooking = async (req: AuthRequest, res: Response): Promise<v
             return;
         }
 
-        // Send confirmation email to client
-        await sendEmail(
-            (kase.client as any).email,
-            `Consultation Booking Confirmed by Lawyer: ${kase.title}`,
-            `<h3>Consultation Booking Confirmed</h3>
-             <p>Hello ${(kase.client as any).fullName},</p>
-             <p>Advocate <strong>${req.user.fullName}</strong> has accepted your consultation and case booking request.</p>
-             <p><strong>Case Topic:</strong> ${kase.title}</p>
-             <p>Please log in to your dashboard, go to the <strong>Case Management</strong> section, and proceed to make the payment. Once paid, your case will become active and the roadmap will be initiated.</p>`
-        );
+        // Send confirmation email to client AND lawyer
+        const clientEmail = (kase.client as any)?.email;
+        const clientName = (kase.client as any)?.fullName || 'Client';
+        const lawyerName = req.user.fullName || 'Advocate';
+
+        await Promise.allSettled([
+            clientEmail ? sendEmail(
+                clientEmail,
+                `Consultation Booking Confirmed by Lawyer: ${kase.title}`,
+                `<h2 style="color: #1e1b4b; margin-top: 0;">Case Booking Confirmed</h2>
+                 <p>Hello <strong>${clientName}</strong>,</p>
+                 <p>Advocate <strong>Adv. ${lawyerName}</strong> has accepted your consultation and case booking request for <strong>${kase.title}</strong>.</p>
+                 <p>Please log in to your dashboard, go to the <strong>Case Management</strong> section, and proceed to make the payment. Once paid, your case will become active and the roadmap will be initiated.</p>`
+            ) : Promise.resolve(),
+            req.user.email ? sendEmail(
+                req.user.email,
+                `You Confirmed Case Booking: ${kase.title}`,
+                `<h2 style="color: #1e1b4b; margin-top: 0;">Case Booking Request Accepted</h2>
+                 <p>Hello <strong>Adv. ${lawyerName}</strong>,</p>
+                 <p>You have confirmed the case booking request from <strong>${clientName}</strong> for <strong>${kase.title}</strong>.</p>
+                 <p>The client has been notified to complete the payment.</p>`
+            ) : Promise.resolve()
+        ]);
 
         res.json(kase);
     } catch (error: any) {

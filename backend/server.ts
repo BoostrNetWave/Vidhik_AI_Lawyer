@@ -22,6 +22,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import caseRoutes from './routes/caseRoutes.js';
 import consultationRoutes from './routes/consultationRoutes.js';
 import websiteContentRoutes from './routes/websiteContentRoutes.js';
+import { verifyEmailConfiguration } from './utils/emailService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -92,6 +93,11 @@ const startServer = async () => {
             console.log(`📡 MongoDB: Connected`);
             console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Configured' : 'MISSING'}`);
             console.log(`=================================================\n`);
+
+            // Verify SMTP configuration on startup
+            verifyEmailConfiguration().catch(err => {
+                console.error('[Lawyer Startup] Email verification check error:', err);
+            });
         });
     } catch (error: any) {
         console.error('Initial startup error:', error.message);
