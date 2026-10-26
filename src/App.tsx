@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./Components/Sidebar";
+import NotificationBell from "./Components/NotificationBell";
 import { Menu, X, User, LogOut, Bell, Settings } from "lucide-react";
 import { useAuth } from "./context/AuthContext";
 import { Button } from "./Components/ui/button";
@@ -36,12 +37,15 @@ function App() {
         <div className="flex items-center gap-2">
           <span className="text-xl font-bold text-primary">Vidhik AI</span>
         </div>
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
-        >
-          <Menu size={24} />
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+          >
+            <Menu size={24} />
+          </button>
+        </div>
       </div>
 
       {/* Sidebar Overlay (Mobile) */}

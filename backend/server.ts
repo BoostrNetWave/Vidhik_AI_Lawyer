@@ -24,6 +24,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import caseRoutes from './routes/caseRoutes.js';
 import consultationRoutes from './routes/consultationRoutes.js';
 import websiteContentRoutes from './routes/websiteContentRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import { verifyEmailConfiguration } from './utils/emailService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -192,6 +193,7 @@ registerRoute('/subscriptions', paymentRoutes);
 registerRoute('/cases', caseRoutes);
 registerRoute('/consultations', consultationRoutes);
 registerRoute('/website-content', websiteContentRoutes);
+registerRoute('/notifications', notificationRoutes);
 
 // Database connection & Server start
 const startServer = async () => {

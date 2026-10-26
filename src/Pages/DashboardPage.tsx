@@ -3,6 +3,7 @@ import api from "../lib/api";
 import { DollarSign, Calendar, Clock, TrendingUp, Search, Bell, FileText, LifeBuoy, Plus, ArrowRight, ExternalLink, ArrowUpRight, PenTool, LogOut, Settings, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import NotificationBell from "../Components/NotificationBell";
 import {
   ResponsiveContainer,
   BarChart,
@@ -220,10 +221,7 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                <Bell className="h-4.5 w-4.5" />
-                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary ring-2 ring-white"></span>
-              </Button>
+              <NotificationBell />
               <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="h-9 w-9">
                 <Settings className="h-4.5 w-4.5" />
               </Button>
