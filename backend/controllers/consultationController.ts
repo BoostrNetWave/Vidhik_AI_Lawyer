@@ -3,6 +3,7 @@ import LiveConsultation from '../models/LiveConsultation.js';
 import User from '../models/User.js';
 import { sendEmail } from '../utils/emailService.js';
 import Signal from '../models/Signal.js';
+import { saveFileToGridFS } from '../utils/gridfsStorage.js';
 
 export const getConsultationsForLawyer = async (req: any, res: Response): Promise<void> => {
     try {
@@ -150,6 +151,10 @@ export const uploadConsultationDocument = async (req: any, res: Response): Promi
         }
 
         const docUrl = `/uploads/${file.filename}`;
+
+        // Save to central MongoDB GridFS for seamless cross-server access
+        await saveFileToGridFS(file.filename, file.path, file.mimetype);
+
         consultation.documents.push({
             name: file.originalname,
             url: docUrl,

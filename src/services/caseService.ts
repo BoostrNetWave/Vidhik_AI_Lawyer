@@ -112,7 +112,7 @@ export const caseService = {
         return response.data;
     },
 
-    async sendSignal(id: string, signalData: { sender: 'client' | 'lawyer'; type: string; sdp?: string; candidate?: any }): Promise<any> {
+    async sendSignal(id: string, signalData: { sender: 'client' | 'lawyer'; type: string; sdp?: string; candidate?: any; name?: string; [key: string]: any }): Promise<any> {
         const response = await api.post(`cases/${id}/signal`, signalData);
         return response.data;
     },

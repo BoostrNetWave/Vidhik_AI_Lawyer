@@ -14,6 +14,23 @@ export default defineConfig({
                 changeOrigin: true,
                 secure: false,
                 rewrite: (path) => path.replace(/^\/lawyer\/api/, '/api')
+            },
+            '/lawyer/uploads': {
+                target: 'http://localhost:5025',
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/lawyer\/uploads/, '/uploads')
+            },
+            '/uploads': {
+                target: 'http://localhost:5025',
+                changeOrigin: true,
+                secure: false
+            },
+            '/user/uploads': {
+                target: 'http://localhost:5025',
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/user\/uploads/, '/uploads')
             }
         }
     },

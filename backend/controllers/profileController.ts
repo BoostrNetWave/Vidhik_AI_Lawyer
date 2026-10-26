@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import User, { IUser } from '../models/User.js';
+import { saveFileToGridFS } from '../utils/gridfsStorage.js';
 
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -85,6 +86,9 @@ export const uploadAvatar = async (req: Request, res: Response): Promise<void> =
 
         const { userId } = req.body;
         const avatarUrl = `/uploads/${req.file.filename}`;
+
+        // Save to central MongoDB GridFS
+        await saveFileToGridFS(req.file.filename, req.file.path, req.file.mimetype);
 
         // Update user with new avatar URL
         await User.findOneAndUpdate(

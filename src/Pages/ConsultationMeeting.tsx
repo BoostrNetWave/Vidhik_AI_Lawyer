@@ -7,6 +7,7 @@ import {
     FileText, ArrowLeft, Download, ShieldCheck, Clock, ExternalLink,
     Lock, RefreshCcw, Upload, AlertCircle
 } from 'lucide-react';
+import { getFileUrl, isImageFile, isPdfFile } from '../lib/fileUtils';
 
 export default function ConsultationMeeting() {
     const { id } = useParams<{ id: string }>();
@@ -825,7 +826,7 @@ export default function ConsultationMeeting() {
                                             
                                             <div className="flex gap-2">
                                                 <a
-                                                    href={`/lawyer${caseData.meetingSummaryUrl}`}
+                                                    href={getFileUrl(caseData.meetingSummaryUrl)}
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className="flex-1 py-2 bg-primary hover:bg-primary text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
@@ -849,6 +850,12 @@ export default function ConsultationMeeting() {
                                                                     const updated = await caseService.uploadMeetingSummary(caseData._id, e.target.files[0]);
                                                                     setCaseData(updated);
                                                                     success("Meeting summary replaced successfully!");
+                                                                    // Signal remote client in real-time across servers
+                                                                    caseService.sendSignal(caseData._id, {
+                                                                        sender: 'lawyer',
+                                                                        type: 'document_update',
+                                                                        name: e.target.files[0].name
+                                                                    }).catch(err => console.error("Error sending doc update signal:", err));
                                                                 } catch (err: any) {
                                                                     error("Failed to re-upload summary");
                                                                 } finally {
@@ -941,7 +948,7 @@ export default function ConsultationMeeting() {
                                             </div>
                                         </div>
                                         <a
-                                            href={`/lawyer${caseData.meetingSummaryUrl}`}
+                                            href={getFileUrl(caseData.meetingSummaryUrl)}
                                             target="_blank"
                                             rel="noreferrer"
                                             className="h-8 w-8 rounded-lg bg-white border border-border flex items-center justify-center hover:bg-secondary text-primary shrink-0 transition-colors"

@@ -3,6 +3,7 @@ import Blog from '../models/Blog.js';
 import User from '../models/User.js';
 import SystemConfig from '../models/SystemConfig.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import { saveFileToGridFS } from '../utils/gridfsStorage.js';
 
 export const getBlogs = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
@@ -76,6 +77,7 @@ export const createBlog = async (req: AuthRequest, res: Response): Promise<void>
         // Handle image file if uploaded
         if (req.file) {
             blogData.image = `/uploads/${req.file.filename}`;
+            await saveFileToGridFS(req.file.filename, req.file.path, req.file.mimetype);
         }
 
         const blog = new Blog(blogData);
@@ -99,6 +101,7 @@ export const updateBlog = async (req: AuthRequest, res: Response): Promise<void>
         // Handle image file if uploaded
         if (req.file) {
             blogData.image = `/uploads/${req.file.filename}`;
+            await saveFileToGridFS(req.file.filename, req.file.path, req.file.mimetype);
         }
 
         // Ensure ownership

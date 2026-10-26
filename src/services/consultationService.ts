@@ -5,6 +5,7 @@ export interface IConsultationDoc {
     url: string;
     uploadedBy: 'client' | 'lawyer';
     uploadedAt: string;
+    size?: number;
 }
 
 export interface IConsultation {

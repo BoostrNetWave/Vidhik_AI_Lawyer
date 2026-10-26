@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import SupportTicket from '../models/SupportTicket.js';
+import { saveFileToGridFS } from '../utils/gridfsStorage.js';
 
 export const getTickets = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -36,6 +37,7 @@ export const createTicket = async (req: Request, res: Response): Promise<void> =
         let attachment: string | undefined = undefined;
         if (req.file) {
             attachment = `/uploads/${req.file.filename}`;
+            await saveFileToGridFS(req.file.filename, req.file.path, req.file.mimetype);
         }
 
         const ticket = new SupportTicket({

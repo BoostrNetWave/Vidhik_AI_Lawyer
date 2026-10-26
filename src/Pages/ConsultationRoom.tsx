@@ -3,10 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
     Video, Mic, MicOff, VideoOff, ScreenShare, PhoneOff, 
     FileText, ArrowLeft, Download, ShieldCheck, Clock, 
-    Lock, RefreshCcw, Upload, File, User
+    Lock, RefreshCcw, Upload, File, User, Eye, ExternalLink, X
 } from 'lucide-react';
 import { consultationService, IConsultation } from '../services/consultationService';
 import { useToast } from '../context/ToastContext';
+import { getFileUrl, isImageFile, isPdfFile, formatFileSize } from '../lib/fileUtils';
 
 export default function ConsultationRoom() {
     const { id } = useParams<{ id: string }>();
@@ -27,8 +28,13 @@ export default function ConsultationRoom() {
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const processedCandidatesRef = useRef<Set<string>>(new Set());
+    const processedDocSignalsRef = useRef<Set<string>>(new Set());
+    const pollTickCountRef = useRef<number>(0);
     const lastProcessedAnswerSdp = useRef<string | null>(null);
     const resettingRef = useRef(false);
+
+    // Image preview lightbox state
+    const [previewModal, setPreviewModal] = useState<{ url: string; title: string } | null>(null);
 
     // Call Toggles & Status
     const [isAudioMuted, setIsAudioMuted] = useState(false);
@@ -137,6 +143,26 @@ export default function ConsultationRoom() {
             error("Failed to load room details");
         }
     };
+
+    // Silent background poll to synchronize new documents in real-time
+    const fetchDetailsSilent = useCallback(async () => {
+        try {
+            const data = await consultationService.getConsultationById(id!);
+            if (data) {
+                setConsultation(prev => {
+                    if (!prev) return data;
+                    const prevDocs = prev.documents || [];
+                    const newDocs = data.documents || [];
+                    if (prevDocs.length !== newDocs.length || JSON.stringify(prevDocs) !== JSON.stringify(newDocs) || prev.status !== data.status) {
+                        return { ...prev, ...data };
+                    }
+                    return prev;
+                });
+            }
+        } catch (_err) {
+            // Silently ignore background poll errors
+        }
+    }, [id]);
 
     useEffect(() => {
         const initRoom = async () => {
@@ -382,6 +408,22 @@ export default function ConsultationRoom() {
                         }
                     }
                 }
+
+                // 3. Process Real-Time Document Updates from Client
+                const docSignals = remoteSignals.filter((s: any) => s.type === 'document_update');
+                for (const signal of docSignals) {
+                    if (signal._id && !processedDocSignalsRef.current.has(signal._id)) {
+                        processedDocSignalsRef.current.add(signal._id);
+                        fetchDetailsSilent();
+                        success(`Client uploaded a new document: ${signal.name || ''}`);
+                    }
+                }
+
+                // 4. Periodic background sync of consultation details (every 3 seconds)
+                pollTickCountRef.current = (pollTickCountRef.current || 0) + 1;
+                if (pollTickCountRef.current % 2 === 0) {
+                    fetchDetailsSilent();
+                }
             } catch (err) {
                 console.error("Error in lawyer signaling poll:", err);
             }
@@ -560,6 +602,12 @@ export default function ConsultationRoom() {
         try {
             await consultationService.uploadDocument(id!, file);
             success("Document uploaded successfully!");
+            // Signal remote client in real-time across servers
+            consultationService.sendSignal(id!, {
+                sender: 'lawyer',
+                type: 'document_update',
+                name: file.name
+            }).catch(err => console.error("Error sending doc update signal:", err));
             fetchDetails();
         } catch (err: any) {
             console.error(err);
@@ -928,27 +976,80 @@ export default function ConsultationRoom() {
                                             <p className="font-bold text-xs">No documents uploaded yet</p>
                                         </div>
                                     ) : (
-                                        consultation.documents.map((doc, idx) => (
-                                            <div key={idx} className="p-3.5 bg-slate-50 border border-slate-150 rounded-xl flex items-center justify-between gap-4">
-                                                <div className="flex items-center gap-2.5 truncate">
-                                                    <div className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 shrink-0">
-                                                        <File className="h-4 w-4 text-primary" />
+                                        consultation.documents.map((doc, idx) => {
+                                            const fileUrl = getFileUrl(doc.url);
+                                            const isImg = isImageFile(doc.url) || isImageFile(doc.name);
+                                            const isPdf = isPdfFile(doc.url) || isPdfFile(doc.name);
+                                            return (
+                                                <div key={idx} className="p-3 bg-white border border-slate-200/80 rounded-2xl flex flex-col gap-2.5 shadow-sm hover:border-primary/40 transition-all">
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div className="flex items-center gap-2.5 min-w-0">
+                                                            <div className={`p-2 rounded-xl text-primary shrink-0 ${isImg ? 'bg-amber-50 text-amber-600' : isPdf ? 'bg-rose-50 text-rose-600' : 'bg-primary/10 text-primary'}`}>
+                                                                {isImg ? <Eye className="h-4 w-4" /> : isPdf ? <FileText className="h-4 w-4" /> : <File className="h-4 w-4" />}
+                                                            </div>
+                                                            <div className="min-w-0 truncate">
+                                                                <h5 className="font-bold text-slate-800 text-xs truncate" title={doc.name}>{doc.name}</h5>
+                                                                <div className="flex items-center gap-2 text-[10px] text-slate-400 font-semibold">
+                                                                    <span>By {doc.uploadedBy || 'Lawyer'}</span>
+                                                                    {doc.size ? <span>• {formatFileSize(doc.size)}</span> : null}
+                                                                    {doc.uploadedAt ? <span>• {new Date(doc.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span> : null}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 shrink-0">
+                                                            {isImg && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setPreviewModal({ url: fileUrl, title: doc.name })}
+                                                                    className="h-8 px-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold flex items-center gap-1 transition-colors"
+                                                                    title="Preview Image"
+                                                                >
+                                                                    <Eye size={13} />
+                                                                    <span className="hidden sm:inline">Preview</span>
+                                                                </button>
+                                                            )}
+                                                            <a
+                                                                href={fileUrl}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="h-8 w-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors shadow-sm"
+                                                                title="Open file in new tab"
+                                                            >
+                                                                <ExternalLink size={13} />
+                                                            </a>
+                                                            <a
+                                                                href={fileUrl}
+                                                                download={doc.name}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="h-8 w-8 rounded-lg bg-slate-900 text-white flex items-center justify-center hover:bg-slate-800 transition-colors shadow-sm"
+                                                                title="Download file"
+                                                            >
+                                                                <Download size={13} />
+                                                            </a>
+                                                        </div>
                                                     </div>
-                                                    <div className="truncate">
-                                                        <h5 className="font-bold text-slate-800 text-xs truncate" title={doc.name}>{doc.name}</h5>
-                                                        <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">By {doc.uploadedBy}</span>
-                                                    </div>
+                                                    {isImg && (
+                                                        <div 
+                                                            className="relative h-28 w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200 cursor-pointer group"
+                                                            onClick={() => setPreviewModal({ url: fileUrl, title: doc.name })}
+                                                        >
+                                                            <img
+                                                                src={fileUrl}
+                                                                alt={doc.name}
+                                                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLElement).style.display = 'none';
+                                                                }}
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5 backdrop-blur-[2px]">
+                                                                <Eye size={14} /> Click to expand
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <a
-                                                    href={`/lawyer${doc.url}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-500 hover:text-slate-900 shrink-0 transition-colors shadow-sm"
-                                                >
-                                                    <Download size={14} />
-                                                </a>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                     )}
                                 </div>
                             </div>
@@ -1072,6 +1173,40 @@ export default function ConsultationRoom() {
                             >
                                 Back to Consultations
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Modal: Image Lightbox Preview */}
+            {previewModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-4">
+                    <div className="relative bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+                        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-950/50">
+                            <h4 className="text-sm font-bold text-white truncate max-w-md">{previewModal.title}</h4>
+                            <div className="flex items-center gap-2">
+                                <a
+                                    href={previewModal.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                                    title="Open Fullscreen"
+                                >
+                                    <ExternalLink size={16} />
+                                </a>
+                                <button
+                                    onClick={() => setPreviewModal(null)}
+                                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-black/40">
+                            <img
+                                src={previewModal.url}
+                                alt={previewModal.title}
+                                className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-lg"
+                            />
                         </div>
                     </div>
                 </div>

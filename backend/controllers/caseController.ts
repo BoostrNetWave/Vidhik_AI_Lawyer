@@ -5,6 +5,7 @@ import Signal from '../models/Signal.js';
 import SystemConfig from '../models/SystemConfig.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { sendEmail } from '../utils/emailService.js';
+import { saveFileToGridFS } from '../utils/gridfsStorage.js';
 
 export const getCases = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
@@ -250,6 +251,10 @@ export const uploadProof = async (req: AuthRequest, res: Response): Promise<void
 
         const { details } = req.body;
         const proofUrl = `/uploads/${req.file.filename}`;
+
+        // Save to central MongoDB GridFS for seamless cross-server access
+        await saveFileToGridFS(req.file.filename, req.file.path, req.file.mimetype);
+
         kase.milestones[milestoneIndex].proofDocs.push({
             name: req.file.originalname,
             url: proofUrl,
@@ -364,6 +369,10 @@ export const uploadMeetingSummary = async (req: AuthRequest, res: Response): Pro
         }
 
         const summaryUrl = `/uploads/${req.file.filename}`;
+
+        // Save to central MongoDB GridFS for seamless cross-server access
+        await saveFileToGridFS(req.file.filename, req.file.path, req.file.mimetype);
+
         kase.meetingSummaryUrl = summaryUrl;
         kase.meetingSummaryName = req.file.originalname;
         kase.meetingSummaryUploadedAt = new Date();
