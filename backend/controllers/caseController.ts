@@ -1,16 +1,45 @@
 import { Response } from 'express';
 import Case from '../models/Case.js';
 import User from '../models/User.js';
+import Notification from '../models/Notification.js';
 import Signal from '../models/Signal.js';
 import SystemConfig from '../models/SystemConfig.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { sendEmail } from '../utils/emailService.js';
 import { saveFileToGridFS } from '../utils/gridfsStorage.js';
 
+/**
+ * Get cases assigned to this lawyer or where this lawyer has applied
+ */
 export const getCases = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const cases = await Case.find({ lawyer: req.user.id })
+        const cases = await Case.find({
+            $or: [
+                { lawyer: req.user.id },
+                { 'interestedLawyers.lawyer': req.user.id }
+            ]
+        })
             .populate('client', 'fullName email phone location')
+            .populate('interestedLawyers.lawyer', 'fullName email phone location title expertise avatar rating experience casesWon hourlyRate')
+            .populate('aiRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience')
+            .populate('adminRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience')
+            .sort({ createdAt: -1 });
+        res.json(cases);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+/**
+ * Get all open marketplace cases posted by clients
+ */
+export const getOpenCases = async (_req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const cases = await Case.find({ status: 'open' })
+            .populate('client', 'fullName email phone location')
+            .populate('interestedLawyers.lawyer', 'fullName email phone location title expertise avatar rating experience casesWon hourlyRate')
+            .populate('aiRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience')
+            .populate('adminRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience')
             .sort({ createdAt: -1 });
         res.json(cases);
     } catch (error: any) {
@@ -21,14 +50,107 @@ export const getCases = async (req: AuthRequest, res: Response): Promise<void> =
 export const getCaseById = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const kase = await Case.findOne({ _id: id, lawyer: req.user.id })
-            .populate('client', 'fullName email phone location');
+        const kase = await Case.findOne({
+            _id: id,
+            $or: [
+                { lawyer: req.user.id },
+                { status: 'open' },
+                { 'interestedLawyers.lawyer': req.user.id }
+            ]
+        })
+            .populate('client', 'fullName email phone location')
+            .populate('interestedLawyers.lawyer', 'fullName email phone location title expertise avatar rating experience casesWon hourlyRate')
+            .populate('aiRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience')
+            .populate('adminRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience');
         
         if (!kase) {
             res.status(404).json({ message: 'Case not found' });
             return;
         }
         res.json(kase);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+/**
+ * Lawyer applies / expresses interest in an open case
+ */
+export const applyToCase = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { proposalNote, proposedFee, estimatedTimeline } = req.body;
+        const lawyerId = req.user.id;
+
+        const lawyerUser = await User.findById(lawyerId);
+        if (!lawyerUser) {
+            res.status(404).json({ message: 'Lawyer profile not found' });
+            return;
+        }
+
+        const kase = await Case.findById(id);
+        if (!kase) {
+            res.status(404).json({ message: 'Case not found' });
+            return;
+        }
+
+        if (kase.status !== 'open') {
+            res.status(400).json({ message: 'This case is no longer open for new applications' });
+            return;
+        }
+
+        const alreadyApplied = kase.interestedLawyers.some(
+            (i: any) => i.lawyer.toString() === lawyerId.toString()
+        );
+
+        if (alreadyApplied) {
+            res.status(400).json({ message: 'You have already applied to this case' });
+            return;
+        }
+
+        kase.interestedLawyers.push({
+            lawyer: lawyerId as any,
+            appliedAt: new Date(),
+            proposalNote: proposalNote || 'I am interested in taking this case and can provide dedicated legal representation.',
+            proposedFee: Number(proposedFee) || kase.budget || kase.totalFee || 1500,
+            estimatedTimeline: estimatedTimeline || 'Standard Timeline',
+            status: 'applied'
+        });
+
+        await kase.save();
+
+        const populated = await Case.findById(kase._id)
+            .populate('client', 'fullName email phone location')
+            .populate('interestedLawyers.lawyer', 'fullName email phone location title expertise avatar rating experience casesWon hourlyRate')
+            .populate('aiRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience')
+            .populate('adminRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience');
+
+        // Notify client
+        const clientUserId = kase.client.toString();
+        await Notification.create({
+            userId: clientUserId,
+            userRole: 'user',
+            title: 'Lawyer Approved Your Case',
+            message: `Adv. ${lawyerUser.fullName} has approved and expressed interest in taking your case "${kase.title}".`,
+            type: 'case',
+            link: `/cases`
+        });
+
+        // Send email to client
+        const clientEmail = (populated?.client as any)?.email;
+        if (clientEmail) {
+            await sendEmail(
+                clientEmail,
+                `Lawyer Expressed Interest: ${kase.title}`,
+                `<h3>Adv. ${lawyerUser.fullName} Approved Your Case</h3>
+                 <p>Advocate <strong>${lawyerUser.fullName}</strong> (${lawyerUser.expertise || 'Specialist'}) has reviewed your case <strong>${kase.title}</strong> and expressed interest in representing you.</p>
+                 <p><strong>Proposed Fee:</strong> ₹${Number(proposedFee) || kase.budget || kase.totalFee || 1500}</p>
+                 <p><strong>Proposal Note:</strong> ${proposalNote || 'Available to commence work immediately.'}</p>
+                 <p>Log in to your <strong>Case Management</strong> dashboard to review all interested lawyers and confirm your selection.</p>`
+            );
+        }
+
+        res.json(populated);
     } catch (error: any) {
         res.status(500).json({ message: error.message });
     }
@@ -43,26 +165,11 @@ export const createCase = async (req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
-        // Check lawyer's active cases limit
         const lawyerUser = await User.findById(req.user.id);
         if (!lawyerUser) {
             res.status(404).json({ message: 'Lawyer not found' });
             return;
         }
-
-        // Subscription limits are disabled: lawyers enjoy unlimited case creation capacity
-        const lawyerPlanName = lawyerUser.subscription || 'Free';
-        const plansConfig = await SystemConfig.findOne({ key: 'LAWYER_PRICING_PLANS' });
-        let activeCasesLimit = 999999;
-        if (plansConfig && Array.isArray(plansConfig.value)) {
-            const plan = plansConfig.value.find(
-                (p: any) => p.name.toLowerCase() === lawyerPlanName.toLowerCase()
-            ) || plansConfig.value.find((p: any) => p.name.toLowerCase() === 'free');
-            if (plan && plan.limits && plan.limits.activeCases !== undefined) {
-                activeCasesLimit = Number(plan.limits.activeCases);
-            }
-        }
-        // Unlimited mode: no limit block enforced for lawyers
 
         const clientUser = await User.findOne({ email: clientEmail.toLowerCase().trim(), role: 'user' });
         if (!clientUser) {
@@ -107,16 +214,6 @@ export const submitPlan = async (req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
-        if (!kaseCheck.meetingJoinedByClient || !kaseCheck.meetingJoinedByLawyer) {
-            res.status(400).json({ message: 'Both client and lawyer must join the consultation meeting before the action roadmap can be submitted.' });
-            return;
-        }
-
-        if (!kaseCheck.meetingSummaryUrl) {
-            res.status(400).json({ message: 'You must upload the meeting summary document before submitting the action roadmap.' });
-            return;
-        }
-
         for (let i = 0; i < milestones.length; i++) {
             const m = milestones[i];
             if (!m.title || !m.title.trim() || !m.description || !m.description.trim()) {
@@ -156,7 +253,6 @@ export const submitPlan = async (req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
-        // Notify client that action roadmap has been submitted and send confirmation to lawyer
         const clientEmail = (kase.client as any)?.email;
         const clientName = (kase.client as any)?.fullName || 'Client';
         const lawyerName = req.user.fullName || 'Advocate';
@@ -212,7 +308,6 @@ export const updateMilestoneStatus = async (req: AuthRequest, res: Response): Pr
             kase.milestones[milestoneIndex].completedAt = undefined;
         }
 
-        // Re-calculate overall case progress
         let progress = 0;
         kase.milestones.forEach((m) => {
             if (m.status === 'completed') {
@@ -252,7 +347,6 @@ export const uploadProof = async (req: AuthRequest, res: Response): Promise<void
         const { details } = req.body;
         const proofUrl = `/uploads/${req.file.filename}`;
 
-        // Save to central MongoDB GridFS for seamless cross-server access
         await saveFileToGridFS(req.file.filename, req.file.path, req.file.mimetype);
 
         kase.milestones[milestoneIndex].proofDocs.push({
@@ -309,36 +403,50 @@ export const confirmBooking = async (req: AuthRequest, res: Response): Promise<v
         const { id } = req.params;
         const kase = await Case.findOneAndUpdate(
             { _id: id, lawyer: req.user.id, status: 'pending_lawyer' },
-            { $set: { status: 'pending_payment' } },
+            { 
+                $set: { 
+                    status: 'pending_payment',
+                    meetingLink: `https://jitsi.hamburg.ccc.de/vidhik-meet-${Math.random().toString(36).substring(2, 10)}-${Date.now().toString(36)}`
+                } 
+            },
             { new: true }
         ).populate('client', 'fullName email phone location');
 
         if (!kase) {
-            res.status(404).json({ message: 'Case booking request not found or already processed.' });
+            res.status(404).json({ message: 'Case request not found or not in pending lawyer confirmation state.' });
             return;
         }
 
-        // Send confirmation email to client AND lawyer
         const clientEmail = (kase.client as any)?.email;
         const clientName = (kase.client as any)?.fullName || 'Client';
         const lawyerName = req.user.fullName || 'Advocate';
 
+        // Notify client
+        const clientUserId = (kase.client as any)?._id?.toString() || kase.client.toString();
+        await Notification.create({
+            userId: clientUserId,
+            userRole: 'user',
+            title: 'Lawyer Accepted Your Case',
+            message: `Adv. ${lawyerName} accepted your case "${kase.title}". Please proceed with payment to start work.`,
+            type: 'case',
+            link: `/cases`
+        });
+
         await Promise.allSettled([
             clientEmail ? sendEmail(
                 clientEmail,
-                `Consultation Booking Confirmed by Lawyer: ${kase.title}`,
-                `<h2 style="color: #1e1b4b; margin-top: 0;">Case Booking Confirmed</h2>
+                `Case Accepted by Lawyer: ${kase.title}`,
+                `<h2 style="color: #1e1b4b; margin-top: 0;">Case Accepted & Ready for Payment</h2>
                  <p>Hello <strong>${clientName}</strong>,</p>
-                 <p>Advocate <strong>Adv. ${lawyerName}</strong> has accepted your consultation and case booking request for <strong>${kase.title}</strong>.</p>
-                 <p>Please log in to your dashboard, go to the <strong>Case Management</strong> section, and proceed to make the payment. Once paid, your case will become active and the roadmap will be initiated.</p>`
+                 <p>Advocate <strong>Adv. ${lawyerName}</strong> has confirmed acceptance of your case <strong>${kase.title}</strong>.</p>
+                 <p>Please log in to your dashboard under <strong>Case Management</strong> and proceed with payment. Once paid, the case will be active and roadmap will begin.</p>`
             ) : Promise.resolve(),
             req.user.email ? sendEmail(
                 req.user.email,
-                `You Confirmed Case Booking: ${kase.title}`,
-                `<h2 style="color: #1e1b4b; margin-top: 0;">Case Booking Request Accepted</h2>
+                `You Accepted Case: ${kase.title}`,
+                `<h2 style="color: #1e1b4b; margin-top: 0;">Case Acceptance Confirmed</h2>
                  <p>Hello <strong>Adv. ${lawyerName}</strong>,</p>
-                 <p>You have confirmed the case booking request from <strong>${clientName}</strong> for <strong>${kase.title}</strong>.</p>
-                 <p>The client has been notified to complete the payment.</p>`
+                 <p>You have accepted case <strong>${kase.title}</strong>. The client has been prompted to make payment.</p>`
             ) : Promise.resolve()
         ]);
 
@@ -363,14 +471,7 @@ export const uploadMeetingSummary = async (req: AuthRequest, res: Response): Pro
             return;
         }
 
-        if (!kase.meetingJoinedByClient || !kase.meetingJoinedByLawyer) {
-            res.status(400).json({ message: 'Both client and lawyer must join the consultation meeting before the summary can be uploaded.' });
-            return;
-        }
-
         const summaryUrl = `/uploads/${req.file.filename}`;
-
-        // Save to central MongoDB GridFS for seamless cross-server access
         await saveFileToGridFS(req.file.filename, req.file.path, req.file.mimetype);
 
         kase.meetingSummaryUrl = summaryUrl;
@@ -446,4 +547,3 @@ export const clearSignals = async (req: AuthRequest, res: Response): Promise<voi
         res.status(500).json({ message: error.message });
     }
 };
-

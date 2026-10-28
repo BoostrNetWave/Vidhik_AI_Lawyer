@@ -16,17 +16,52 @@ export interface IMilestone {
     completedAt?: Date;
 }
 
+export interface IInterestedLawyer {
+    lawyer: mongoose.Types.ObjectId;
+    appliedAt: Date;
+    proposalNote?: string;
+    proposedFee?: number;
+    estimatedTimeline?: string;
+    status?: 'applied' | 'selected' | 'rejected';
+}
+
 export interface ICase extends Document {
     title: string;
     description: string;
     client: mongoose.Types.ObjectId;
-    lawyer: mongoose.Types.ObjectId;
-    status: 'pending_lawyer' | 'pending_payment' | 'active' | 'completed' | 'cancelled';
+    lawyer?: mongoose.Types.ObjectId;
+    status: 'open' | 'pending_lawyer' | 'pending_payment' | 'active' | 'completed' | 'cancelled';
+    budget?: number;
     totalFee: number;
     currentProgress: number;
     planSubmitted: boolean;
     planApproved: boolean;
     milestones: IMilestone[];
+    category?: string;
+    court?: string;
+    filingNumber?: string;
+    nextHearingDate?: Date;
+    priority?: 'low' | 'medium' | 'high' | 'urgent';
+    aiSummary?: string;
+    aiKeyFacts?: string[];
+    aiRecommendedSpecialization?: string;
+    aiRecommendedLawyer?: mongoose.Types.ObjectId;
+    aiRecommendationReason?: string;
+    adminRecommendedLawyer?: mongoose.Types.ObjectId;
+    adminRecommendationNote?: string;
+    interestedLawyers: IInterestedLawyer[];
+    notes?: {
+        text: string;
+        createdAt: Date;
+        createdBy?: string;
+    }[];
+    documents?: {
+        name: string;
+        url: string;
+        size?: number;
+        uploadedAt: Date;
+        docType?: string;
+    }[];
     bookingDate?: Date;
     bookingTime?: string;
     meetingLink?: string;
@@ -63,21 +98,64 @@ const milestoneSchema = new Schema({
     completedAt: { type: Date }
 });
 
+const interestedLawyerSchema = new Schema({
+    lawyer: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    appliedAt: { type: Date, default: Date.now },
+    proposalNote: { type: String, default: '' },
+    proposedFee: { type: Number, default: 0 },
+    estimatedTimeline: { type: String, default: '' },
+    status: { 
+        type: String, 
+        enum: ['applied', 'selected', 'rejected'], 
+        default: 'applied' 
+    }
+});
+
 const caseSchema = new Schema({
     title: { type: String, required: true, trim: true },
     description: { type: String, required: true },
     client: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    lawyer: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    lawyer: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+    category: { type: String, default: 'General Legal' },
+    court: { type: String },
+    filingNumber: { type: String },
+    nextHearingDate: { type: Date },
+    priority: { 
+        type: String, 
+        enum: ['low', 'medium', 'high', 'urgent'], 
+        default: 'medium' 
+    },
     status: { 
         type: String, 
-        enum: ['pending_lawyer', 'pending_payment', 'active', 'completed', 'cancelled'], 
-        default: 'pending_lawyer' 
+        enum: ['open', 'pending_lawyer', 'pending_payment', 'active', 'completed', 'cancelled'], 
+        default: 'open' 
     },
+    budget: { type: Number, default: 0 },
     totalFee: { type: Number, required: true, default: 0 },
     currentProgress: { type: Number, default: 0 },
     planSubmitted: { type: Boolean, default: false },
     planApproved: { type: Boolean, default: false },
+    aiSummary: { type: String, default: '' },
+    aiKeyFacts: [{ type: String }],
+    aiRecommendedSpecialization: { type: String, default: '' },
+    aiRecommendedLawyer: { type: Schema.Types.ObjectId, ref: 'User' },
+    aiRecommendationReason: { type: String, default: '' },
+    adminRecommendedLawyer: { type: Schema.Types.ObjectId, ref: 'User' },
+    adminRecommendationNote: { type: String, default: '' },
+    interestedLawyers: [interestedLawyerSchema],
     milestones: [milestoneSchema],
+    notes: [{
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now },
+        createdBy: { type: String }
+    }],
+    documents: [{
+        name: { type: String, required: true },
+        url: { type: String, required: true },
+        size: { type: Number },
+        uploadedAt: { type: Date, default: Date.now },
+        docType: { type: String, default: 'Case File' }
+    }],
     bookingDate: { type: Date },
     bookingTime: { type: String },
     meetingLink: { type: String },

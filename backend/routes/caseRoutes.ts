@@ -2,8 +2,10 @@ import express, { Router } from 'express';
 import { protect } from '../middleware/authMiddleware.js';
 import { 
     getCases, 
+    getOpenCases,
     getCaseById, 
     createCase, 
+    applyToCase,
     submitPlan, 
     updateMilestoneStatus, 
     uploadProof, 
@@ -24,11 +26,10 @@ const __dirname = path.dirname(__filename);
 
 // Configure multer for proof uploads
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // Save directly in uploads folder
+    destination: (_req, _file, cb) => {
         cb(null, path.join(__dirname, '../uploads'));
     },
-    filename: (req, file, cb) => {
+    filename: (_req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, 'proof-' + uniqueSuffix + path.extname(file.originalname));
     }
@@ -36,8 +37,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for proof documents
-    fileFilter: (req, file, cb) => {
+    limits: { fileSize: 15 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
         const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = allowedTypes.test(file.mimetype);
@@ -53,9 +54,12 @@ const router: Router = express.Router();
 
 router.use(protect);
 
+router.get('/open', getOpenCases);
 router.get('/', getCases);
 router.post('/', createCase);
+router.post('/:id/apply', applyToCase);
 router.put('/:id/confirm-booking', confirmBooking);
+router.put('/:id/accept-case', confirmBooking);
 router.get('/:id', getCaseById);
 router.put('/:id/plan', submitPlan);
 router.put('/:id/milestones/:index/status', updateMilestoneStatus);

@@ -16,6 +16,36 @@ export interface IMilestone {
     completedAt?: string;
 }
 
+export interface ICaseDocument {
+    name: string;
+    url: string;
+    size?: number;
+    uploadedAt: string;
+    docType?: string;
+}
+
+export interface IInterestedLawyer {
+    lawyer: {
+        _id: string;
+        fullName: string;
+        email?: string;
+        phone?: string;
+        location?: string;
+        title?: string;
+        expertise?: string;
+        avatar?: string;
+        rating?: number;
+        experience?: string;
+        casesWon?: number;
+        hourlyRate?: number;
+    };
+    appliedAt: string;
+    proposalNote?: string;
+    proposedFee?: number;
+    estimatedTimeline?: string;
+    status?: 'applied' | 'selected' | 'rejected';
+}
+
 export interface ICase {
     _id: string;
     title: string;
@@ -27,13 +57,28 @@ export interface ICase {
         phone?: string;
         location?: string;
     };
-    lawyer: string;
-    status: 'pending_lawyer' | 'pending_payment' | 'active' | 'completed' | 'cancelled';
+    lawyer?: any;
+    status: 'open' | 'pending_lawyer' | 'pending_payment' | 'active' | 'completed' | 'cancelled';
+    category?: string;
+    court?: string;
+    filingNumber?: string;
+    nextHearingDate?: string;
+    priority?: 'low' | 'medium' | 'high' | 'urgent';
+    budget?: number;
     totalFee: number;
     currentProgress: number;
     planSubmitted: boolean;
     planApproved: boolean;
     milestones: IMilestone[];
+    aiSummary?: string;
+    aiKeyFacts?: string[];
+    aiRecommendedSpecialization?: string;
+    aiRecommendedLawyer?: any;
+    aiRecommendationReason?: string;
+    adminRecommendedLawyer?: any;
+    adminRecommendationNote?: string;
+    interestedLawyers?: IInterestedLawyer[];
+    documents?: ICaseDocument[];
     bookingDate?: string;
     bookingTime?: string;
     meetingLink?: string;
@@ -52,8 +97,18 @@ export const caseService = {
         return response.data;
     },
 
+    async getOpenCases(): Promise<ICase[]> {
+        const response = await api.get('cases/open');
+        return response.data;
+    },
+
     async getCaseById(id: string): Promise<ICase> {
         const response = await api.get(`cases/${id}`);
+        return response.data;
+    },
+
+    async applyToCase(id: string, data: { proposalNote?: string; proposedFee?: number; estimatedTimeline?: string }): Promise<ICase> {
+        const response = await api.post(`cases/${id}/apply`, data);
         return response.data;
     },
 

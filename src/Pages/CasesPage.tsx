@@ -16,23 +16,37 @@ import {
     ExternalLink,
     Percent,
     Video,
-    Download
+    Download,
+    Sparkles,
+    Send,
+    Check,
+    ChevronRight,
+    Globe,
+    Layers
 } from "lucide-react";
 import { caseService, ICase, IMilestone } from "../services/caseService";
 import { useToast } from "../context/ToastContext";
 import { useConfirm } from "../context/ConfirmationContext";
+import { useAuth } from "../context/AuthContext";
 import { getFileUrl, isImageFile, isPdfFile } from "../lib/fileUtils";
 
 export default function CasesPage() {
     const navigate = useNavigate();
     const { success, error } = useToast();
     const { confirm } = useConfirm();
+    const { user } = useAuth();
+    const lawyerId = user?.id || (user as any)?._id || user?.userId;
+
+    // View tab: 'my_cases' or 'open_marketplace'
+    const [activeTab, setActiveTab] = useState<'my_cases' | 'open_marketplace'>('my_cases');
     
-    const [cases, setCases] = useState<ICase[]>([]);
+    const [myCases, setMyCases] = useState<ICase[]>([]);
+    const [openCases, setOpenCases] = useState<ICase[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedCase, setSelectedCase] = useState<ICase | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
     
-    // Create Case Form Modal
+    // Create Case Form Modal (for direct client engagement)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [createFormData, setCreateFormData] = useState({
         clientEmail: "",
@@ -42,27 +56,19 @@ export default function CasesPage() {
     });
     const [isSubmittingCase, setIsSubmittingCase] = useState(false);
 
+    // Apply / Express Interest Modal
+    const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+    const [targetOpenCase, setTargetOpenCase] = useState<ICase | null>(null);
+    const [proposalData, setProposalData] = useState({
+        proposedFee: "",
+        estimatedTimeline: "2-3 Weeks",
+        proposalNote: ""
+    });
+    const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+
     // Summary upload in CasesPage
     const [summaryFile, setSummaryFile] = useState<File | null>(null);
     const [isUploadingSummary, setIsUploadingSummary] = useState(false);
-
-    const handleUploadSummaryDirect = async () => {
-        if (!summaryFile || !selectedCase) return;
-
-        setIsUploadingSummary(true);
-        try {
-            const updated = await caseService.uploadMeetingSummary(selectedCase._id, summaryFile);
-            success("Meeting summary uploaded successfully! The case roadmap is now unlocked.");
-            setSummaryFile(null);
-            fetchCases();
-            setSelectedCase(updated);
-        } catch (err: any) {
-            console.error(err);
-            error(err.response?.data?.message || "Failed to upload meeting summary");
-        } finally {
-            setIsUploadingSummary(false);
-        }
-    };
 
     // Plan Builder
     const [builderMilestones, setBuilderMilestones] = useState<{
@@ -76,20 +82,32 @@ export default function CasesPage() {
         { title: "Filing and Hearings", description: "Filing petition in court and attending initial hearings", progressIncrement: 40, payoutAmount: 0 }
     ]);
 
-    // File upload loading state
+    // Proof Upload loading state
     const [uploadingMilestoneIndex, setUploadingMilestoneIndex] = useState<number | null>(null);
     const [activeUploadIndex, setActiveUploadIndex] = useState<number | null>(null);
     const [uploadFile, setUploadFile] = useState<File | null>(null);
     const [uploadDetails, setUploadDetails] = useState<string>("");
 
-    const fetchCases = useCallback(async (isSilent = false) => {
+    const fetchAllCases = useCallback(async (isSilent = false) => {
         if (!isSilent) setLoading(true);
         try {
-            const data = await caseService.getCases();
-            setCases(data);
+            const [myCasesData, openCasesData] = await Promise.all([
+                caseService.getCases().catch(() => []),
+                caseService.getOpenCases().catch(() => [])
+            ]);
+
+            setMyCases(myCasesData);
+            setOpenCases(openCasesData);
+
             setSelectedCase(prevSelected => {
-                if (!prevSelected) return null;
-                const updated = data.find(c => c._id === prevSelected._id);
+                if (!prevSelected) {
+                    if (activeTab === 'open_marketplace') {
+                        return openCasesData.length > 0 ? openCasesData[0] : null;
+                    }
+                    return myCasesData.length > 0 ? myCasesData[0] : null;
+                }
+                const pool = activeTab === 'open_marketplace' ? openCasesData : myCasesData;
+                const updated = pool.find((c: any) => c._id === prevSelected._id);
                 return updated || prevSelected;
             });
         } catch (err: any) {
@@ -100,46 +118,100 @@ export default function CasesPage() {
         } finally {
             if (!isSilent) setLoading(false);
         }
-    }, [error]);
+    }, [error, activeTab]);
 
     useEffect(() => {
-        fetchCases();
-
+        fetchAllCases();
         const interval = setInterval(() => {
-            fetchCases(true);
-        }, 5000);
-
+            fetchAllCases(true);
+        }, 4000);
         return () => clearInterval(interval);
-    }, [fetchCases]);
+    }, [fetchAllCases]);
 
-    const handleCreateCaseSubmit = async (e: React.FormEvent) => {
+    // Switch tabs and default selection
+    const handleTabChange = (tab: 'my_cases' | 'open_marketplace') => {
+        setActiveTab(tab);
+        const pool = tab === 'open_marketplace' ? openCases : myCases;
+        setSelectedCase(pool.length > 0 ? pool[0] : null);
+    };
+
+    // Open Apply Modal
+    const handleOpenApplyModal = (c: ICase) => {
+        setTargetOpenCase(c);
+        setProposalData({
+            proposedFee: (c.budget || c.totalFee || 2500).toString(),
+            estimatedTimeline: "2-3 Weeks",
+            proposalNote: `I have reviewed the case details for "${c.title}" and would be pleased to provide comprehensive legal representation.`
+        });
+        setIsApplyModalOpen(true);
+    };
+
+    // Submit Proposal / Approval to take case
+    const handleApplySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!createFormData.clientEmail || !createFormData.title || !createFormData.description || !createFormData.totalFee) {
-            error("Please fill in all fields");
-            return;
-        }
+        if (!targetOpenCase) return;
 
-        setIsSubmittingCase(true);
+        setIsSubmittingProposal(true);
         try {
-            const newCase = await caseService.createCase({
-                clientEmail: createFormData.clientEmail,
-                title: createFormData.title,
-                description: createFormData.description,
-                totalFee: Number(createFormData.totalFee)
+            await caseService.applyToCase(targetOpenCase._id, {
+                proposedFee: Number(proposalData.proposedFee) || targetOpenCase.budget || targetOpenCase.totalFee,
+                estimatedTimeline: proposalData.estimatedTimeline,
+                proposalNote: proposalData.proposalNote
             });
-            success("Case Engagement created successfully!");
-            setIsCreateModalOpen(false);
-            setCreateFormData({ clientEmail: "", title: "", description: "", totalFee: "" });
-            fetchCases();
-            setSelectedCase(newCase);
+            success("Approval submitted! Client will see your proposal and can select you.");
+            setIsApplyModalOpen(false);
+            setTargetOpenCase(null);
+            fetchAllCases(true);
         } catch (err: any) {
             console.error(err);
-            error(err.response?.data?.message || "Failed to create case engagement");
+            error(err.response?.data?.message || "Failed to submit proposal");
         } finally {
-            setIsSubmittingCase(false);
+            setIsSubmittingProposal(false);
         }
     };
 
+    // Confirm acceptance when selected by client
+    const handleConfirmBooking = async (caseId?: string) => {
+        const targetId = caseId || selectedCase?._id;
+        if (!targetId) return;
+
+        confirm({
+            title: "Accept Engagement Request",
+            message: "Accept this case engagement and prompt the client to complete payment. Proceed?",
+            type: "info",
+            confirmText: "Accept Engagement",
+            onConfirm: async () => {
+                try {
+                    const updated = await caseService.confirmBooking(targetId);
+                    success("Case accepted! Client has been notified to complete payment.");
+                    fetchAllCases(true);
+                    setSelectedCase(updated);
+                } catch (err: any) {
+                    error(err.response?.data?.message || "Failed to confirm engagement");
+                }
+            }
+        });
+    };
+
+    // Meeting summary upload
+    const handleUploadSummaryDirect = async () => {
+        if (!summaryFile || !selectedCase) return;
+        setIsUploadingSummary(true);
+        try {
+            const updated = await caseService.uploadMeetingSummary(selectedCase._id, summaryFile);
+            success("Meeting summary uploaded successfully! Action roadmap unlocked.");
+            setSummaryFile(null);
+            fetchAllCases(true);
+            setSelectedCase(updated);
+        } catch (err: any) {
+            console.error(err);
+            error(err.response?.data?.message || "Failed to upload summary");
+        } finally {
+            setIsUploadingSummary(false);
+        }
+    };
+
+    // Roadmap builder
     const handleAddBuilderMilestone = () => {
         setBuilderMilestones([
             ...builderMilestones,
@@ -151,95 +223,55 @@ export default function CasesPage() {
         setBuilderMilestones(builderMilestones.filter((_, i) => i !== index));
     };
 
-    const handleBuilderMilestoneChange = (index: number, field: string, value: any) => {
+    const handleMilestoneChange = (index: number, field: string, value: any) => {
         const updated = [...builderMilestones];
-        updated[index] = {
-            ...updated[index],
-            [field]: value
-        };
-        setBuilderMilestones(updated);
-    };
-
-    const handleAutoDistributePayout = () => {
-        if (!selectedCase) return;
-        const total = selectedCase.totalFee;
-        const count = builderMilestones.length;
-        if (count === 0) return;
-
-        const updated = builderMilestones.map(m => ({
-            ...m,
-            payoutAmount: Math.round((m.progressIncrement / 100) * total)
-        }));
+        updated[index] = { ...updated[index], [field]: value };
         setBuilderMilestones(updated);
     };
 
     const handleSubmitPlan = async () => {
         if (!selectedCase) return;
-
-        // Validation
-        for (let i = 0; i < builderMilestones.length; i++) {
-            const m = builderMilestones[i];
-            if (!m.title.trim() || !m.description.trim()) {
-                error(`Roadmap Stage ${i + 1} must have a title and description.`);
-                return;
-            }
-        }
-
-        const totalProgress = builderMilestones.reduce((sum, m) => sum + Number(m.progressIncrement), 0);
-        if (totalProgress !== 100) {
-            error(`Progress increments must sum to exactly 100%. Current sum: ${totalProgress}%`);
+        const totalInc = builderMilestones.reduce((acc, curr) => acc + Number(curr.progressIncrement), 0);
+        if (totalInc !== 100) {
+            error(`Total progress increment must equal 100%. Currently: ${totalInc}%`);
             return;
         }
-
-        const totalPayout = builderMilestones.reduce((sum, m) => sum + Number(m.payoutAmount), 0);
-        if (totalPayout > selectedCase.totalFee) {
-            error(`Total milestone payouts (₹${totalPayout}) cannot exceed the total case fee (₹${selectedCase.totalFee})`);
-            return;
-        }
-
-        confirm({
-            title: "Submit Action Plan",
-            message: "This will send the detailed procedural plan to the client for their review and approval. Proceed?",
-            type: "info",
-            confirmText: "Submit Plan",
-            onConfirm: async () => {
-                try {
-                    const updated = await caseService.submitPlan(selectedCase._id, builderMilestones);
-                    success("Action plan submitted for client approval!");
-                    fetchCases();
-                } catch (err: any) {
-                    error(err.response?.data?.message || "Failed to submit plan");
-                }
-            }
-        });
-    };
-
-    const handleUpdateMilestoneStatus = async (index: number, newStatus: 'pending' | 'in_progress' | 'completed') => {
-        if (!selectedCase) return;
 
         try {
-            const updated = await caseService.updateMilestoneStatus(selectedCase._id, index, newStatus);
-            success(`Milestone status updated to ${newStatus}`);
-            fetchCases();
+            const updated = await caseService.submitPlan(selectedCase._id, builderMilestones);
+            success("Action roadmap submitted to client for review!");
+            fetchAllCases(true);
+            setSelectedCase(updated);
         } catch (err: any) {
-            error(err.response?.data?.message || "Failed to update milestone");
+            error(err.response?.data?.message || "Failed to submit plan");
         }
     };
 
-    const handleFileUploadWithDetails = async (index: number) => {
-        if (!selectedCase || !uploadFile) return;
+    const handleUpdateMilestoneStatus = async (index: number, status: string) => {
+        if (!selectedCase) return;
+        try {
+            const updated = await caseService.updateMilestoneStatus(selectedCase._id, index, status);
+            success("Milestone status updated!");
+            fetchAllCases(true);
+            setSelectedCase(updated);
+        } catch (err: any) {
+            error(err.response?.data?.message || "Failed to update milestone status");
+        }
+    };
 
+    const handleUploadProof = async (index: number) => {
+        if (!uploadFile || !selectedCase) return;
         setUploadingMilestoneIndex(index);
         try {
-            await caseService.uploadProof(selectedCase._id, index, uploadFile, uploadDetails);
-            success("Verification document and progress details uploaded successfully!");
-            setActiveUploadIndex(null);
+            const updated = await caseService.uploadProof(selectedCase._id, index, uploadFile, uploadDetails);
+            success("Proof document uploaded successfully!");
             setUploadFile(null);
             setUploadDetails("");
-            fetchCases();
+            setActiveUploadIndex(null);
+            fetchAllCases(true);
+            setSelectedCase(updated);
         } catch (err: any) {
-            console.error(err);
-            error(err.response?.data?.message || "File upload failed");
+            error(err.response?.data?.message || "Failed to upload proof");
         } finally {
             setUploadingMilestoneIndex(null);
         }
@@ -247,17 +279,16 @@ export default function CasesPage() {
 
     const handleRequestPayout = async (index: number) => {
         if (!selectedCase) return;
-
         confirm({
             title: "Request Payout",
-            message: "Request milestone payment release from the Super Admin. Please ensure all proof documents are uploaded.",
+            message: "Request milestone payment release from the Super Admin. Ensure proof documents are uploaded.",
             type: "info",
             confirmText: "Request Payout",
             onConfirm: async () => {
                 try {
                     await caseService.requestPayout(selectedCase._id, index);
                     success("Payout request submitted to Super Admin!");
-                    fetchCases();
+                    fetchAllCases(true);
                 } catch (err: any) {
                     error(err.response?.data?.message || "Failed to request payout");
                 }
@@ -265,26 +296,12 @@ export default function CasesPage() {
         });
     };
 
-    const handleConfirmBooking = async () => {
-        if (!selectedCase) return;
-
-        confirm({
-            title: "Confirm Booking Request",
-            message: "Accept this consultation booking slot and notify the client to complete the payment. Proceed?",
-            type: "info",
-            confirmText: "Confirm Booking",
-            onConfirm: async () => {
-                try {
-                    const updated = await caseService.confirmBooking(selectedCase._id);
-                    success("Booking request confirmed! Client has been notified to complete the payment.");
-                    fetchCases();
-                    setSelectedCase(updated);
-                } catch (err: any) {
-                    error(err.response?.data?.message || "Failed to confirm booking request");
-                }
-            }
-        });
-    };
+    const currentCasesPool = activeTab === 'open_marketplace' ? openCases : myCases;
+    const filteredCases = currentCasesPool.filter(c => 
+        (c.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (c.category || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (c.client?.fullName || "").toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="min-h-screen bg-slate-50/50 p-4 md:p-8 max-w-[1600px] mx-auto space-y-8 font-sans">
@@ -292,98 +309,161 @@ export default function CasesPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-3 mb-1">
-                        <div className="p-2 bg-primary rounded-xl text-white shadow-lg shadow-primary/10">
+                        <div className="p-2.5 bg-primary rounded-2xl text-white shadow-md shadow-primary/20">
                             <Briefcase size={22} />
                         </div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Client Engagements</h1>
+                        <div>
+                            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Case Management & Marketplace</h1>
+                            <p className="text-slate-500 text-xs mt-0.5">
+                                Browse open cases posted by clients, express approval & interest, and manage active action roadmaps.
+                            </p>
+                        </div>
                     </div>
-                    <p className="text-slate-500 text-sm">Create cases, define action roadmaps, track progress, and request payments upon proof verification.</p>
                 </div>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/10 hover:bg-primary/95 transition-all active:scale-[0.98] gap-2"
-                >
-                    <PlusCircle size={20} />
-                    New Engagement
-                </button>
+
+                {/* Tab Switcher */}
+                <div className="flex items-center bg-slate-200/70 p-1.5 rounded-2xl border border-slate-300/60 shadow-inner">
+                    <button
+                        onClick={() => handleTabChange('my_cases')}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                            activeTab === 'my_cases'
+                                ? "bg-white text-slate-900 shadow-sm"
+                                : "text-slate-600 hover:text-slate-900"
+                        }`}
+                    >
+                        <Layers size={15} />
+                        <span>My Assigned Cases</span>
+                        <span className="bg-slate-100 text-slate-700 text-[10px] px-2 py-0.5 rounded-full font-black">
+                            {myCases.length}
+                        </span>
+                    </button>
+
+                    <button
+                        onClick={() => handleTabChange('open_marketplace')}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                            activeTab === 'open_marketplace'
+                                ? "bg-primary text-white shadow-md shadow-primary/20"
+                                : "text-slate-600 hover:text-slate-900"
+                        }`}
+                    >
+                        <Globe size={15} />
+                        <span>Available Open Cases</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                            activeTab === 'open_marketplace' ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
+                        }`}>
+                            {openCases.length}
+                        </span>
+                    </button>
+                </div>
             </div>
 
-            {/* Main Content Layout */}
+            {/* Main Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
                 {/* Left Side: Cases List (4 Cols) */}
                 <div className="lg:col-span-4 bg-white border border-slate-200 rounded-3xl p-6 space-y-6 shadow-sm">
-                    <h3 className="font-extrabold text-slate-900 text-lg">Active Cases</h3>
-                    
+                    <div className="flex justify-between items-center">
+                        <h3 className="font-extrabold text-slate-900 text-lg">
+                            {activeTab === 'open_marketplace' ? "Open Marketplace Cases" : "My Engagements"}
+                        </h3>
+                        <span className="text-xs font-black text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                            {filteredCases.length} Total
+                        </span>
+                    </div>
+
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                         <input
                             type="text"
-                            placeholder="Search engagements..."
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-ring/20 focus:border-border outline-none transition-all shadow-inner"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search cases or client names..."
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs font-semibold focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-inner"
                         />
                     </div>
 
-                    {loading && cases.length === 0 ? (
+                    {loading && currentCasesPool.length === 0 ? (
                         <div className="py-12 text-center">
                             <div className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                             <p className="mt-2 text-xs text-slate-400 font-bold">Syncing cases...</p>
                         </div>
-                    ) : cases.length === 0 ? (
-                        <div className="py-16 text-center text-slate-400 border border-dashed border-slate-200 rounded-2xl">
+                    ) : filteredCases.length === 0 ? (
+                        <div className="py-16 text-center text-slate-400 border border-dashed border-slate-200 rounded-2xl p-6">
                             <Briefcase size={36} className="mx-auto mb-2 text-slate-300" />
-                            <p className="font-bold text-sm">No cases found</p>
-                            <p className="text-xs text-slate-400 px-4 mt-1">Start by creating a new client case engagement.</p>
+                            <p className="font-bold text-sm text-slate-700">No cases found</p>
+                            <p className="text-xs text-slate-400 mt-1">
+                                {activeTab === 'open_marketplace' 
+                                    ? "No open marketplace cases currently available." 
+                                    : "You have no assigned cases yet."}
+                            </p>
                         </div>
                     ) : (
-                        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-                            {cases.map((c) => (
-                                <div
-                                    key={c._id}
-                                    onClick={() => setSelectedCase(c)}
-                                    className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                                        selectedCase?._id === c._id
-                                            ? "border-primary bg-primary/5 shadow-md shadow-primary/5"
-                                            : "border-slate-100 bg-white hover:border-slate-300 hover:shadow-sm"
-                                    }`}
-                                >
-                                    <div className="flex justify-between items-start gap-2 mb-2">
-                                        <h4 className="font-extrabold text-slate-900 text-sm leading-snug truncate">{c.title}</h4>
-                                        <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
-                                            c.status === "active" 
-                                            ? "bg-secondary text-primary" 
-                                            : c.status === "pending_lawyer"
-                                                ? "bg-muted text-primary font-extrabold hover:bg-muted"
-                                                : c.status === "pending_payment"
-                                                    ? "bg-muted text-primary font-extrabold hover:bg-muted"
-                                                    : "bg-slate-100 text-slate-650"
-                                        }`}>
-                                            {c.status === "pending_lawyer" ? "Booking Request" : c.status === "pending_payment" ? "Awaiting Payment" : c.status}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-slate-500 line-clamp-2 mb-3">{c.description}</p>
-                                    
-                                    <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold border-t border-slate-50 pt-3">
-                                        <div className="flex items-center gap-1.5">
-                                            <User size={12} className="text-slate-400" />
-                                            <span className="text-slate-700 truncate max-w-[120px]">{c.client?.fullName || "Unassigned"}</span>
-                                        </div>
-                                        <span className="text-slate-900 font-black">₹{c.totalFee.toLocaleString()}</span>
-                                    </div>
+                        <div className="space-y-3 max-h-[640px] overflow-y-auto pr-1">
+                            {filteredCases.map((c) => {
+                                const hasApplied = c.interestedLawyers?.some(
+                                    (i: any) => (i.lawyer?._id || i.lawyer)?.toString() === lawyerId?.toString()
+                                );
+                                const isSelectedForMe = c.status === 'pending_lawyer' && (c.lawyer?._id || c.lawyer)?.toString() === lawyerId?.toString();
 
-                                    {/* Small Progress Bar */}
-                                    <div className="mt-3 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                        <div 
-                                            className="bg-primary h-1.5 rounded-full transition-all duration-500" 
-                                            style={{ width: `${c.currentProgress}%` }}
-                                        ></div>
+                                return (
+                                    <div
+                                        key={c._id}
+                                        onClick={() => setSelectedCase(c)}
+                                        className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                                            selectedCase?._id === c._id
+                                                ? "border-primary bg-primary/5 shadow-md shadow-primary/5"
+                                                : "border-slate-100 bg-white hover:border-slate-300 hover:shadow-xs"
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-start gap-2 mb-1.5">
+                                            <h4 className="font-extrabold text-slate-900 text-sm leading-snug line-clamp-2">
+                                                {c.title}
+                                            </h4>
+                                        </div>
+
+                                        <p className="text-xs text-slate-500 line-clamp-2 mb-2 font-medium">
+                                            {c.aiSummary || c.description}
+                                        </p>
+
+                                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 pt-2 border-t border-slate-50">
+                                            <div className="flex items-center gap-1.5 text-slate-700">
+                                                <User size={13} className="text-slate-400" />
+                                                <span className="truncate max-w-[120px]">{c.client?.fullName || "Client"}</span>
+                                            </div>
+                                            <span className="text-slate-900 font-black">
+                                                ₹{(c.totalFee || c.budget || 0).toLocaleString()}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-2">
+                                            <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                                c.status === "open"
+                                                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                                    : c.status === "pending_lawyer"
+                                                        ? "bg-amber-100 text-amber-800"
+                                                        : c.status === "pending_payment"
+                                                            ? "bg-orange-100 text-orange-800"
+                                                            : c.status === "active"
+                                                                ? "bg-emerald-100 text-emerald-800"
+                                                                : "bg-slate-100 text-slate-700"
+                                            }`}>
+                                                {c.status === "open" 
+                                                    ? (hasApplied ? "✓ You Applied" : "Open for Approval") 
+                                                    : c.status === "pending_lawyer" 
+                                                        ? (isSelectedForMe ? "Action: Client Picked You" : "Pending Confirmation")
+                                                        : c.status === "pending_payment" 
+                                                            ? "Awaiting Payment" 
+                                                            : c.status}
+                                            </span>
+
+                                            {c.documents && c.documents.length > 0 && (
+                                                <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
+                                                    <FileText size={11} /> {c.documents.length} doc{c.documents.length > 1 ? 's' : ''}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="mt-1 flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                        <span>Progress</span>
-                                        <span className="text-primary">{c.currentProgress}%</span>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -393,665 +473,487 @@ export default function CasesPage() {
                     {selectedCase ? (
                         <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm space-y-8">
                             
-                            {/* Case Header Details */}
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 pb-6">
+                            {/* Case Header */}
+                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 border-b border-slate-100 pb-6">
                                 <div className="space-y-1">
-                                    <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">{selectedCase.title}</h2>
-                                    <p className="text-xs text-slate-400 font-medium">Case ID: <span className="font-mono">{selectedCase._id}</span></p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded">
+                                            {selectedCase.category || "General Legal"}
+                                        </span>
+                                        <span className="text-xs text-slate-400 font-mono">Ref: {selectedCase.filingNumber || selectedCase._id}</span>
+                                    </div>
+                                    <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight leading-tight mt-1">
+                                        {selectedCase.title}
+                                    </h2>
+                                    <p className="text-xs text-slate-400 font-medium">
+                                        Client: <span className="font-bold text-slate-700">{selectedCase.client?.fullName}</span> • {selectedCase.client?.location || "India"}
+                                    </p>
                                 </div>
-                                <div className="flex flex-row items-center justify-between sm:justify-start gap-4 sm:gap-6 shrink-0 bg-slate-50 border border-slate-100 rounded-2xl p-4 sm:px-6 sm:py-4 w-full sm:w-auto">
+
+                                <div className="flex items-center gap-4 shrink-0 bg-slate-50 border border-slate-200/60 rounded-2xl px-5 py-3">
                                     <div>
-                                        <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Client Name</p>
-                                        <p className="text-sm font-black text-slate-900">{selectedCase.client?.fullName}</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Case Status</p>
+                                        <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full inline-block mt-1 ${
+                                            selectedCase.status === 'open' 
+                                                ? 'bg-blue-100 text-blue-800'
+                                                : selectedCase.status === 'pending_lawyer'
+                                                    ? 'bg-amber-100 text-amber-800'
+                                                    : selectedCase.status === 'pending_payment'
+                                                        ? 'bg-orange-100 text-orange-800'
+                                                        : selectedCase.status === 'active'
+                                                            ? 'bg-emerald-100 text-emerald-800'
+                                                            : 'bg-slate-100 text-slate-800'
+                                        }`}>
+                                            {selectedCase.status === 'open' ? 'Open Marketplace' : selectedCase.status}
+                                        </span>
                                     </div>
                                     <div className="w-px h-8 bg-slate-200" />
                                     <div>
-                                        <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Total Payout Fee</p>
-                                        <p className="text-sm font-black text-primary">₹{selectedCase.totalFee.toLocaleString()}</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Budget / Fee</p>
+                                        <p className="text-base font-black text-primary mt-0.5">
+                                            ₹{(selectedCase.totalFee || selectedCase.budget || 0).toLocaleString()}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Case Description */}
-                            <div className="space-y-2">
-                                <h4 className="font-extrabold text-slate-900 text-sm">Engagement Details</h4>
-                                <p className="text-sm text-slate-650 leading-relaxed bg-slate-50/50 border border-slate-100 rounded-2xl p-4">{selectedCase.description}</p>
-                            </div>
-
-                            {/* Booking Date & Time Details (if present) */}
-                            {selectedCase.bookingDate && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-xs font-semibold text-slate-600">
-                                    <div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Proposed Consultation Date</p>
-                                        <p className="text-sm font-black text-slate-900 mt-1">{new Date(selectedCase.bookingDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            {/* AI EXECUTIVE SUMMARY & KEY ISSUES CARD */}
+                            {selectedCase.aiSummary && (
+                                <div className="bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/50 border border-primary/20 rounded-2xl p-6 space-y-4 shadow-xs">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center">
+                                                <Sparkles className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-extrabold text-slate-900 text-sm">Vidhik AI Case Intelligence Summary</h4>
+                                                <p className="text-[10px] text-primary font-bold uppercase tracking-wider">Automated Legal Assessment for Advocates</p>
+                                            </div>
+                                        </div>
+                                        <span className="text-[10px] font-extrabold bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                                            AI Analysis
+                                        </span>
                                     </div>
-                                    <div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Proposed Consultation Time</p>
-                                        <p className="text-sm font-black text-slate-900 mt-1">{selectedCase.bookingTime}</p>
+
+                                    <p className="text-xs text-slate-700 leading-relaxed font-medium whitespace-pre-line bg-white/70 border border-slate-150 rounded-xl p-4">
+                                        {selectedCase.aiSummary}
+                                    </p>
+
+                                    {selectedCase.aiKeyFacts && selectedCase.aiKeyFacts.length > 0 && (
+                                        <div className="space-y-2 pt-1">
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Key Facts & Disputed Points</span>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {selectedCase.aiKeyFacts.map((fact, idx) => (
+                                                    <div key={idx} className="bg-white/90 border border-slate-150 rounded-lg p-2.5 flex items-start gap-2 text-xs font-semibold text-slate-800">
+                                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                                        <span>{fact}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* ATTACHED CASE DOCUMENTS (PDF / WORD) */}
+                            {selectedCase.documents && selectedCase.documents.length > 0 && (
+                                <div className="space-y-3">
+                                    <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                                        <FileText className="w-4 h-4 text-primary" />
+                                        Uploaded Case Documentation ({selectedCase.documents.length})
+                                    </h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {selectedCase.documents.map((doc, idx) => (
+                                            <a 
+                                                key={idx}
+                                                href={getFileUrl(doc.url)} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl p-3 flex items-center justify-between group transition-all"
+                                            >
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                                        <FileText className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-xs font-bold text-slate-900 truncate group-hover:text-primary transition-colors">
+                                                            {doc.name}
+                                                        </p>
+                                                        <span className="text-[10px] text-slate-400 font-semibold">{doc.docType || "Supporting Document"}</span>
+                                                    </div>
+                                                </div>
+                                                <Download className="w-4 h-4 text-slate-400 group-hover:text-primary shrink-0 ml-2" />
+                                            </a>
+                                        ))}
                                     </div>
                                 </div>
                             )}
 
+                            {/* OPEN CASE APPROVAL / APPLICATION ACTION BANNER */}
+                            {selectedCase.status === 'open' && (
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 space-y-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <h4 className="font-extrabold text-slate-900 text-base">
+                                                Interested in representing this case?
+                                            </h4>
+                                            <p className="text-xs text-slate-600 font-medium mt-0.5">
+                                                Review the brief and documents above. Click approve to express interest and propose your terms.
+                                            </p>
+                                        </div>
+
+                                        {selectedCase.interestedLawyers?.some((i: any) => (i.lawyer?._id || i.lawyer)?.toString() === lawyerId?.toString()) ? (
+                                            <div className="bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl px-4 py-2.5 font-bold text-xs flex items-center gap-2">
+                                                <CheckCircle2 size={16} />
+                                                <span>You Approved this Case (Awaiting Client Selection)</span>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleOpenApplyModal(selectedCase)}
+                                                className="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-xs shadow-md shadow-primary/20 flex items-center gap-2 shrink-0 transition-all active:scale-95"
+                                            >
+                                                <CheckCircle2 size={16} />
+                                                <span>Approve & Apply for Case</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* CLIENT SELECTED THIS LAWYER BANNER */}
                             {selectedCase.status === 'pending_lawyer' && (
-                                <div className="bg-secondary border border-border p-6 rounded-3xl space-y-4">
+                                <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl space-y-4">
                                     <div className="flex items-start gap-4">
-                                        <AlertCircle className="h-6 w-6 text-primary shrink-0 mt-0.5 animate-pulse" />
+                                        <AlertCircle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
                                         <div className="space-y-1">
-                                            <h4 className="font-extrabold text-primary text-sm">New Consultation Booking Request</h4>
-                                            <p className="text-xs text-primary leading-relaxed font-semibold">
-                                                This client has requested to schedule a consultation date and start a new case engagement with you. Verify your calendar and click <strong>Confirm Booking Request</strong> to notify the client to proceed with payment.
+                                            <h4 className="font-extrabold text-amber-950 text-sm">Client Selected Your Proposal!</h4>
+                                            <p className="text-xs text-amber-800 leading-relaxed font-semibold">
+                                                Client <strong>{selectedCase.client?.fullName}</strong> has confirmed selection of your legal representation for <strong>"{selectedCase.title}"</strong>. Click accept below to prompt the client for payment and initiate the engagement roadmap.
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex justify-end pt-2">
                                         <button
                                             type="button"
-                                            onClick={handleConfirmBooking}
-                                            className="px-5 py-2 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary transition-all shadow-md shadow-primary/10"
+                                            onClick={() => handleConfirmBooking(selectedCase._id)}
+                                            className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary/90 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
                                         >
-                                            Confirm Booking Request
+                                            <CheckCircle2 size={16} />
+                                            <span>Accept & Prompt Client Payment</span>
                                         </button>
                                     </div>
                                 </div>
                             )}
 
+                            {/* AWAITING PAYMENT BANNER */}
                             {selectedCase.status === 'pending_payment' && (
-                                <div className="bg-secondary border border-border p-6 rounded-3xl flex items-start gap-4">
-                                    <Clock className="h-6 w-6 text-primary shrink-0 mt-0.5" />
-                                    <div className="space-y-1">
-                                        <h4 className="font-extrabold text-primary text-sm">Awaiting Client Payment</h4>
-                                        <p className="text-xs text-primary leading-relaxed font-semibold">
-                                            You have confirmed this consultation booking request. The client has been notified to complete the checkout payment of <strong>₹{selectedCase.totalFee.toLocaleString()}</strong>. Once payment is confirmed, the case will transition to "Active" and you can configure the action plan.
+                                <div className="bg-orange-50 border border-orange-200 p-6 rounded-2xl flex items-center gap-4">
+                                    <Clock className="h-6 w-6 text-orange-600 shrink-0" />
+                                    <div>
+                                        <h4 className="font-extrabold text-orange-950 text-sm">Engagement Accepted — Awaiting Client Payment</h4>
+                                        <p className="text-xs text-orange-800 font-medium mt-0.5">
+                                            The client has been notified to complete the retainer fee payment (₹{selectedCase.totalFee.toLocaleString()}). As soon as paid, the case will automatically activate.
                                         </p>
                                     </div>
                                 </div>
                             )}
 
-                            {selectedCase.status !== 'pending_lawyer' && selectedCase.status !== 'pending_payment' && (
-                                /* Action Roadmap & Milestone Section */
-                                <div className="space-y-6">
-                                    {/* Meeting Summary Document Card */}
-                                    {selectedCase.meetingSummaryUrl && (
-                                        <div className="bg-secondary border border-border rounded-3xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm animate-in fade-in duration-300">
+                            {/* ACTIVE CASE - VIDEO CONSULTATION & ACTION ROADMAP BUILDER */}
+                            {selectedCase.status === 'active' && (
+                                <div className="space-y-8">
+                                    {/* Video consultation link */}
+                                    {selectedCase.meetingLink && (
+                                        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="p-3 bg-muted rounded-xl text-primary">
-                                                    <FileText size={24} />
+                                                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                                                    <Video size={20} />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-extrabold text-slate-900 text-sm">Consultation Meeting Summary Document</h4>
-                                                    <p className="text-xs text-slate-500 mt-1">Briefing document: <span className="font-bold text-slate-700">{selectedCase.meetingSummaryName}</span></p>
-                                                    <p className="text-[10px] text-slate-400 font-semibold">Uploaded on {selectedCase.meetingSummaryUploadedAt ? new Date(selectedCase.meetingSummaryUploadedAt).toLocaleDateString() : 'N/A'}</p>
+                                                    <h4 className="font-extrabold text-emerald-950 text-sm">Case Video Consultation Room</h4>
+                                                    <p className="text-xs text-emerald-700 font-medium">Connect directly with client via the live video suite.</p>
                                                 </div>
-                                            </div>
-                                            <a 
-                                                href={getFileUrl(selectedCase.meetingSummaryUrl)}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="bg-primary hover:bg-primary/90 text-white rounded-xl font-bold px-5 py-2.5 text-xs flex items-center gap-1.5 shadow-sm transition-all text-center shrink-0"
-                                            >
-                                                <Download size={14} />
-                                                Download Summary Briefing
-                                            </a>
-                                        </div>
-                                    )}
-
-                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                        <div>
-                                            <h3 className="font-extrabold text-slate-900 text-lg">Procedural Roadmap & Stages</h3>
-                                            {selectedCase.meetingLink && (
-                                                <button
-                                                    onClick={() => navigate(`/cases/${selectedCase._id}/meet`)}
-                                                    className="mt-2 bg-primary hover:bg-primary/95 text-white rounded-xl font-bold px-4 py-2 text-xs flex items-center gap-2 shadow-sm transition-all"
-                                                >
-                                                    <Video className="w-4 h-4" />
-                                                    Join Video Consultation
-                                                </button>
-                                            )}
-                                        </div>
-                                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                                            selectedCase.planApproved 
-                                                ? "bg-secondary text-primary border border-border" 
-                                                : selectedCase.planSubmitted 
-                                                    ? "bg-secondary text-primary border border-border" 
-                                                    : "bg-secondary text-primary border border-border"
-                                        }`}>
-                                            {selectedCase.planApproved 
-                                                ? "Roadmap Approved by Client" 
-                                                : selectedCase.planSubmitted 
-                                                    ? "Roadmap Awaiting Client Approval" 
-                                                    : "Action Plan Required"}
-                                        </span>
-                                    </div>
-
-                                {!selectedCase.planSubmitted ? (
-                                    /* ROADMAP BUILDER & CONSULTATION GATE */
-                                    !selectedCase.meetingJoinedByClient || !selectedCase.meetingJoinedByLawyer ? (
-                                        <div className="bg-secondary border border-border rounded-3xl p-8 space-y-6">
-                                            <div className="flex items-start gap-4">
-                                                <AlertCircle className="h-6 w-6 text-primary shrink-0 mt-0.5 animate-pulse" />
-                                                <div className="space-y-2">
-                                                    <h4 className="font-extrabold text-primary text-sm uppercase tracking-wider">Video Consultation Attendance Required</h4>
-                                                    <p className="text-xs text-primary leading-relaxed font-semibold">
-                                                        Before you can upload the meeting summary and proceed to design the case roadmap, both you and the client must join the live consultation video call.
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="bg-white border border-border rounded-2xl p-4 space-y-3 shadow-sm text-xs font-semibold text-slate-600">
-                                                <h5 className="font-bold text-slate-800 text-xs">Live Attendance Tracker</h5>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Your Status</span>
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByLawyer ? 'bg-secondary text-primary' : 'bg-secondary text-primary'}`}>
-                                                            {selectedCase.meetingJoinedByLawyer ? 'Joined' : 'Pending'}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Client Status</span>
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedCase.meetingJoinedByClient ? 'bg-secondary text-primary' : 'bg-secondary text-primary'}`}>
-                                                            {selectedCase.meetingJoinedByClient ? 'Joined' : 'Pending'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {selectedCase.meetingLink && (
-                                                <div className="flex justify-end">
-                                                    <button
-                                                        onClick={() => navigate(`/cases/${selectedCase._id}/meet`)}
-                                                        className="bg-primary hover:bg-primary text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md shadow-primary/10 transition-all"
-                                                    >
-                                                        <Video className="w-4 h-4" />
-                                                        Join Video Consultation
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : !selectedCase.meetingSummaryUrl ? (
-                                        <div className="bg-secondary border border-border rounded-3xl p-8 space-y-6">
-                                            <div className="flex items-start gap-4">
-                                                <FileText className="h-6 w-6 text-primary shrink-0 mt-0.5" />
-                                                <div className="space-y-1.5">
-                                                    <h4 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider">Video Consultation Completed - Meeting Summary Required</h4>
-                                                    <p className="text-xs text-slate-650 leading-relaxed font-semibold">
-                                                        You have both successfully attended the consultation. Please upload the meeting summary briefing document to unlock the Action Roadmap Builder.
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="border border-dashed border-slate-300 bg-white p-6 rounded-2xl text-center space-y-3">
-                                                <input 
-                                                    type="file" 
-                                                    id="summary-upload-direct"
-                                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                                    className="hidden"
-                                                    onChange={(e) => {
-                                                        if (e.target.files && e.target.files[0]) {
-                                                            setSummaryFile(e.target.files[0]);
-                                                        }
-                                                    }}
-                                                />
-                                                {summaryFile ? (
-                                                    <div className="space-y-2">
-                                                        <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-800">
-                                                            <FileText size={16} className="text-primary" />
-                                                            <span className="truncate max-w-[200px]">{summaryFile.name}</span>
-                                                        </div>
-                                                        <p className="text-[10px] text-slate-400 font-semibold">Size: {(summaryFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                                                    </div>
-                                                ) : (
-                                                    <label htmlFor="summary-upload-direct" className="cursor-pointer space-y-1 block">
-                                                        <Upload size={24} className="mx-auto text-slate-400" />
-                                                        <p className="text-xs font-bold text-primary hover:underline">Select Brief Summary File</p>
-                                                        <p className="text-[10px] text-slate-400 font-semibold">PDF, Word, or Image up to 10MB</p>
-                                                    </label>
-                                                )}
-                                            </div>
-
-                                            {summaryFile && (
-                                                <div className="flex justify-end gap-3">
-                                                    <button
-                                                        onClick={() => setSummaryFile(null)}
-                                                        className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl text-xs"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                    <button
-                                                        onClick={handleUploadSummaryDirect}
-                                                        disabled={isUploadingSummary}
-                                                        className="px-5 py-2.5 bg-primary text-white hover:bg-primary/95 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md disabled:bg-muted"
-                                                    >
-                                                        {isUploadingSummary ? (
-                                                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                        ) : (
-                                                            <>
-                                                                <Upload size={13} />
-                                                                Upload & Unlock Roadmap
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="bg-slate-50/40 border border-slate-200 rounded-3xl p-6 space-y-6">
-                                            <div className="space-y-1">
-                                                <h4 className="font-extrabold text-slate-900 text-sm">Outline Case Milestones</h4>
-                                                <p className="text-xs text-slate-500 leading-normal">
-                                                    Create a transparent work process for your client. The sum of all progress increments must equal 100%. Payouts can be configured per milestone.
-                                                </p>
-                                            </div>
-
-                                        <div className="space-y-4">
-                                            {builderMilestones.map((bm, idx) => (
-                                                <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3 shadow-sm relative">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveBuilderMilestone(idx)}
-                                                        className="absolute top-4 right-4 text-slate-400 hover:text-primary transition-colors"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pr-6">
-                                                        <div className="md:col-span-7 space-y-1">
-                                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Milestone {idx + 1} Title</label>
-                                                            <input
-                                                                type="text"
-                                                                value={bm.title}
-                                                                onChange={(e) => handleBuilderMilestoneChange(idx, 'title', e.target.value)}
-                                                                placeholder="e.g. Drafting & Filing Petition"
-                                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary outline-none"
-                                                            />
-                                                        </div>
-                                                        <div className="md:col-span-2 space-y-1">
-                                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Progress Contribution (%)</label>
-                                                            <div className="relative">
-                                                                <input
-                                                                    type="number"
-                                                                    value={bm.progressIncrement}
-                                                                    onChange={(e) => handleBuilderMilestoneChange(idx, 'progressIncrement', Number(e.target.value))}
-                                                                    placeholder="20"
-                                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-7 py-2 text-xs focus:ring-1 focus:ring-primary outline-none"
-                                                                />
-                                                                <Percent size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                                            </div>
-                                                        </div>
-                                                        <div className="md:col-span-3 space-y-1">
-                                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payout Amount (₹)</label>
-                                                            <div className="relative">
-                                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
-                                                                <input
-                                                                    type="number"
-                                                                    value={bm.payoutAmount}
-                                                                    onChange={(e) => handleBuilderMilestoneChange(idx, 'payoutAmount', Number(e.target.value))}
-                                                                    placeholder="10000"
-                                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-6 pr-3 py-2 text-xs focus:ring-1 focus:ring-primary outline-none"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Step Details</label>
-                                                        <textarea
-                                                            rows={2}
-                                                            value={bm.description}
-                                                            onChange={(e) => handleBuilderMilestoneChange(idx, 'description', e.target.value)}
-                                                            placeholder="Describe the legal processes followed in this stage..."
-                                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary outline-none resize-none"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="flex flex-wrap justify-between items-center gap-4 border-t border-slate-200 pt-4">
-                                            <div className="flex items-center gap-3">
-                                                <button
-                                                    onClick={handleAddBuilderMilestone}
-                                                    className="px-4 py-2 border border-dashed border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-white hover:border-primary transition-all"
-                                                >
-                                                    + Add Roadmap Stage
-                                                </button>
-                                                <button
-                                                    onClick={handleAutoDistributePayout}
-                                                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all"
-                                                >
-                                                    Auto-Distribute Fees
-                                                </button>
                                             </div>
 
                                             <button
-                                                onClick={handleSubmitPlan}
-                                                className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow-md shadow-primary/10 hover:bg-primary/95 transition-all"
+                                                onClick={() => navigate(`/cases/${selectedCase._id}/consultation`)}
+                                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs h-10 px-5 flex items-center gap-2 shrink-0 shadow-xs"
                                             >
-                                                Submit Engagement Roadmap
+                                                <Video size={16} />
+                                                <span>Join Video Suite</span>
                                             </button>
                                         </div>
-                                    </div>
-                                    )
-                                ) : (
-                                    /* ROADMAP VIEW & MANAGEMENT */
+                                    )}
+
+                                    {/* ROADMAP SECTION */}
                                     <div className="space-y-6">
-                                        
-                                        {/* Dynamic Progress Indicator */}
-                                        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                            <div className="space-y-1">
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Progress Checker</p>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-3xl font-black text-slate-900">{selectedCase.currentProgress}%</span>
-                                                    <span className="text-xs text-slate-500 font-bold">of work verified</span>
-                                                </div>
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h3 className="font-extrabold text-slate-900 text-lg">Action Roadmap & Milestone Progress</h3>
+                                                <p className="text-xs text-slate-500 font-semibold">Breakdown of legal phases with proof-of-work documentation.</p>
                                             </div>
-                                            <div className="flex-1 max-w-md bg-slate-200 rounded-full h-3 overflow-hidden">
-                                                <div 
-                                                    className="bg-primary h-3 rounded-full transition-all duration-700" 
-                                                    style={{ width: `${selectedCase.currentProgress}%` }}
-                                                ></div>
-                                            </div>
+                                            <span className="text-xs font-black text-primary bg-primary/10 px-3 py-1 rounded-full">
+                                                {selectedCase.currentProgress}% Completed
+                                            </span>
                                         </div>
 
-                                        {/* Milestones Stepper */}
-                                        <div className="relative pl-6 border-l-2 border-slate-100 space-y-8 ml-3 py-2">
-                                            {selectedCase.milestones.map((m, idx) => {
-                                                const isCompleted = m.status === 'completed';
-                                                const isInProgress = m.status === 'in_progress';
-                                                
-                                                return (
-                                                    <div key={idx} className="relative">
-                                                        {/* Stepper Dot */}
-                                                        <div className={`absolute -left-[33px] top-1.5 h-4 w-4 rounded-full border-4 border-white ${
-                                                            isCompleted 
-                                                                ? "bg-primary shadow-md ring-4 ring-ring" 
-                                                                : isInProgress 
-                                                                    ? "bg-primary animate-pulse ring-4 ring-ring" 
-                                                                    : "bg-slate-300"
-                                                        }`} />
+                                        {selectedCase.planSubmitted ? (
+                                            /* Render existing submitted milestones */
+                                            <div className="space-y-4">
+                                                {selectedCase.milestones.map((m, mIdx) => (
+                                                    <div key={mIdx} className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
+                                                        <div className="flex justify-between items-start">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                                                                    {mIdx + 1}
+                                                                </span>
+                                                                <h5 className="font-extrabold text-slate-900 text-sm">{m.title}</h5>
+                                                            </div>
+                                                            <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                                                                m.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
+                                                            }`}>
+                                                                {m.status}
+                                                            </span>
+                                                        </div>
 
-                                                        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 hover:shadow-sm transition-all duration-200">
-                                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                                                <div className="space-y-1">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="font-mono text-xs font-black text-slate-400">STAGE {idx + 1}</span>
-                                                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                                                                        <span className="text-xs font-extrabold text-slate-600">Contribution: {m.progressIncrement}%</span>
-                                                                    </div>
-                                                                    <h4 className="font-extrabold text-slate-900 text-base">{m.title}</h4>
+                                                        <p className="text-xs text-slate-600 pl-8 font-medium">{m.description}</p>
+
+                                                        {/* Proof Docs */}
+                                                        {m.proofDocs && m.proofDocs.length > 0 && (
+                                                            <div className="pl-8 flex flex-wrap gap-2 pt-1">
+                                                                {m.proofDocs.map((doc, dIdx) => (
+                                                                    <a 
+                                                                        key={dIdx} 
+                                                                        href={getFileUrl(doc.url)} 
+                                                                        target="_blank" 
+                                                                        rel="noreferrer"
+                                                                        className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] font-bold text-slate-800 flex items-center gap-1.5"
+                                                                    >
+                                                                        <CheckCircle2 size={13} className="text-emerald-600" />
+                                                                        <span>{doc.name}</span>
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Actions: Mark status, upload proof, request payout */}
+                                                        <div className="pl-8 pt-2 flex flex-wrap items-center gap-2">
+                                                            {m.status !== 'completed' && (
+                                                                <button
+                                                                    onClick={() => handleUpdateMilestoneStatus(mIdx, 'completed')}
+                                                                    className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700"
+                                                                >
+                                                                    Mark Completed
+                                                                </button>
+                                                            )}
+
+                                                            <button
+                                                                onClick={() => setActiveUploadIndex(activeUploadIndex === mIdx ? null : mIdx)}
+                                                                className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-50 flex items-center gap-1"
+                                                            >
+                                                                <Upload size={13} />
+                                                                <span>Upload Proof</span>
+                                                            </button>
+
+                                                            {m.status === 'completed' && m.payoutStatus !== 'approved' && (
+                                                                <button
+                                                                    disabled={m.payoutStatus === 'requested'}
+                                                                    onClick={() => handleRequestPayout(mIdx)}
+                                                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                                                                        m.payoutStatus === 'requested'
+                                                                            ? "bg-amber-100 text-amber-800 cursor-not-allowed"
+                                                                            : "bg-primary text-white hover:bg-primary/90"
+                                                                    }`}
+                                                                >
+                                                                    {m.payoutStatus === 'requested' ? "Payout Requested" : "Request Payout"}
+                                                                </button>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Inline Proof Upload Drawer */}
+                                                        {activeUploadIndex === mIdx && (
+                                                            <div className="pl-8 pt-2 space-y-2 bg-white border border-slate-200 rounded-xl p-4 mt-2">
+                                                                <input
+                                                                    type="file"
+                                                                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                                                                    className="text-xs"
+                                                                />
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Proof notes / court order number..."
+                                                                    value={uploadDetails}
+                                                                    onChange={(e) => setUploadDetails(e.target.value)}
+                                                                    className="w-full h-8 px-2 border rounded text-xs"
+                                                                />
+                                                                <button
+                                                                    disabled={!uploadFile || uploadingMilestoneIndex === mIdx}
+                                                                    onClick={() => handleUploadProof(mIdx)}
+                                                                    className="px-4 py-1.5 bg-primary text-white rounded text-xs font-bold disabled:opacity-50"
+                                                                >
+                                                                    {uploadingMilestoneIndex === mIdx ? "Uploading..." : "Save Proof"}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            /* BUILD INITIAL ACTION ROADMAP */
+                                            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4">
+                                                <h4 className="font-extrabold text-slate-900 text-sm">Define Case Action Roadmap</h4>
+                                                <p className="text-xs text-slate-500">
+                                                    Break down the legal workflow into milestones (must total 100% progress).
+                                                </p>
+
+                                                <div className="space-y-3">
+                                                    {builderMilestones.map((bm, bIdx) => (
+                                                        <div key={bIdx} className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                                                                <div className="sm:col-span-8">
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder={`Milestone ${bIdx + 1} Title`}
+                                                                        value={bm.title}
+                                                                        onChange={(e) => handleMilestoneChange(bIdx, 'title', e.target.value)}
+                                                                        className="w-full h-9 border rounded-lg px-3 text-xs font-bold"
+                                                                    />
                                                                 </div>
-
-                                                                {/* Status Actions */}
-                                                                <div className="flex items-center gap-3">
-                                                                    <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg ${
-                                                                        isCompleted 
-                                                                            ? "bg-secondary text-primary border border-border" 
-                                                                            : isInProgress 
-                                                                                ? "bg-primary/10 text-primary border border-primary/20" 
-                                                                                : "bg-slate-100 text-slate-600"
-                                                                    }`}>
-                                                                        {m.status.replace('_', ' ')}
-                                                                    </span>
-                                                                    
-                                                                    {selectedCase.planApproved && !isCompleted && (
-                                                                        <select
-                                                                            value={m.status}
-                                                                            onChange={(e) => handleUpdateMilestoneStatus(idx, e.target.value as any)}
-                                                                            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold outline-none text-slate-700"
-                                                                        >
-                                                                            <option value="pending">Set Pending</option>
-                                                                            <option value="in_progress">Set In Progress</option>
-                                                                            <option value="completed">Mark Completed</option>
-                                                                        </select>
-                                                                    )}
+                                                                <div className="sm:col-span-3">
+                                                                    <input
+                                                                        type="number"
+                                                                        placeholder="Progress %"
+                                                                        value={bm.progressIncrement}
+                                                                        onChange={(e) => handleMilestoneChange(bIdx, 'progressIncrement', Number(e.target.value))}
+                                                                        className="w-full h-9 border rounded-lg px-3 text-xs font-bold"
+                                                                    />
+                                                                </div>
+                                                                <div className="sm:col-span-1 flex items-center justify-center">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleRemoveBuilderMilestone(bIdx)}
+                                                                        className="text-slate-400 hover:text-red-500"
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
                                                                 </div>
                                                             </div>
 
-                                                            <p className="text-slate-500 text-xs leading-relaxed">{m.description}</p>
-
-                                                            {/* Upload Proof Document section */}
-                                                            {selectedCase.planApproved && (
-                                                                <div className="border-t border-slate-100 pt-4 mt-2 space-y-4">
-                                                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-150">
-                                                                        <div className="space-y-1 flex-1">
-                                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Proof of Work & Progress Updates</p>
-                                                                            {m.proofDocs.length === 0 ? (
-                                                                                <p className="text-xs text-primary font-bold flex items-center gap-1">
-                                                                                    <AlertCircle size={12} />
-                                                                                    No progress proof uploaded yet for this stage.
-                                                                                </p>
-                                                                            ) : (
-                                                                                <div className="space-y-3">
-                                                                                    {m.proofDocs.map((doc, dIdx) => {
-                                                                                        const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(doc.url);
-                                                                                        return (
-                                                                                            <div key={dIdx} className="space-y-2 border-b border-slate-100 pb-2 last:border-b-0 last:pb-0">
-                                                                                                <div className="flex flex-wrap items-center gap-2">
-                                                                                                    <a 
-                                                                                                        href={getFileUrl(doc.url)}
-                                                                                                        target="_blank"
-                                                                                                        rel="noreferrer"
-                                                                                                        className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1.5"
-                                                                                                    >
-                                                                                                        <FileText size={12} />
-                                                                                                        <span>{doc.name}</span>
-                                                                                                        <ExternalLink size={10} />
-                                                                                                    </a>
-                                                                                                    <span className="text-[9px] text-slate-400 font-medium">({new Date(doc.uploadedAt).toLocaleString()})</span>
-                                                                                                </div>
-                                                                                                {doc.details && (
-                                                                                                    <p className="text-[11px] text-slate-650 bg-slate-100/70 border border-slate-200/60 rounded-lg p-2.5 mt-1.5 leading-relaxed font-normal">
-                                                                                                        {doc.details}
-                                                                                                    </p>
-                                                                                                )}
-                                                                                                {isImg && (
-                                                                                                    <div className="mt-2 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 max-w-sm shadow-sm relative group">
-                                                                                                        <img 
-                                                                                                            src={getFileUrl(doc.url)} 
-                                                                                                            alt={doc.name}
-                                                                                                            className="max-h-48 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                                                                                                        />
-                                                                                                    </div>
-                                                                                                )}
-                                                                                            </div>
-                                                                                        );
-                                                                                    })}
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-
-                                                                        {/* Upload Form / Button */}
-                                                                        <div className="shrink-0">
-                                                                            {activeUploadIndex === idx ? (
-                                                                                <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3 shadow-md max-w-xs sm:max-w-md w-full">
-                                                                                    <div className="space-y-1">
-                                                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Select File / Photo</label>
-                                                                                        <input
-                                                                                            type="file"
-                                                                                            onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                                                                                            className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
-                                                                                            accept="image/*,.pdf,.doc,.docx"
-                                                                                        />
-                                                                                    </div>
-                                                                                    <div className="space-y-1">
-                                                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Progress details / Note</label>
-                                                                                        <textarea
-                                                                                            value={uploadDetails}
-                                                                                            onChange={(e) => setUploadDetails(e.target.value)}
-                                                                                            placeholder="Describe the progress (e.g. drafted agreement, filed in court)..."
-                                                                                            rows={2}
-                                                                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary outline-none resize-none"
-                                                                                        />
-                                                                                    </div>
-                                                                                    <div className="flex gap-2 justify-end">
-                                                                                        <button
-                                                                                            type="button"
-                                                                                            onClick={() => {
-                                                                                                setActiveUploadIndex(null);
-                                                                                                setUploadFile(null);
-                                                                                                setUploadDetails("");
-                                                                                            }}
-                                                                                            className="px-2.5 py-1.5 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-600 hover:bg-slate-50"
-                                                                                        >
-                                                                                            Cancel
-                                                                                        </button>
-                                                                                        <button
-                                                                                            type="button"
-                                                                                            onClick={() => handleFileUploadWithDetails(idx)}
-                                                                                            disabled={!uploadFile || uploadingMilestoneIndex === idx}
-                                                                                            className="px-2.5 py-1.5 bg-primary text-white font-bold rounded-xl text-[11px] hover:bg-primary/95 disabled:opacity-50"
-                                                                                        >
-                                                                                            {uploadingMilestoneIndex === idx ? "Uploading..." : "Submit Proof"}
-                                                                                        </button>
-                                                                                    </div>
-                                                                                </div>
-                                                                            ) : (
-                                                                                <button
-                                                                                    onClick={() => {
-                                                                                        setActiveUploadIndex(idx);
-                                                                                        setUploadFile(null);
-                                                                                        setUploadDetails("");
-                                                                                    }}
-                                                                                    className="inline-flex items-center justify-center px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-sm gap-2"
-                                                                                >
-                                                                                    <Upload size={14} />
-                                                                                    Upload Proof / Photo
-                                                                                </button>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                    {/* Payout Area */}
-                                                                    {isCompleted && (
-                                                                        <div className="flex flex-row justify-between items-center p-4 rounded-xl border border-slate-100 mt-3 bg-slate-50/30">
-                                                                            <div>
-                                                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Milestone Payment</p>
-                                                                                <p className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5 mt-0.5">
-                                                                                    <Coins size={14} className="text-primary" />
-                                                                                    ₹{m.payoutAmount.toLocaleString()}
-                                                                                </p>
-                                                                            </div>
-                                                                            
-                                                                            {m.payoutStatus === 'pending' ? (
-                                                                                <button
-                                                                                    onClick={() => handleRequestPayout(idx)}
-                                                                                    disabled={m.proofDocs.length === 0}
-                                                                                    className="px-4 py-2 bg-primary text-white font-bold rounded-xl text-xs shadow-md shadow-primary/10 hover:bg-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                                >
-                                                                                    Request Payout Release
-                                                                                </button>
-                                                                            ) : (
-                                                                                <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-xl ${
-                                                                                    m.payoutStatus === 'approved' 
-                                                                                        ? "bg-muted text-primary" 
-                                                                                        : m.payoutStatus === 'requested' 
-                                                                                            ? "bg-muted text-primary animate-pulse" 
-                                                                                            : "bg-muted text-primary"
-                                                                                }`}>
-                                                                                    {m.payoutStatus === 'approved' ? "Payout Released (Paid)" : m.payoutStatus === 'requested' ? "Awaiting Payout Release" : "Payout Rejected"}
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Description / deliverables..."
+                                                                value={bm.description}
+                                                                onChange={(e) => handleMilestoneChange(bIdx, 'description', e.target.value)}
+                                                                className="w-full h-8 border rounded-lg px-3 text-xs"
+                                                            />
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="flex justify-between items-center pt-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleAddBuilderMilestone}
+                                                        className="px-4 py-2 border rounded-xl font-bold text-xs hover:bg-white"
+                                                    >
+                                                        + Add Phase
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleSubmitPlan}
+                                                        className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl text-xs shadow-sm hover:bg-primary/90"
+                                                    >
+                                                        Submit Roadmap for Client Approval
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                </div>
                             )}
+
                         </div>
                     ) : (
-                        <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center shadow-sm">
-                            <Briefcase size={48} className="mx-auto mb-4 text-slate-300" />
-                            <h3 className="font-extrabold text-slate-900 text-xl">Select a Case Engagement</h3>
-                            <p className="text-slate-500 text-sm max-w-md mx-auto mt-2">
-                                Choose an engagement from the sidebar list to view client details, build or track roadmaps, manage proofs, and request financial payouts.
-                            </p>
+                        <div className="bg-white border border-slate-200 rounded-3xl p-16 text-center text-slate-400">
+                            <Briefcase size={40} className="mx-auto mb-3 text-slate-300" />
+                            <h3 className="font-bold text-slate-800 text-base">Select a case to view</h3>
+                            <p className="text-xs text-slate-400 mt-1">Pick a case from the list on the left to view documentation, AI analysis, and take action.</p>
                         </div>
                     )}
                 </div>
-
             </div>
 
-            {/* CREATE CASE ENGAGEMENT MODAL */}
-            {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-                    <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center">
-                            <h3 className="font-extrabold text-slate-900 text-lg">Create Engagement Case</h3>
-                            <button 
-                                onClick={() => setIsCreateModalOpen(false)}
-                                className="text-slate-400 hover:text-slate-600 text-sm font-bold"
-                            >
-                                Cancel
+            {/* APPLY / EXPRESS INTEREST MODAL */}
+            {isApplyModalOpen && targetOpenCase && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+                    <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 max-w-lg w-full space-y-6 shadow-2xl">
+                        <div className="flex justify-between items-center border-b pb-4">
+                            <div>
+                                <h3 className="font-extrabold text-slate-900 text-lg">Approve & Apply to Case</h3>
+                                <p className="text-xs text-slate-500 font-semibold truncate max-w-xs">{targetOpenCase.title}</p>
+                            </div>
+                            <button onClick={() => setIsApplyModalOpen(false)} className="text-slate-400 hover:text-slate-700">
+                                <Trash2 size={18} className="hidden" />
+                                ✕
                             </button>
                         </div>
 
-                        <form onSubmit={handleCreateCaseSubmit} className="space-y-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500">Client Email Address</label>
+                        <form onSubmit={handleApplySubmit} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Proposed Fee (₹)</label>
                                 <input
-                                    type="email"
+                                    type="number"
                                     required
-                                    value={createFormData.clientEmail}
-                                    onChange={(e) => setCreateFormData({ ...createFormData, clientEmail: e.target.value })}
-                                    placeholder="client@example.com"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                    value={proposalData.proposedFee}
+                                    onChange={(e) => setProposalData({ ...proposalData, proposedFee: e.target.value })}
+                                    className="w-full h-11 border rounded-xl px-4 text-sm font-semibold"
                                 />
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                    Client's estimated budget: ₹{(targetOpenCase.budget || targetOpenCase.totalFee || 0).toLocaleString()}
+                                </span>
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500">Case / Project Title</label>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Estimated Timeline</label>
                                 <input
                                     type="text"
-                                    required
-                                    value={createFormData.title}
-                                    onChange={(e) => setCreateFormData({ ...createFormData, title: e.target.value })}
-                                    placeholder="e.g. Property Title Verification"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                    value={proposalData.estimatedTimeline}
+                                    onChange={(e) => setProposalData({ ...proposalData, estimatedTimeline: e.target.value })}
+                                    placeholder="e.g. 2-3 Weeks or Immediate Filing"
+                                    className="w-full h-11 border rounded-xl px-4 text-sm font-semibold"
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500">Engagement Scope / Description</label>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Proposal Message / Approach</label>
                                 <textarea
-                                    required
-                                    rows={3}
-                                    value={createFormData.description}
-                                    onChange={(e) => setCreateFormData({ ...createFormData, description: e.target.value })}
-                                    placeholder="Describe the scope of work..."
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none"
+                                    rows={4}
+                                    value={proposalData.proposalNote}
+                                    onChange={(e) => setProposalData({ ...proposalData, proposalNote: e.target.value })}
+                                    placeholder="State your relevant experience, proposed strategy, or availability for this case..."
+                                    className="w-full border rounded-xl p-3 text-sm font-medium"
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500">Total Contract Value / Payout Fee (₹)</label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₹</span>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={createFormData.totalFee}
-                                        onChange={(e) => setCreateFormData({ ...createFormData, totalFee: e.target.value })}
-                                        placeholder="50000"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                    />
-                                </div>
+                            <div className="flex justify-end gap-3 pt-3 border-t">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsApplyModalOpen(false)}
+                                    className="px-5 py-2.5 border rounded-xl text-xs font-bold"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingProposal}
+                                    className="px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 disabled:opacity-50"
+                                >
+                                    {isSubmittingProposal ? "Submitting..." : "Send Proposal to Client"}
+                                </button>
                             </div>
-
-                            <button
-                                type="submit"
-                                disabled={isSubmittingCase}
-                                className="w-full h-12 bg-primary text-white font-extrabold rounded-xl shadow-lg shadow-primary/10 hover:bg-primary/95 transition-all flex items-center justify-center gap-2"
-                            >
-                                {isSubmittingCase ? "Creating..." : "Create Case & Add Roadmap"}
-                            </button>
                         </form>
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
