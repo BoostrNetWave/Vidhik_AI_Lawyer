@@ -22,13 +22,15 @@ import {
     Check,
     ChevronRight,
     Globe,
-    Layers
+    Layers,
+    Eye,
+    X
 } from "lucide-react";
 import { caseService, ICase, IMilestone } from "../services/caseService";
 import { useToast } from "../context/ToastContext";
 import { useConfirm } from "../context/ConfirmationContext";
 import { useAuth } from "../context/AuthContext";
-import { getFileUrl, isImageFile, isPdfFile } from "../lib/fileUtils";
+import { getFileUrl, isImageFile, isPdfFile, downloadFile } from "../lib/fileUtils";
 
 export default function CasesPage() {
     const navigate = useNavigate();
@@ -46,6 +48,7 @@ export default function CasesPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedCase, setSelectedCase] = useState<ICase | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [previewDoc, setPreviewDoc] = useState<{ url: string; title: string; details?: string; uploadedAt?: string } | null>(null);
     
     // Create Case Form Modal (for direct client engagement)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -569,12 +572,14 @@ export default function CasesPage() {
                                     </h4>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {selectedCase.documents.map((doc, idx) => (
-                                            <a 
+                                            <div 
                                                 key={idx}
-                                                href={getFileUrl(doc.url)} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl p-3 flex items-center justify-between group transition-all"
+                                                onClick={() => setPreviewDoc({
+                                                    url: getFileUrl(doc.url),
+                                                    title: doc.name || `Case Document ${idx + 1}`,
+                                                    details: doc.docType || 'Supporting Document'
+                                                })}
+                                                className="bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl p-3 flex items-center justify-between group transition-all cursor-pointer"
                                             >
                                                 <div className="flex items-center gap-2.5 min-w-0">
                                                     <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -584,11 +589,23 @@ export default function CasesPage() {
                                                         <p className="text-xs font-bold text-slate-900 truncate group-hover:text-primary transition-colors">
                                                             {doc.name}
                                                         </p>
-                                                        <span className="text-[10px] text-slate-400 font-semibold">{doc.docType || "Supporting Document"}</span>
+                                                        <span className="text-[10px] text-slate-400 font-semibold">{doc.docType || 'Supporting Document'}</span>
                                                     </div>
                                                 </div>
-                                                <Download className="w-4 h-4 text-slate-400 group-hover:text-primary shrink-0 ml-2" />
-                                            </a>
+                                                <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            downloadFile(getFileUrl(doc.url), doc.name);
+                                                        }}
+                                                        className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-primary transition-colors"
+                                                        title="Download File"
+                                                    >
+                                                        <Download className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
@@ -724,16 +741,31 @@ export default function CasesPage() {
                                                         {m.proofDocs && m.proofDocs.length > 0 && (
                                                             <div className="pl-8 flex flex-wrap gap-2 pt-1">
                                                                 {m.proofDocs.map((doc, dIdx) => (
-                                                                    <a 
+                                                                    <div 
                                                                         key={dIdx} 
-                                                                        href={getFileUrl(doc.url)} 
-                                                                        target="_blank" 
-                                                                        rel="noreferrer"
-                                                                        className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] font-bold text-slate-800 flex items-center gap-1.5"
+                                                                        onClick={() => setPreviewDoc({
+                                                                            url: getFileUrl(doc.url),
+                                                                            title: doc.name || `Proof Document ${dIdx + 1}`,
+                                                                            details: doc.details,
+                                                                            uploadedAt: doc.uploadedAt
+                                                                        })}
+                                                                        className="bg-white hover:bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer shadow-xs group"
                                                                     >
-                                                                        <CheckCircle2 size={13} className="text-emerald-600" />
-                                                                        <span>{doc.name}</span>
-                                                                    </a>
+                                                                        <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                                                                        <span className="truncate max-w-[180px]">{doc.name}</span>
+                                                                        <Eye size={12} className="text-slate-400 group-hover:text-primary ml-1 shrink-0" />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                downloadFile(getFileUrl(doc.url), doc.name);
+                                                                            }}
+                                                                            className="p-0.5 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-700 ml-0.5"
+                                                                            title="Download file"
+                                                                        >
+                                                                            <Download size={11} />
+                                                                        </button>
+                                                                    </div>
                                                                 ))}
                                                             </div>
                                                         )}
@@ -954,6 +986,86 @@ export default function CasesPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+        
+            {/* IN-APP LIGHTBOX PREVIEW MODAL */}
+            {previewDoc && (
+                <div 
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex flex-col items-center justify-center p-4 animate-in fade-in duration-200"
+                    onClick={() => setPreviewDoc(null)}
+                >
+                    <div 
+                        className="relative bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-950/80">
+                            <div className="min-w-0 pr-4">
+                                <h4 className="text-sm font-bold text-white truncate">{previewDoc.title}</h4>
+                                {previewDoc.details && (
+                                    <p className="text-[11px] text-slate-400 truncate mt-0.5">{previewDoc.details}</p>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => downloadFile(previewDoc.url, previewDoc.title)}
+                                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                                    title="Download Document"
+                                >
+                                    <Download size={16} />
+                                </button>
+                                <a
+                                    href={previewDoc.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                                    title="Open in new window"
+                                >
+                                    <ExternalLink size={16} />
+                                </a>
+                                <button
+                                    type="button"
+                                    onClick={() => setPreviewDoc(null)}
+                                    className="p-2 rounded-xl bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-white transition-colors"
+                                    title="Close Preview"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-black/40 min-h-[350px]">
+                            {isImageFile(previewDoc.url) || isImageFile(previewDoc.title) ? (
+                                <img
+                                    src={previewDoc.url}
+                                    alt={previewDoc.title}
+                                    className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-lg"
+                                />
+                            ) : isPdfFile(previewDoc.url) || isPdfFile(previewDoc.title) ? (
+                                <iframe
+                                    src={previewDoc.url}
+                                    title={previewDoc.title}
+                                    className="w-full h-[75vh] rounded-xl border border-slate-800 bg-white shadow-lg"
+                                />
+                            ) : (
+                                <div className="text-center p-8 text-slate-300 space-y-4">
+                                    <FileText size={48} className="mx-auto text-slate-500" />
+                                    <div>
+                                        <p className="font-semibold text-sm">Preview not directly supported for this file type</p>
+                                        <p className="text-xs text-slate-400 mt-1">You can download the file to inspect it on your device.</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadFile(previewDoc.url, previewDoc.title)}
+                                        className="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
+                                    >
+                                        <Download size={14} /> Download Document
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

@@ -5,9 +5,8 @@ import { useToast } from "../context/ToastContext";
 import { 
     Video, Mic, MicOff, VideoOff, ScreenShare, PhoneOff, 
     FileText, ArrowLeft, Download, ShieldCheck, Clock, ExternalLink,
-    Lock, RefreshCcw, Upload, AlertCircle
-} from 'lucide-react';
-import { getFileUrl, isImageFile, isPdfFile } from '../lib/fileUtils';
+    Lock, RefreshCcw, Upload, AlertCircle, Eye, X } from 'lucide-react';
+import { getFileUrl, isImageFile, isPdfFile, downloadFile } from '../lib/fileUtils';
 
 export default function ConsultationMeeting() {
     const { id } = useParams<{ id: string }>();
@@ -68,6 +67,7 @@ export default function ConsultationMeeting() {
     const [caseData, setCaseData] = useState<ICase | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'details' | 'docs'>('details');
+    const [previewDoc, setPreviewDoc] = useState<{ url: string; title: string; details?: string; uploadedAt?: string } | null>(null);
 
 
     // Call Toggles & Status
@@ -831,15 +831,28 @@ export default function ConsultationMeeting() {
                                             </p>
                                             
                                             <div className="flex gap-2">
-                                                <a
-                                                    href={getFileUrl(caseData.meetingSummaryUrl)}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="flex-1 py-2 bg-primary hover:bg-primary text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
-                                                >
-                                                    <Download size={13} />
-                                                    Download
-                                                </a>
+                                                <div className="flex-1 flex gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPreviewDoc({
+                                                            url: getFileUrl(caseData.meetingSummaryUrl),
+                                                            title: caseData.meetingSummaryName || 'Meeting Summary',
+                                                            details: 'Consultation briefing summary'
+                                                        })}
+                                                        className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                                                    >
+                                                        <Eye size={13} />
+                                                        Preview
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => downloadFile(getFileUrl(caseData.meetingSummaryUrl), caseData.meetingSummaryName || 'Meeting-Summary.pdf')}
+                                                        className="flex-1 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                                                    >
+                                                        <Download size={13} />
+                                                        Download
+                                                    </button>
+                                                </div>
                                                 
                                                 {/* Allow replacement upload */}
                                                 <label className="px-3 py-2 border border-slate-200 hover:border-slate-350 bg-white text-slate-700 rounded-xl font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-sm">
@@ -953,14 +966,28 @@ export default function ConsultationMeeting() {
                                                 <span className="text-[9px] text-primary font-black uppercase tracking-wider">Meeting Summary</span>
                                             </div>
                                         </div>
-                                        <a
-                                            href={getFileUrl(caseData.meetingSummaryUrl)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="h-8 w-8 rounded-lg bg-white border border-border flex items-center justify-center hover:bg-secondary text-primary shrink-0 transition-colors"
-                                        >
-                                            <Download size={14} />
-                                        </a>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            <button
+                                                type="button"
+                                                onClick={() => setPreviewDoc({
+                                                    url: getFileUrl(caseData.meetingSummaryUrl),
+                                                    title: caseData.meetingSummaryName || 'Meeting Summary',
+                                                    details: 'Consultation briefing summary'
+                                                })}
+                                                className="h-8 w-8 rounded-lg bg-white border border-border flex items-center justify-center hover:bg-secondary text-primary transition-colors"
+                                                title="Preview Document"
+                                            >
+                                                <Eye size={14} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => downloadFile(getFileUrl(caseData.meetingSummaryUrl), caseData.meetingSummaryName || 'Meeting-Summary.pdf')}
+                                                className="h-8 w-8 rounded-lg bg-white border border-border flex items-center justify-center hover:bg-secondary text-primary transition-colors"
+                                                title="Download File"
+                                            >
+                                                <Download size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
 
@@ -981,14 +1008,28 @@ export default function ConsultationMeeting() {
                                                     <span className="text-[9px] text-slate-400 font-semibold">{new Date(doc.uploadedAt).toLocaleDateString()}</span>
                                                 </div>
                                             </div>
-                                            <a
-                                                href={getFileUrl(doc.url)}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-500 hover:text-slate-900 shrink-0 transition-colors"
-                                            >
-                                                <ExternalLink size={14} />
-                                            </a>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPreviewDoc({
+                                                        url: getFileUrl(doc.url),
+                                                        title: doc.name || 'Document',
+                                                        uploadedAt: doc.uploadedAt
+                                                    })}
+                                                    className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-500 hover:text-slate-900 transition-colors"
+                                                    title="Preview Document"
+                                                >
+                                                    <Eye size={14} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => downloadFile(getFileUrl(doc.url), doc.name)}
+                                                    className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-500 hover:text-slate-900 transition-colors"
+                                                    title="Download Document"
+                                                >
+                                                    <Download size={14} />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))
                                 )}
@@ -997,6 +1038,87 @@ export default function ConsultationMeeting() {
                     </div>
                 </div>
             </div>
+        
+            {/* IN-APP LIGHTBOX PREVIEW MODAL */}
+            {previewDoc && (
+                <div 
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex flex-col items-center justify-center p-4 animate-in fade-in duration-200"
+                    onClick={() => setPreviewDoc(null)}
+                >
+                    <div 
+                        className="relative bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-950/80">
+                            <div className="min-w-0 pr-4">
+                                <h4 className="text-sm font-bold text-white truncate">{previewDoc.title}</h4>
+                                {previewDoc.details && (
+                                    <p className="text-[11px] text-slate-400 truncate mt-0.5">{previewDoc.details}</p>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => downloadFile(previewDoc.url, previewDoc.title)}
+                                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                                    title="Download Document"
+                                >
+                                    <Download size={16} />
+                                </button>
+                                <a
+                                    href={previewDoc.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                                    title="Open in new window"
+                                >
+                                    <ExternalLink size={16} />
+                                </a>
+                                <button
+                                    type="button"
+                                    onClick={() => setPreviewDoc(null)}
+                                    className="p-2 rounded-xl bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-white transition-colors"
+                                    title="Close Preview"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-black/40 min-h-[350px]">
+                            {isImageFile(previewDoc.url) || isImageFile(previewDoc.title) ? (
+                                <img
+                                    src={previewDoc.url}
+                                    alt={previewDoc.title}
+                                    className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-lg"
+                                />
+                            ) : isPdfFile(previewDoc.url) || isPdfFile(previewDoc.title) ? (
+                                <iframe
+                                    src={previewDoc.url}
+                                    title={previewDoc.title}
+                                    className="w-full h-[75vh] rounded-xl border border-slate-800 bg-white shadow-lg"
+                                />
+                            ) : (
+                                <div className="text-center p-8 text-slate-300 space-y-4">
+                                    <FileText size={48} className="mx-auto text-slate-500" />
+                                    <div>
+                                        <p className="font-semibold text-sm">Preview not directly supported for this file type</p>
+                                        <p className="text-xs text-slate-400 mt-1">You can download the file to inspect it on your device.</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadFile(previewDoc.url, previewDoc.title)}
+                                        className="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
+                                    >
+                                        <Download size={14} /> Download Document
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

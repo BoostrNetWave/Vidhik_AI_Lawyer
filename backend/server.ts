@@ -60,7 +60,10 @@ const uploadDirectories = [
     path.resolve(__dirname, '../../user-admin2/server/uploads'),
     '/var/www/vidhik/lawyer-admin-main/backend/uploads',
     '/var/www/html/Vidhik_AI_Lawyer/backend/uploads',
-    '/var/www/html/lawyer/backend/uploads'
+    '/var/www/html/lawyer/backend/uploads',
+    '/var/www/html/VidhikAI_User_Panel/uploads',
+    '/var/www/html/VidhikAI_User_Panel/server/uploads',
+    '/var/www/vidhik/user-admin2/uploads'
 ];
 
 // Universal file server (Disk -> GridFS Central Database -> Peer fallback)
@@ -166,7 +169,11 @@ app.get([
     '/user/lawyer/uploads/:filename',
     '/user/lawyer/uploads/*',
     '/api/uploads/:filename',
-    '/api/uploads/*'
+    '/api/uploads/*',
+    '/lawyer/api/uploads/:filename',
+    '/lawyer/api/uploads/*',
+    '/user/api/uploads/:filename',
+    '/user/api/uploads/*'
 ], handleServeFile);
 
 // Routes - Mounted with /api prefix as well as root & plural aliases for Nginx proxy compatibility

@@ -27,6 +27,7 @@ import SubscriptionPage from "./Pages/SubscriptionPage";
 import ConsultationsPage from "./Pages/ConsultationsPage";
 import ConsultationRoom from "./Pages/ConsultationRoom";
 import WebsiteContentPage from "./Pages/WebsiteContentPage";
+import DocumentViewPage from "./Pages/DocumentViewPage";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
@@ -42,6 +43,14 @@ const router = createBrowserRouter([
   {
     path: "/verify-otp",
     element: <VerifyOTP />,
+  },
+  {
+    path: "/uploads/:filename",
+    element: <DocumentViewPage />,
+  },
+  {
+    path: "/uploads/*",
+    element: <DocumentViewPage />,
   },
   {
     path: "/",
@@ -71,6 +80,8 @@ const router = createBrowserRouter([
       { path: "consultations/:id/consultation", element: <ConsultationRoom /> },
       { path: "consultation-room/:id", element: <ConsultationRoom /> },
       { path: "website-content", element: <WebsiteContentPage /> },
+      { path: "uploads/:filename", element: <DocumentViewPage /> },
+      { path: "uploads/*", element: <DocumentViewPage /> },
       { path: "*", element: <Navigate to="/" replace /> },
     ],
   },
