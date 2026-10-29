@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { 
     Briefcase, 
     PlusCircle, 
@@ -32,6 +32,7 @@ import { getFileUrl, isImageFile, isPdfFile } from "../lib/fileUtils";
 
 export default function CasesPage() {
     const navigate = useNavigate();
+    const { id: routeCaseId } = useParams<{ id: string }>();
     const { success, error } = useToast();
     const { confirm } = useConfirm();
     const { user } = useAuth();
@@ -100,6 +101,10 @@ export default function CasesPage() {
             setOpenCases(openCasesData);
 
             setSelectedCase(prevSelected => {
+                if (routeCaseId) {
+                    const fromRoute = myCasesData.find((c: any) => c._id === routeCaseId) || openCasesData.find((c: any) => c._id === routeCaseId);
+                    if (fromRoute) return fromRoute;
+                }
                 if (!prevSelected) {
                     if (activeTab === 'open_marketplace') {
                         return openCasesData.length > 0 ? openCasesData[0] : null;
@@ -662,27 +667,25 @@ export default function CasesPage() {
                             {selectedCase.status === 'active' && (
                                 <div className="space-y-8">
                                     {/* Video consultation link */}
-                                    {selectedCase.meetingLink && (
-                                        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                                                    <Video size={20} />
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-extrabold text-emerald-950 text-sm">Case Video Consultation Room</h4>
-                                                    <p className="text-xs text-emerald-700 font-medium">Connect directly with client via the live video suite.</p>
-                                                </div>
+                                    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                                <Video size={20} />
                                             </div>
-
-                                            <button
-                                                onClick={() => navigate(`/cases/${selectedCase._id}/consultation`)}
-                                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs h-10 px-5 flex items-center gap-2 shrink-0 shadow-xs"
-                                            >
-                                                <Video size={16} />
-                                                <span>Join Video Suite</span>
-                                            </button>
+                                            <div>
+                                                <h4 className="font-extrabold text-emerald-950 text-sm">Case Video Consultation Room</h4>
+                                                <p className="text-xs text-emerald-700 font-medium">Connect directly with client via the live video suite.</p>
+                                            </div>
                                         </div>
-                                    )}
+
+                                        <button
+                                            onClick={() => navigate(`/cases/${selectedCase._id}/consultation`)}
+                                            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs h-10 px-5 flex items-center gap-2 shrink-0 shadow-xs cursor-pointer active:scale-95 transition-all"
+                                        >
+                                            <Video size={16} />
+                                            <span>Join Video Suite</span>
+                                        </button>
+                                    </div>
 
                                     {/* ROADMAP SECTION */}
                                     <div className="space-y-6">

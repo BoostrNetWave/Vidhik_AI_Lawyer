@@ -122,7 +122,13 @@ export default function ConsultationMeeting() {
     const [summaryFile, setSummaryFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
-    const user = JSON.parse(localStorage.getItem('lawyer_profile_data') || '{}');
+    const user = (() => {
+        try {
+            return JSON.parse(localStorage.getItem('lawyer_profile_data') || '{}');
+        } catch {
+            return {};
+        }
+    })();
 
     const fetchCaseDetails = async () => {
         try {
@@ -334,7 +340,7 @@ export default function ConsultationMeeting() {
         const initMeeting = async () => {
             try {
                 setLoading(true);
-                const data = await caseService.getCaseById(id!);
+                const data = await caseService.getCaseById(id || '');
                 setCaseData(data);
                 
                 // Let backend know lawyer has joined consultation
@@ -527,7 +533,7 @@ export default function ConsultationMeeting() {
         );
     }
 
-    const sharedDocs = caseData.milestones.flatMap((m) => m.proofDocs || []);
+    const sharedDocs = [...((caseData.milestones || []).flatMap((m) => m?.proofDocs || [])), ...(caseData.documents || [])];
 
     return (
         <div className="max-w-[1600px] mx-auto space-y-6 pb-12 font-sans">
@@ -976,7 +982,7 @@ export default function ConsultationMeeting() {
                                                 </div>
                                             </div>
                                             <a
-                                                href={`/lawyer${doc.url}`}
+                                                href={getFileUrl(doc.url)}
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-500 hover:text-slate-900 shrink-0 transition-colors"

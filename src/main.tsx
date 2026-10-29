@@ -1,7 +1,7 @@
 // src/main.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import { ToastProvider } from "./context/ToastContext";
@@ -63,10 +63,15 @@ const router = createBrowserRouter([
       { path: "settings", element: <SettingsPage /> },
       { path: "subscription", element: <SubscriptionPage /> },
       { path: "cases", element: <CasesPage /> },
+      { path: "cases/:id", element: <CasesPage /> },
       { path: "cases/:id/meet", element: <ConsultationMeeting /> },
+      { path: "cases/:id/consultation", element: <ConsultationMeeting /> },
       { path: "consultations", element: <ConsultationsPage /> },
       { path: "consultations/:id/meet", element: <ConsultationRoom /> },
+      { path: "consultations/:id/consultation", element: <ConsultationRoom /> },
+      { path: "consultation-room/:id", element: <ConsultationRoom /> },
       { path: "website-content", element: <WebsiteContentPage /> },
+      { path: "*", element: <Navigate to="/" replace /> },
     ],
   },
 ], {
