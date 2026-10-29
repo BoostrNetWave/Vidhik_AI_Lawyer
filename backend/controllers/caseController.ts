@@ -547,3 +547,31 @@ export const clearSignals = async (req: AuthRequest, res: Response): Promise<voi
         res.status(500).json({ message: error.message });
     }
 };
+
+export const reanalyzeCase = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const apiPort = process.env.USER_API_PORT || 5003;
+        try {
+            const aiRes = await fetch(`http://localhost:${apiPort}/api/cases/${id}/reanalyze`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': req.headers.authorization || ''
+                }
+            });
+            if (aiRes.ok) {
+                const data = await aiRes.json();
+                res.json(data);
+                return;
+            }
+        } catch (fetchErr) {
+            console.warn('[Lawyer reanalyze forward]:', fetchErr);
+        }
+
+        const kase = await Case.findById(id);
+        res.json(kase);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};

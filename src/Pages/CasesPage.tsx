@@ -48,6 +48,24 @@ export default function CasesPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedCase, setSelectedCase] = useState<ICase | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isReanalyzing, setIsReanalyzing] = useState(false);
+
+    const handleReanalyze = async () => {
+        if (!selectedCase?._id) return;
+        setIsReanalyzing(true);
+        success("Analyzing case documents & brief with AI...");
+        try {
+            const updated = await caseService.reanalyzeCase(selectedCase._id);
+            setSelectedCase(updated);
+            setMyCases(prev => prev.map(c => c._id === updated._id ? updated : c));
+            setOpenCases(prev => prev.map(c => c._id === updated._id ? updated : c));
+            success("AI Case analysis updated successfully!");
+        } catch (err: any) {
+            error(err.response?.data?.message || "Failed to re-analyze case");
+        } finally {
+            setIsReanalyzing(false);
+        }
+    };
     const [previewDoc, setPreviewDoc] = useState<{ url: string; title: string; details?: string; uploadedAt?: string } | null>(null);
     
     // Create Case Form Modal (for direct client engagement)
@@ -526,42 +544,91 @@ export default function CasesPage() {
                             </div>
 
                             {/* AI EXECUTIVE SUMMARY & KEY ISSUES CARD */}
-                            {selectedCase.aiSummary && (
-                                <div className="bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/50 border border-primary/20 rounded-2xl p-6 space-y-4 shadow-xs">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center">
-                                                <Sparkles className="w-4 h-4" />
+                            {selectedCase.aiSummary && (() => {
+                                const isNonLegal = selectedCase.isLegalDocument === false || 
+                                    selectedCase.aiSummary.startsWith('⚠️') || 
+                                    selectedCase.aiSummary.includes('Non-Legal Document Detected');
+
+                                return (
+                                    <div className={`border rounded-2xl p-6 space-y-4 shadow-xs transition-all ${
+                                        isNonLegal 
+                                            ? 'bg-amber-50/90 border-amber-300 ring-1 ring-amber-200' 
+                                            : 'bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/50 border-primary/20'
+                                    }`}>
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                                                    isNonLegal 
+                                                        ? 'bg-amber-100 text-amber-700' 
+                                                        : 'bg-primary text-white shadow-xs'
+                                                }`}>
+                                                    {isNonLegal ? <AlertCircle className="w-4 h-4 text-amber-700" /> : <Sparkles className="w-4 h-4" />}
+                                                </div>
+                                                <div>
+                                                    <h4 className={`font-extrabold text-sm ${isNonLegal ? 'text-amber-950' : 'text-slate-900'}`}>
+                                                        {isNonLegal ? '⚠️ Client Upload Validation: Non-Legal Document' : 'Vidhik AI Case Intelligence Summary'}
+                                                    </h4>
+                                                    <p className={`text-[10px] font-bold tracking-wider uppercase ${isNonLegal ? 'text-amber-800' : 'text-primary'}`}>
+                                                        {isNonLegal ? 'Attachment does not contain valid legal instrument' : 'Automated Legal Assessment for Advocates'}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="font-extrabold text-slate-900 text-sm">Vidhik AI Case Intelligence Summary</h4>
-                                                <p className="text-[10px] text-primary font-bold uppercase tracking-wider">Automated Legal Assessment for Advocates</p>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    disabled={isReanalyzing}
+                                                    onClick={handleReanalyze}
+                                                    className="px-3 py-1.5 rounded-xl border border-slate-200 hover:border-primary/40 bg-white text-slate-700 hover:text-primary text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-50"
+                                                    title="Re-run AI Document Analysis"
+                                                >
+                                                    <Sparkles className={`w-3.5 h-3.5 ${isReanalyzing ? 'animate-spin text-primary' : ''}`} />
+                                                    <span>{isReanalyzing ? 'Analyzing...' : 'Re-analyze with AI'}</span>
+                                                </button>
+                                                {selectedCase.aiRecommendedSpecialization && (
+                                                    <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border ${
+                                                        isNonLegal 
+                                                            ? 'bg-amber-100 text-amber-800 border-amber-300' 
+                                                            : 'bg-primary/10 text-primary border-primary/20'
+                                                    }`}>
+                                                        {selectedCase.aiRecommendedSpecialization}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
-                                        <span className="text-[10px] font-extrabold bg-primary/10 text-primary px-2.5 py-1 rounded-full">
-                                            AI Analysis
-                                        </span>
+
+                                        <p className={`text-xs leading-relaxed font-medium whitespace-pre-line border rounded-xl p-4 ${
+                                            isNonLegal 
+                                            ? 'text-amber-950 bg-amber-100/60 border-amber-200 font-semibold' 
+                                            : 'text-slate-700 bg-white/70 border-slate-150'
+                                        }`}>
+                                            {selectedCase.aiSummary}
+                                        </p>
+
+                                        {selectedCase.aiKeyFacts && selectedCase.aiKeyFacts.length > 0 && (
+                                            <div className="space-y-2 pt-1">
+                                                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                                                    {isNonLegal ? 'Document Verification Findings' : 'Key Facts & Disputed Points'}
+                                                </span>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                    {selectedCase.aiKeyFacts.map((fact, idx) => (
+                                                        <div key={idx} className={`border rounded-lg p-2.5 flex items-start gap-2 text-xs font-semibold ${
+                                                            isNonLegal 
+                                                                ? 'bg-amber-100/50 border-amber-200 text-amber-900' 
+                                                                : 'bg-white/90 border-slate-150 text-slate-800'
+                                                        }`}>
+                                                            {isNonLegal 
+                                                                ? <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                                                                : <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                                            }
+                                                            <span>{fact}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-
-                                    <p className="text-xs text-slate-700 leading-relaxed font-medium whitespace-pre-line bg-white/70 border border-slate-150 rounded-xl p-4">
-                                        {selectedCase.aiSummary}
-                                    </p>
-
-                                    {selectedCase.aiKeyFacts && selectedCase.aiKeyFacts.length > 0 && (
-                                        <div className="space-y-2 pt-1">
-                                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Key Facts & Disputed Points</span>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                {selectedCase.aiKeyFacts.map((fact, idx) => (
-                                                    <div key={idx} className="bg-white/90 border border-slate-150 rounded-lg p-2.5 flex items-start gap-2 text-xs font-semibold text-slate-800">
-                                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                                                        <span>{fact}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                );
+                            })()}
 
                             {/* ATTACHED CASE DOCUMENTS (PDF / WORD) */}
                             {selectedCase.documents && selectedCase.documents.length > 0 && (

@@ -15,7 +15,8 @@ import {
     joinMeeting,
     sendSignal,
     getSignals,
-    clearSignals
+    clearSignals,
+    reanalyzeCase
 } from '../controllers/caseController.js';
 import multer from 'multer';
 import path from 'path';
@@ -70,5 +71,6 @@ router.post('/:id/join-meeting', joinMeeting);
 router.post('/:id/signal', sendSignal);
 router.get('/:id/signals', getSignals);
 router.post('/:id/signals/clear', clearSignals);
+router.post('/:id/reanalyze', reanalyzeCase);
 
 export default router;

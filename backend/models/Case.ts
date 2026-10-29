@@ -42,6 +42,8 @@ export interface ICase extends Document {
     filingNumber?: string;
     nextHearingDate?: Date;
     priority?: 'low' | 'medium' | 'high' | 'urgent';
+    isLegalDocument?: boolean;
+    nonLegalReason?: string;
     aiSummary?: string;
     aiKeyFacts?: string[];
     aiRecommendedSpecialization?: string;
@@ -135,6 +137,8 @@ const caseSchema = new Schema({
     currentProgress: { type: Number, default: 0 },
     planSubmitted: { type: Boolean, default: false },
     planApproved: { type: Boolean, default: false },
+    isLegalDocument: { type: Boolean, default: true },
+    nonLegalReason: { type: String, default: '' },
     aiSummary: { type: String, default: '' },
     aiKeyFacts: [{ type: String }],
     aiRecommendedSpecialization: { type: String, default: '' },

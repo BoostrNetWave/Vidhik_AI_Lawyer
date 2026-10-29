@@ -70,6 +70,8 @@ export interface ICase {
     planSubmitted: boolean;
     planApproved: boolean;
     milestones: IMilestone[];
+    isLegalDocument?: boolean;
+    nonLegalReason?: string;
     aiSummary?: string;
     aiKeyFacts?: string[];
     aiRecommendedSpecialization?: string;
@@ -179,6 +181,11 @@ export const caseService = {
 
     async clearSignals(id: string): Promise<any> {
         const response = await api.post(`cases/${id}/signals/clear`);
+        return response.data;
+    },
+
+    async reanalyzeCase(id: string): Promise<ICase> {
+        const response = await api.post(`cases/${id}/reanalyze`);
         return response.data;
     }
 };
