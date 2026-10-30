@@ -115,7 +115,7 @@ export const applyToCase = async (req: AuthRequest, res: Response): Promise<void
         }
 
         kase.interestedLawyers.push({
-            lawyer: lawyerId as any,
+            lawyer: lawyerUser._id as any,
             appliedAt: new Date(),
             proposalNote: proposalNote || 'I am interested in taking this case and can provide dedicated legal representation.',
             proposedFee: Number(proposedFee) || kase.budget || kase.totalFee || 1500,
@@ -127,33 +127,42 @@ export const applyToCase = async (req: AuthRequest, res: Response): Promise<void
 
         const populated = await Case.findById(kase._id)
             .populate('client', 'fullName email phone location')
+            .populate('lawyer', 'fullName email phone location title expertise avatar rating experience casesWon hourlyRate')
             .populate('interestedLawyers.lawyer', 'fullName email phone location title expertise avatar rating experience casesWon hourlyRate')
             .populate('aiRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience')
             .populate('adminRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience');
 
-        // Notify client
-        const clientUserId = kase.client.toString();
-        await Notification.create({
-            userId: clientUserId,
-            userRole: 'user',
-            title: 'Lawyer Approved Your Case',
-            message: `Adv. ${lawyerUser.fullName} has approved and expressed interest in taking your case "${kase.title}".`,
-            type: 'case',
-            link: `/cases`
-        });
+        // Notify client (with safe error handling)
+        try {
+            const clientUserId = (kase.client as any)?._id?.toString() || kase.client.toString();
+            await Notification.create({
+                userId: clientUserId,
+                userRole: 'user',
+                title: 'Lawyer Approved Your Case',
+                message: `Adv. ${lawyerUser.fullName} has approved and expressed interest in taking your case "${kase.title}".`,
+                type: 'case',
+                link: `/cases`
+            });
+        } catch (notifErr) {
+            console.warn('[applyToCase] Notification creation error:', notifErr);
+        }
 
-        // Send email to client
+        // Send email to client (with safe error handling)
         const clientEmail = (populated?.client as any)?.email;
         if (clientEmail) {
-            await sendEmail(
-                clientEmail,
-                `Lawyer Expressed Interest: ${kase.title}`,
-                `<h3>Adv. ${lawyerUser.fullName} Approved Your Case</h3>
-                 <p>Advocate <strong>${lawyerUser.fullName}</strong> (${lawyerUser.expertise || 'Specialist'}) has reviewed your case <strong>${kase.title}</strong> and expressed interest in representing you.</p>
-                 <p><strong>Proposed Fee:</strong> ₹${Number(proposedFee) || kase.budget || kase.totalFee || 1500}</p>
-                 <p><strong>Proposal Note:</strong> ${proposalNote || 'Available to commence work immediately.'}</p>
-                 <p>Log in to your <strong>Case Management</strong> dashboard to review all interested lawyers and confirm your selection.</p>`
-            );
+            try {
+                await sendEmail(
+                    clientEmail,
+                    `Lawyer Expressed Interest: ${kase.title}`,
+                    `<h3>Adv. ${lawyerUser.fullName} Approved Your Case</h3>
+                     <p>Advocate <strong>${lawyerUser.fullName}</strong> (${lawyerUser.expertise || 'Specialist'}) has reviewed your case <strong>${kase.title}</strong> and expressed interest in representing you.</p>
+                     <p><strong>Proposed Fee:</strong> ₹${Number(proposedFee) || kase.budget || kase.totalFee || 1500}</p>
+                     <p><strong>Proposal Note:</strong> ${proposalNote || 'Available to commence work immediately.'}</p>
+                     <p>Log in to your <strong>Case Management</strong> dashboard to review all interested lawyers and confirm your selection.</p>`
+                );
+            } catch (emailErr) {
+                console.warn('[applyToCase] Email error:', emailErr);
+            }
         }
 
         res.json(populated);
@@ -446,18 +455,24 @@ export const confirmBooking = async (req: AuthRequest, res: Response): Promise<v
 
         const clientEmail = (kase.client as any)?.email;
         const clientName = (kase.client as any)?.fullName || 'Client';
-        const lawyerName = req.user.fullName || 'Advocate';
+        
+        const lawyerUser = await User.findById(req.user.id);
+        const lawyerName = (kase.lawyer as any)?.fullName || lawyerUser?.fullName || 'Advocate';
 
-        // Notify client
+        // Notify client (with safe error handling)
         const clientUserId = (kase.client as any)?._id?.toString() || kase.client.toString();
-        await Notification.create({
-            userId: clientUserId,
-            userRole: 'user',
-            title: 'Lawyer Accepted Your Case',
-            message: `Adv. ${lawyerName} accepted your case "${kase.title}". Please proceed with payment to start work.`,
-            type: 'case',
-            link: `/cases`
-        });
+        try {
+            await Notification.create({
+                userId: clientUserId,
+                userRole: 'user',
+                title: 'Lawyer Accepted Your Case',
+                message: `Adv. ${lawyerName} accepted your case "${kase.title}". Please proceed with payment to start work.`,
+                type: 'case',
+                link: `/cases`
+            });
+        } catch (notifErr) {
+            console.warn('[confirmBooking] Notification error:', notifErr);
+        }
 
         await Promise.allSettled([
             clientEmail ? sendEmail(
