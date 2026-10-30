@@ -88,6 +88,12 @@ export const applyToCase = async (req: AuthRequest, res: Response): Promise<void
             return;
         }
 
+        // If user logged into lawyer portal and is applying, ensure they have lawyer role
+        if (lawyerUser.role !== 'lawyer' && lawyerUser.role !== 'admin') {
+            lawyerUser.role = 'lawyer';
+            await lawyerUser.save();
+        }
+
         const kase = await Case.findById(id);
         if (!kase) {
             res.status(404).json({ message: 'Case not found' });
@@ -100,7 +106,7 @@ export const applyToCase = async (req: AuthRequest, res: Response): Promise<void
         }
 
         const alreadyApplied = kase.interestedLawyers.some(
-            (i: any) => i.lawyer.toString() === lawyerId.toString()
+            (i: any) => (i.lawyer?._id || i.lawyer)?.toString() === lawyerId.toString()
         );
 
         if (alreadyApplied) {
@@ -401,19 +407,40 @@ export const requestPayout = async (req: AuthRequest, res: Response): Promise<vo
 export const confirmBooking = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const kase = await Case.findOneAndUpdate(
-            { _id: id, lawyer: req.user.id, status: 'pending_lawyer' },
-            { 
-                $set: { 
-                    status: 'pending_payment',
-                    meetingLink: `https://jitsi.hamburg.ccc.de/vidhik-meet-${Math.random().toString(36).substring(2, 10)}-${Date.now().toString(36)}`
-                } 
-            },
-            { new: true }
-        ).populate('client', 'fullName email phone location');
+        const kaseCheck = await Case.findById(id);
+        if (!kaseCheck) {
+            res.status(404).json({ message: 'Case not found' });
+            return;
+        }
+
+        const selectedLawyerId = (kaseCheck.lawyer?._id || kaseCheck.lawyer)?.toString();
+        const currentUserId = req.user.id?.toString();
+
+        if (selectedLawyerId !== currentUserId) {
+            res.status(403).json({ message: 'You are not the selected lawyer for this case' });
+            return;
+        }
+
+        if (kaseCheck.status !== 'pending_lawyer') {
+            res.status(400).json({ message: `Case is not in pending lawyer confirmation state (current status: ${kaseCheck.status})` });
+            return;
+        }
+
+        kaseCheck.status = 'pending_payment';
+        if (!kaseCheck.meetingLink) {
+            kaseCheck.meetingLink = `https://jitsi.hamburg.ccc.de/vidhik-meet-${Math.random().toString(36).substring(2, 10)}-${Date.now().toString(36)}`;
+        }
+        await kaseCheck.save();
+
+        const kase = await Case.findById(kaseCheck._id)
+            .populate('client', 'fullName email phone location')
+            .populate('lawyer', 'fullName email phone location title expertise avatar rating experience casesWon hourlyRate')
+            .populate('interestedLawyers.lawyer', 'fullName email phone location title expertise avatar rating experience casesWon hourlyRate')
+            .populate('aiRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience')
+            .populate('adminRecommendedLawyer', 'fullName email phone location title expertise avatar rating experience');
 
         if (!kase) {
-            res.status(404).json({ message: 'Case request not found or not in pending lawyer confirmation state.' });
+            res.status(404).json({ message: 'Case not found after updating' });
             return;
         }
 

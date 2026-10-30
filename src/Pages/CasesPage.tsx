@@ -711,27 +711,39 @@ export default function CasesPage() {
 
                             {/* CLIENT SELECTED THIS LAWYER BANNER */}
                             {selectedCase.status === 'pending_lawyer' && (
-                                <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl space-y-4">
-                                    <div className="flex items-start gap-4">
-                                        <AlertCircle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
+                                (selectedCase.lawyer?._id || selectedCase.lawyer)?.toString() === lawyerId?.toString() ? (
+                                    <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl space-y-4">
+                                        <div className="flex items-start gap-4">
+                                            <AlertCircle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
+                                            <div className="space-y-1">
+                                                <h4 className="font-extrabold text-amber-950 text-sm">Client Selected Your Proposal!</h4>
+                                                <p className="text-xs text-amber-800 leading-relaxed font-semibold">
+                                                    Client <strong>{selectedCase.client?.fullName}</strong> has confirmed selection of your legal representation for <strong>"{selectedCase.title}"</strong>. Click accept below to prompt the client for payment and initiate the engagement roadmap.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-end pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleConfirmBooking(selectedCase._id)}
+                                                className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary/90 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
+                                            >
+                                                <CheckCircle2 size={16} />
+                                                <span>Accept & Prompt Client Payment</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl flex items-center gap-4">
+                                        <Clock className="h-6 w-6 text-slate-400 shrink-0" />
                                         <div className="space-y-1">
-                                            <h4 className="font-extrabold text-amber-950 text-sm">Client Selected Your Proposal!</h4>
-                                            <p className="text-xs text-amber-800 leading-relaxed font-semibold">
-                                                Client <strong>{selectedCase.client?.fullName}</strong> has confirmed selection of your legal representation for <strong>"{selectedCase.title}"</strong>. Click accept below to prompt the client for payment and initiate the engagement roadmap.
+                                            <h4 className="font-extrabold text-slate-800 text-sm">Client Engagement In Progress</h4>
+                                            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                                The client has chosen another advocate for <strong>"{selectedCase.title}"</strong> and confirmation is pending.
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex justify-end pt-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => handleConfirmBooking(selectedCase._id)}
-                                            className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl text-xs hover:bg-primary/90 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
-                                        >
-                                            <CheckCircle2 size={16} />
-                                            <span>Accept & Prompt Client Payment</span>
-                                        </button>
-                                    </div>
-                                </div>
+                                )
                             )}
 
                             {/* AWAITING PAYMENT BANNER */}
