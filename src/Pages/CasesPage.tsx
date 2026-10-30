@@ -1017,6 +1017,8 @@ export default function CasesPage() {
                                 <input
                                     type="number"
                                     required
+                                    min={100}
+                                    max={500000}
                                     value={proposalData.proposedFee}
                                     onChange={(e) => setProposalData({ ...proposalData, proposedFee: e.target.value })}
                                     className="w-full h-11 border rounded-xl px-4 text-sm font-semibold"
