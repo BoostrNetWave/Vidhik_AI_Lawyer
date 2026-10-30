@@ -6,7 +6,7 @@ import {
     Video, Mic, MicOff, VideoOff, ScreenShare, PhoneOff, 
     FileText, ArrowLeft, Download, ShieldCheck, Clock, ExternalLink,
     Lock, RefreshCcw, Upload, AlertCircle, Eye, X } from 'lucide-react';
-import { getFileUrl, isImageFile, isPdfFile, downloadFile } from '../lib/fileUtils';
+import { getFileUrl, isImageFile, isPdfFile, isWordFile, downloadFile } from '../lib/fileUtils';
 
 export default function ConsultationMeeting() {
     const { id } = useParams<{ id: string }>();
@@ -1098,6 +1098,38 @@ export default function ConsultationMeeting() {
                                     title={previewDoc.title}
                                     className="w-full h-[75vh] rounded-xl border border-slate-800 bg-white shadow-lg"
                                 />
+                            ) : isWordFile(previewDoc.url) || isWordFile(previewDoc.title) ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center p-6 space-y-5 max-w-xl mx-auto">
+                                    <div className="w-20 h-20 rounded-2xl bg-blue-600/20 border-2 border-blue-500/40 text-blue-400 flex items-center justify-center shadow-lg shadow-blue-900/20">
+                                        <FileText size={42} className="text-blue-400" />
+                                    </div>
+                                    <div className="text-center space-y-1.5">
+                                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                            Word Document (.docx / .doc)
+                                        </span>
+                                        <h4 className="text-base font-bold text-white truncate max-w-md pt-2">{previewDoc.title}</h4>
+                                        <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                                            Ready for full inspection. You can download and open this document in Microsoft Word, Google Docs, or LibreOffice.
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => downloadFile(previewDoc.url, previewDoc.title)}
+                                            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
+                                        >
+                                            <Download size={14} /> Download Word Document
+                                        </button>
+                                        <a
+                                            href={previewDoc.url.startsWith('http') ? `https://docs.google.com/viewer?url=${encodeURIComponent(previewDoc.url)}&embedded=true` : previewDoc.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 border border-slate-700 transition-all cursor-pointer"
+                                        >
+                                            <ExternalLink size={14} /> View Online
+                                        </a>
+                                    </div>
+                                </div>
                             ) : (
                                 <div className="text-center p-8 text-slate-300 space-y-4">
                                     <FileText size={48} className="mx-auto text-slate-500" />

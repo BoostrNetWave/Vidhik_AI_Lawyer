@@ -24,9 +24,9 @@ export const getEmailConfig = () => {
         : undefined;
     const explicitService = (process.env.SMTP_SERVICE || '').trim().toLowerCase();
 
-    // If server .env still contains the legacy expired credentials or is unset,
+    // If server .env still contains legacy credentials or is unset,
     // automatically use the verified active Gmail SMTP credentials:
-    if (!rawUser || rawUser === 'sibsankar2727@gmail.com' || rawPass === 'ulqi aihu ajut qdnl') {
+    if (!rawUser || !rawPass || rawUser.includes('boostrnetwave') || rawUser.includes('sibsankar') || rawPass.includes('7SdX5Kvd') || rawPass.includes('ulqi')) {
         rawUser = 'noreply.vidhikai@gmail.com';
         rawPass = 'mmax iqxa mnsc zpsd';
         explicitHost = 'smtp.gmail.com';

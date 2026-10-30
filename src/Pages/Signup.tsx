@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, AlertCircle, Eye, EyeOff, CheckCircle, Scale, Star, ShieldCheck, Check, Sparkles } from 'lucide-react';
-import logo from '../assets/logo.jpeg';
+import { Mail, Lock, User, AlertCircle, Eye, EyeOff, Loader2, Star, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import logo from '../assets/logo.png';
 import { Button } from '../Components/ui/button';
 import { Input } from '../Components/ui/input';
 import { Label } from '../Components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../Components/ui/card';
 import api from '../lib/api';
 
 const Signup: React.FC = () => {
@@ -14,11 +13,11 @@ const Signup: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [agreeTerms, setAgreeTerms] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    const { login } = useAuth();
     const navigate = useNavigate();
 
     const validateForm = () => {
@@ -46,7 +45,10 @@ const Signup: React.FC = () => {
             setError('Password must be at least 6 characters');
             return false;
         }
-        
+        if (!agreeTerms) {
+            setError('You must accept the terms of service to register');
+            return false;
+        }
         return true;
     };
 
@@ -77,25 +79,24 @@ const Signup: React.FC = () => {
                         state: { email: email.trim() },
                         replace: true 
                     });
-                }, 1500);
+                }, 1200);
             }
-            
         } catch (err: any) {
             console.error('Registration error:', err);
-            setError(err.response?.data?.message || 'Registration failed. Please try again.');
+            setError(err.response?.data?.message || 'Registration failed. Please check your details and try again.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex min-h-screen w-full font-sans bg-slate-50">
+        <div className="flex min-h-screen w-full font-sans bg-zinc-50">
             {/* Left - Branding Panel */}
-            <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-[#0F172A] via-[#1E1B4B] to-[#020617] relative overflow-hidden items-center justify-center p-12 select-none">
+            <div className="hidden lg:flex lg:w-5/12 bg-zinc-950 relative overflow-hidden items-center justify-center p-12 select-none border-r border-zinc-800/80">
                 {/* Decorative glows */}
-                <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-primary/90/10 to-transparent blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
-                <div className="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-zinc-800/20 to-transparent blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-zinc-800/30 blur-[100px] pointer-events-none" />
+                <div className="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full bg-zinc-800/30 blur-[100px] pointer-events-none" />
                 
                 {/* Dots grid pattern */}
                 <div 
@@ -112,39 +113,29 @@ const Signup: React.FC = () => {
                     </Link>
                     
                     <h2 className="font-display text-4xl font-extrabold mb-6 leading-tight">
-                        Grow Your Legal Practice Digitally
+                        Advanced Practice Space for Lawyers
                     </h2>
                     <p className="text-slate-300/85 text-sm leading-relaxed mb-10">
-                        Join Vidhik AI's provider network. Connect with clients, build your caseload, automate paperwork, and manage your billing from a single platform.
+                        Join India's premier legal intelligence network. Receive high-intent client cases, submit tailored proposals, and manage end-to-end litigation workflows.
                     </p>
                     
-                    {/* Features checklist */}
-                    <div className="space-y-4 mb-10 bg-white/[0.02] backdrop-blur-md rounded-2xl p-6 border border-white/[0.06] shadow-[0_20px_50px_rgba(0,0,0,0.25)]">
-                        <div className="flex items-start gap-3">
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-muted-foreground">
-                                <Check className="h-3 w-3" />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-semibold text-white">Premium Client Leads</h4>
-                                <p className="text-xs text-slate-400 leading-normal">Get matched with clients searching for your legal expertise.</p>
-                            </div>
+                    {/* Premium Card Testimonial */}
+                    <div className="bg-zinc-900/40 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]">
+                        <div className="flex gap-1 mb-4">
+                            {[...Array(5)].map((_, i) => (
+                                <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                            ))}
                         </div>
-                        <div className="flex items-start gap-3">
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-muted-foreground">
-                                <Check className="h-3 w-3" />
+                        <p className="text-sm text-slate-200 leading-relaxed mb-4 italic">
+                            "Vidhik AI has completely transformed our practice management. The case discovery and roadmap milestones keep our clients fully engaged."
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold shadow-md">
+                                SN
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-white">Interactive Case Dashboards</h4>
-                                <p className="text-xs text-slate-400 leading-normal">Collaborate with clients, share notes, and update statuses.</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-muted-foreground">
-                                <Check className="h-3 w-3" />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-semibold text-white">Automated Invoicing & Payments</h4>
-                                <p className="text-xs text-slate-400 leading-normal">Collect retainers, track hours, and receive payments securely.</p>
+                                <p className="text-sm font-semibold text-white">Adv. Sneha Nambiar</p>
+                                <p className="text-xs text-slate-400">Supreme Court & Commercial Litigator</p>
                             </div>
                         </div>
                     </div>
@@ -152,21 +143,17 @@ const Signup: React.FC = () => {
             </div>
 
             {/* Right - Form Container */}
-            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-[#FAFAFC] relative overflow-hidden">
-                {/* Decorative glows on the right panel */}
-                <div className="absolute top-0 right-0 -z-10 w-[300px] h-[300px] rounded-full bg-muted/30 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -z-10 w-[300px] h-[300px] rounded-full bg-muted/30 blur-3xl pointer-events-none" />
-                
+            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-zinc-50 relative overflow-hidden">
                 {/* Dots grid pattern for Right Panel */}
                 <div 
-                    className="absolute inset-0 opacity-[0.015] pointer-events-none"
+                    className="absolute inset-0 opacity-[0.03] pointer-events-none"
                     style={{
-                        backgroundImage: `radial-gradient(circle at 1px 1px, #7C3AED 1px, transparent 0)`,
+                        backgroundImage: `radial-gradient(circle at 1px 1px, #18181b 1px, transparent 0)`,
                         backgroundSize: '20px 20px'
                     }}
                 />
 
-                <div className="w-full max-w-md">
+                <div className="w-full max-w-md relative z-10">
                     {/* Small Logo for mobile view */}
                     <div className="text-center mb-8 lg:hidden">
                         <Link to="/" className="inline-flex items-center">
@@ -174,125 +161,125 @@ const Signup: React.FC = () => {
                         </Link>
                     </div>
 
-                    <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-[0_20px_50px_-12px_rgba(124,58,237,0.08)] rounded-2xl p-8 sm:p-10 w-full relative">
+                    <div className="bg-white/60 backdrop-blur-3xl border border-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] rounded-3xl p-8 sm:p-10 w-full relative">
                         <div className="text-center mb-8">
-                            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 font-display flex items-center justify-center gap-2">
-                                Create Account
+                            <h2 className="text-3xl font-extrabold tracking-tight text-zinc-900 font-display">
+                                Advocate Registration
                             </h2>
                             <p className="mt-2.5 text-sm text-slate-500">
-                                Join the legal admin portal and manage your practice.
+                                Register your practice on the Vidhik AI lawyer network.
                             </p>
                         </div>
 
-                        <form className="space-y-5" onSubmit={handleSubmit}>
-                            {error && (
-                                <div className="bg-secondary border border-border rounded-lg p-3.5 flex items-start gap-2.5 text-primary text-sm animate-shake">
-                                    <AlertCircle className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-primary" />
-                                    <p className="leading-normal font-medium">{error}</p>
-                                </div>
-                            )}
-                            
-                            {success && (
-                                <div className="bg-secondary border border-border rounded-lg p-3.5 flex items-start gap-2.5 text-primary text-sm">
-                                    <CheckCircle className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-primary" />
-                                    <p className="leading-normal font-medium">Account created! OTP sent to your email. Redirecting to verification...</p>
-                                </div>
-                            )}
+                        {error && (
+                            <div className="mb-5 bg-rose-50 border border-rose-200 rounded-xl p-3.5 flex items-start gap-2.5 text-rose-700 text-xs font-semibold animate-in fade-in">
+                                <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                <p className="leading-normal">{error}</p>
+                            </div>
+                        )}
 
-                            <div className="space-y-2">
-                                <Label htmlFor="fullName" className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                                    Full Name
-                                </Label>
+                        {success && (
+                            <div className="mb-5 bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-start gap-2.5 text-emerald-800 text-xs font-semibold animate-in fade-in">
+                                <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-emerald-600" />
+                                <p className="leading-normal">Account registered! Redirecting to OTP verification...</p>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Full Name</Label>
                                 <div className="relative">
                                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
-                                    <Input
-                                        id="fullName"
-                                        name="fullName"
+                                    <Input 
                                         type="text"
-                                        required
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
-                                        className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:border-border focus:ring-ring/20 focus-visible:ring-ring/20 focus-visible:border-border transition-all rounded-lg"
-                                        placeholder="John Doe"
+                                        placeholder="Adv. Rajesh Sharma" 
+                                        autoComplete="name" 
+                                        className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:border-zinc-900 focus:ring-zinc-900/10 focus-visible:ring-zinc-900/10 focus-visible:border-zinc-900 transition-all rounded-lg"
+                                        required
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                                    Email address
-                                </Label>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Official Email</Label>
                                 <div className="relative">
                                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
-                                    <Input
-                                        id="email"
-                                        name="email"
+                                    <Input 
                                         type="email"
-                                        required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="pl-10 h-11 bg-slate-50/50 border-slate-200 focus:border-border focus:ring-ring/20 focus-visible:ring-ring/20 focus-visible:border-border transition-all rounded-lg"
-                                        placeholder="admin@legal.com"
+                                        placeholder="advocate@barcouncil.org" 
+                                        autoComplete="email" 
+                                        className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:border-zinc-900 focus:ring-zinc-900/10 focus-visible:ring-zinc-900/10 focus-visible:border-zinc-900 transition-all rounded-lg"
+                                        required
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                                    Password
-                                </Label>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Password</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
                                     <Input
-                                        id="password"
-                                        name="password"
                                         type={showPassword ? "text" : "password"}
-                                        required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-10 pr-10 h-11 bg-slate-50/50 border-slate-200 focus:border-border focus:ring-ring/20 focus-visible:ring-ring/20 focus-visible:border-border transition-all rounded-lg"
                                         placeholder="••••••••"
+                                        autoComplete="new-password"
+                                        className="pl-10 pr-10 h-11 bg-zinc-50 border-zinc-200 focus:border-zinc-900 focus:ring-zinc-900/10 focus-visible:ring-zinc-900/10 focus-visible:border-zinc-900 transition-all rounded-lg"
+                                        required
                                     />
                                     <button
                                         type="button"
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center cursor-pointer"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none flex items-center justify-center"
                                     >
-                                        {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                                        {showPassword ? (
+                                            <EyeOff className="h-4 w-4" />
+                                        ) : (
+                                            <Eye className="h-4 w-4" />
+                                        )}
+                                        <span className="sr-only">Toggle password visibility</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-gradient-to-r from-primary/90 to-primary hover:from-primary/90 hover:to-primary text-white font-semibold h-11 rounded-lg flex items-center justify-center transition-all duration-300 shadow-[0_10px_20px_-5px_rgba(124,58,237,0.3)] hover:shadow-[0_15px_25px_-5px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none"
+                            <div className="flex items-start space-x-2 pt-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="terms" 
+                                    checked={agreeTerms}
+                                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                                    className="mt-1 rounded border-slate-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
+                                />
+                                <Label htmlFor="terms" className="text-xs font-medium text-slate-500 leading-snug cursor-pointer select-none">
+                                    I agree to the <span className="font-semibold text-zinc-900">Advocate Network Terms</span> and verify that I hold an active Bar Council enrollment.
+                                </Label>
+                            </div>
+
+                            <Button 
+                                type="submit" 
+                                disabled={loading} 
+                                className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold h-11 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none mt-2"
                             >
                                 {loading ? (
-                                    <div className="flex items-center justify-center gap-2">
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        Creating account...
-                                    </div>
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Registering & Sending OTP...
+                                    </>
                                 ) : (
-                                    <div className="flex items-center justify-center gap-1.5">
-                                        <Sparkles className="h-4 w-4" />
-                                        Create Account
-                                    </div>
+                                    <span>Register Advocate Account</span>
                                 )}
                             </Button>
                         </form>
 
-                        <div className="mt-8 text-center text-sm text-slate-500 border-t border-slate-100 pt-6">
-                            <p>
-                                Already have an account?{" "}
-                                <Link
-                                    to="/login"
-                                    className="font-semibold text-primary hover:text-primary transition-colors inline-flex items-center gap-0.5 group"
-                                >
-                                    Sign In
-                                    <span className="transform transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-                                </Link>
-                            </p>
+                        <div className="mt-6 text-center text-sm text-zinc-500 border-t border-zinc-100 pt-5">
+                            Already registered as an advocate?{" "}
+                            <Link to="/login" className="font-semibold text-zinc-900 hover:text-zinc-600 transition-colors">
+                                Sign in
+                            </Link>
                         </div>
                     </div>
                 </div>

@@ -38,12 +38,20 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 15 * 1024 * 1024 },
+    limits: { fileSize: 25 * 1024 * 1024 },
     fileFilter: (_req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        if (extname && mimetype) {
+        const ext = path.extname(file.originalname).toLowerCase();
+        const allowedExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.doc', '.docx', '.txt', '.rtf'];
+        const allowedMimes = [
+            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/octet-stream',
+            'text/plain',
+            'text/rtf'
+        ];
+        if (allowedExts.includes(ext) || allowedMimes.includes(file.mimetype) || file.mimetype.startsWith('image/')) {
             cb(null, true);
         } else {
             cb(new Error('Only images, PDFs, and Word documents are allowed'));

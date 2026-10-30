@@ -50,6 +50,12 @@ export function isPdfFile(filenameOrUrl: string | undefined | null): boolean {
     return /\.pdf$/i.test(clean);
 }
 
+export function isWordFile(filenameOrUrl: string | undefined | null): boolean {
+    if (!filenameOrUrl) return false;
+    const clean = filenameOrUrl.split('?')[0].split('#')[0];
+    return /\.(doc|docx|dot|dotx|rtf)$/i.test(clean);
+}
+
 export function getFileName(filenameOrUrl: string | undefined | null): string {
     if (!filenameOrUrl) return 'Document';
     const clean = filenameOrUrl.split('?')[0].split('#')[0];

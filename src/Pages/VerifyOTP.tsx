@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Mail, ShieldCheck, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
+import { ShieldCheck, RefreshCw, AlertCircle, Loader2, ArrowLeft, Star } from 'lucide-react';
 import { Button } from '../Components/ui/button';
 import { Input } from '../Components/ui/input';
 import { Label } from '../Components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../Components/ui/card';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import logo from '../assets/logo.jpeg';
+import logo from '../assets/logo.png';
 
 const VerifyOTP: React.FC = () => {
     const [otp, setOtp] = useState('');
@@ -19,7 +18,7 @@ const VerifyOTP: React.FC = () => {
     const location = useLocation();
     const { login } = useAuth();
 
-    const email = location.state?.email || localStorage.getItem('pending_verification_email');
+    const email = location.state?.email || localStorage.getItem('pending_verification_email') || '';
 
     useEffect(() => {
         if (!email) {
@@ -28,7 +27,7 @@ const VerifyOTP: React.FC = () => {
     }, [email, navigate]);
 
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: any;
         if (timer > 0) {
             interval = setInterval(() => {
                 setTimer((prev) => prev - 1);
@@ -48,7 +47,7 @@ const VerifyOTP: React.FC = () => {
         setLoading(true);
 
         try {
-            const response = await api.post('/auth/verify-otp', { email, otp });
+            const response = await api.post('/auth/verify-otp', { email, otp: otp.trim() });
             const { token, user } = response.data;
             
             // Clean up
@@ -61,14 +60,14 @@ const VerifyOTP: React.FC = () => {
             navigate('/', { replace: true });
         } catch (err: any) {
             console.error('OTP verification error:', err);
-            setError(err.response?.data?.message || 'Verification failed. Please try again.');
+            setError(err.response?.data?.message || 'Verification failed. Please check the code and try again.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleResend = async () => {
-        if (timer > 0) return;
+        if (timer > 0 || resending) return;
 
         setError('');
         setResending(true);
@@ -78,114 +77,157 @@ const VerifyOTP: React.FC = () => {
             setTimer(60);
             setError('');
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to resend OTP');
+            setError(err.response?.data?.message || 'Failed to resend verification code');
         } finally {
             setResending(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-secondary/30 to-white flex items-center justify-center p-4">
-            <div className="w-full max-w-md">
-                <Card className="shadow-xl border-0 overflow-hidden">
-                    <div className="h-2 bg-primary w-full" />
-                    <CardHeader className="space-y-1 text-center pb-6 pt-8">
-                        <div className="flex justify-center mb-6">
-                            <div className="relative">
-                                <div className="absolute -inset-4 bg-primary/10 rounded-full blur-lg animate-pulse" />
-                                <div className="relative bg-white p-2 rounded-2xl shadow-xl shadow-primary/10 border border-slate-100 h-24 w-24 overflow-hidden flex items-center justify-center">
-                                    <ShieldCheck className="w-12 h-12 text-primary" />
-                                </div>
+        <div className="flex min-h-screen w-full font-sans bg-zinc-50">
+            {/* Left - Branding Panel */}
+            <div className="hidden lg:flex lg:w-5/12 bg-zinc-950 relative overflow-hidden items-center justify-center p-12 select-none border-r border-zinc-800/80">
+                {/* Decorative glows */}
+                <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-zinc-800/20 to-transparent blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-zinc-800/30 blur-[100px] pointer-events-none" />
+                <div className="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full bg-zinc-800/30 blur-[100px] pointer-events-none" />
+                
+                {/* Dots grid pattern */}
+                <div 
+                    className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                    style={{
+                        backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+                        backgroundSize: '24px 24px'
+                    }}
+                />
+
+                <div className="relative z-10 text-white max-w-md">
+                    <Link to="/" className="inline-flex items-center mb-10 transition-transform duration-300 hover:scale-105 bg-white px-4 py-2 rounded-2xl shadow-sm border border-white/20">
+                        <img src={logo} alt="Vidhik AI" className="h-8 w-auto object-contain" />
+                    </Link>
+                    
+                    <h2 className="font-display text-4xl font-extrabold mb-6 leading-tight">
+                        Security First Practice Space
+                    </h2>
+                    <p className="text-slate-300/85 text-sm leading-relaxed mb-10">
+                        We authenticate all advocate credentials with rigorous verification standards to safeguard case confidentiality and uphold professional ethics.
+                    </p>
+                    
+                    {/* Premium Card Testimonial */}
+                    <div className="bg-zinc-900/40 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]">
+                        <div className="flex gap-1 mb-4">
+                            {[...Array(5)].map((_, i) => (
+                                <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                            ))}
+                        </div>
+                        <p className="text-sm text-slate-200 leading-relaxed mb-4 italic">
+                            "The platform's verification protocol gives us absolute confidence that all sensitive briefs remain strictly confidential."
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold shadow-md">
+                                RK
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-white">Rajesh Kumar</p>
+                                <p className="text-xs text-slate-400">Corporate Legal Advisor</p>
                             </div>
                         </div>
-                        <CardTitle className="text-3xl font-bold text-gray-900">
-                            Verify Email
-                        </CardTitle>
-                        <CardDescription className="text-gray-600 px-4">
-                            We've sent a 6-digit verification code to <span className="font-semibold text-primary">{email}</span>
-                        </CardDescription>
-                    </CardHeader>
+                    </div>
+                </div>
+            </div>
 
-                    <CardContent className="space-y-6">
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {error && (
-                                <div className="bg-secondary border border-border rounded-lg p-3 flex items-center gap-3 text-primary text-sm animate-shake">
-                                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                                    <p>{error}</p>
-                                </div>
-                            )}
+            {/* Right - Form Container */}
+            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-zinc-50 relative overflow-hidden">
+                {/* Dots grid pattern for Right Panel */}
+                <div 
+                    className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                    style={{
+                        backgroundImage: `radial-gradient(circle at 1px 1px, #18181b 1px, transparent 0)`,
+                        backgroundSize: '20px 20px'
+                    }}
+                />
 
-                            <div className="space-y-4 text-center">
-                                <Label htmlFor="otp" className="text-sm font-medium text-gray-700 block">
-                                    Enter 6-digit Code
+                <div className="w-full max-w-md relative z-10">
+                    {/* Small Logo for mobile view */}
+                    <div className="text-center mb-8 lg:hidden">
+                        <Link to="/" className="inline-flex items-center">
+                            <img src={logo} alt="Vidhik AI" className="h-9 w-auto object-contain" />
+                        </Link>
+                    </div>
+
+                    <div className="bg-white/60 backdrop-blur-3xl border border-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] rounded-3xl p-8 sm:p-10 w-full relative">
+                        <div className="text-center mb-8">
+                            <div className="w-14 h-14 rounded-2xl bg-zinc-900 text-white flex items-center justify-center mx-auto mb-4 shadow-md">
+                                <ShieldCheck className="w-7 h-7" />
+                            </div>
+                            <h2 className="text-3xl font-extrabold tracking-tight text-zinc-900 font-display">
+                                Verify Email
+                            </h2>
+                            <p className="mt-2.5 text-sm text-slate-500 leading-relaxed">
+                                Enter the 6-digit verification code sent to
+                            </p>
+                            <p className="font-bold text-zinc-900 text-sm mt-0.5 break-all">
+                                {email}
+                            </p>
+                        </div>
+
+                        {error && (
+                            <div className="mb-5 bg-rose-50 border border-rose-200 rounded-xl p-3.5 flex items-start gap-2.5 text-rose-700 text-xs font-semibold animate-in fade-in">
+                                <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                <p className="leading-normal">{error}</p>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="space-y-2">
+                                <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500 text-center block">
+                                    6-Digit Verification Code
                                 </Label>
-                                <Input
-                                    id="otp"
+                                <Input 
                                     type="text"
-                                    maxLength={6}
-                                    placeholder="000000"
                                     value={otp}
-                                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-                                    className="text-center text-3xl tracking-[0.5em] font-bold h-16 border-2 focus:border-primary focus:ring-primary/20 bg-slate-50/50"
-                                    autoFocus
+                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    placeholder="123456" 
+                                    autoComplete="one-time-code" 
+                                    maxLength={6}
+                                    className="h-14 text-center tracking-[0.4em] font-mono text-2xl font-bold bg-zinc-50 border-zinc-200 focus:border-zinc-900 focus:ring-zinc-900/10 focus-visible:ring-zinc-900/10 focus-visible:border-zinc-900 transition-all rounded-xl"
+                                    required
                                 />
                             </div>
 
-                            <Button
-                                type="submit"
-                                disabled={loading || otp.length !== 6}
-                                className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/25"
+                            <Button 
+                                type="submit" 
+                                disabled={loading || otp.length !== 6} 
+                                className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold h-11 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                             >
                                 {loading ? (
-                                    <div className="flex items-center gap-2">
-                                        <RefreshCw className="h-5 w-5 animate-spin" />
-                                        <span>Verifying...</span>
-                                    </div>
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Verifying Code...
+                                    </>
                                 ) : (
-                                    <div className="flex items-center gap-2 text-lg">
-                                        <span>Verify Account</span>
-                                        <ArrowRight className="h-5 w-5" />
-                                    </div>
+                                    <span>Verify & Continue</span>
                                 )}
                             </Button>
                         </form>
 
-                        <div className="text-center space-y-4">
-                            <p className="text-sm text-gray-500">
-                                Didn't receive the code?
-                            </p>
+                        <div className="mt-6 flex items-center justify-between border-t border-zinc-100 pt-5 text-xs text-slate-500">
                             <button
+                                type="button"
                                 onClick={handleResend}
-                                disabled={timer > 0 || resending}
-                                className={`text-sm font-semibold transition-colors flex items-center justify-center gap-2 mx-auto ${
-                                    timer > 0 || resending 
-                                    ? 'text-gray-400 cursor-not-allowed' 
-                                    : 'text-primary hover:text-primary/80'
-                                }`}
+                                disabled={resending || timer > 0}
+                                className="font-semibold text-zinc-900 hover:text-zinc-600 transition-colors inline-flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                             >
-                                {resending ? (
-                                    <RefreshCw className="h-4 w-4 animate-spin" />
-                                ) : timer > 0 ? (
-                                    `Resend code in ${timer}s`
-                                ) : (
-                                    'Resend Verification Code'
-                                )}
+                                <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
+                                {timer > 0 ? `Resend code in ${timer}s` : 'Resend code'}
                             </button>
-                        </div>
-                    </CardContent>
 
-                    <CardFooter className="bg-slate-50/50 py-6 border-t border-slate-100">
-                        <div className="text-center w-full">
-                            <Link
-                                to="/signup"
-                                className="text-sm text-gray-500 hover:text-primary transition-colors flex items-center justify-center gap-1"
-                            >
-                                <ArrowRight className="h-4 w-4 rotate-180" />
-                                Back to Registration
+                            <Link to="/login" className="font-semibold text-zinc-900 hover:text-zinc-600 transition-colors inline-flex items-center gap-1">
+                                <ArrowLeft className="w-3.5 h-3.5" /> Back to login
                             </Link>
                         </div>
-                    </CardFooter>
-                </Card>
+                    </div>
+                </div>
             </div>
         </div>
     );
